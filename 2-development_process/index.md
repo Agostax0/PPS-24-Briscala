@@ -38,3 +38,14 @@ These tools allow to save and describe changes in the form of a "commit". Before
   *  **test**: adding new tests or correcting old tests
   *  **chore**: changes to libraries or configurations
   *  **perf**: changes to code's performances
+
+## Code Formatting
+In order to keep consistent code-formatting standards, the team chose to use ScalaFMT, a tool that dictates formatting standards and applies them to each line of code generated.
+Our project's ScalaFTM configuration can be found [here](https://github.com/Agostax0/PPS-24-Briscala/blob/master/.scalafmt.conf).
+
+## Build Automation
+A build automation tool was chose to ease the development process, [SBT](https://www.scala-sbt.org) (Simple Build Tool) was chose for its ease-of-use and its ample plugin library.
+
+## Continuous Integration
+Continuous Integration was implemented using GitHub-native workflows, which are tasked with continuous testing at every change/commit on clean machines with varying operative systems.
+These configurations can be found [here](https://github.com/Agostax0/PPS-24-Briscala/tree/master/.github/workflows).

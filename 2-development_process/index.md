@@ -28,7 +28,7 @@ These tools allow to save and describe changes in the form of a "commit". Before
 
 * **Commit nomenclature**: in order to maintain an easy to navigate commit history, a precise commit nomenclature has been decided where each commit is structured as such 
 
-    \[type\]: \[message\] where "type" can be one of the following:
+    `[type]: message` where "type" can be one of the following:
 
   * **feat**: a new feature has been completed
   *  **fix**: a bug has been fixed

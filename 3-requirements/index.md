@@ -36,7 +36,12 @@
 * Performance: the game engine should be efficient and responsive, providing a smooth user experience
 
 ## Implementation Requirements
-* Scala version... TODO
+* Use of Scala 3.+
+* Use of JDK 21+
+* The DSL engine should be implemented as an Internal DSL
+* The DSL should use Scala's features and syntax to create an almost natural language-like game configuration
+* The codebase should be well-organized, documented and maintained throughout its development
+* The project must, first and foremost run on Linux, optionally it could run on other operating systems.
 
 ## Optional Requirements
 * The following requirements are not mandatory to for project completion, but their implementation would improve the quality of the result:

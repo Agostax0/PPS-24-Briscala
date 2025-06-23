@@ -1,11 +1,12 @@
 # Sprint 1.
 
-| Priority |    Item     |  Assignee   | Initial Size Estimate | Day 1 | Day 2 | Day 3 | Day 4 | Day 5 | Day 6 | Day 7 |
-|:--------:|:-----------:|:-----------:|:---------------------:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-|    1     | Placeholder | Placeholder |      Placeholder      |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+| Priority |                 Item                 |                                 Tasks                                  |   Assignee    | Initial Size Estimate | Day 1 | Day 2 | Day 3 | Day 4 | Day 5 | Day 6 | Day 7 |
+|:--------:|:------------------------------------:|:----------------------------------------------------------------------:|:-------------:|:---------------------:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|    1     |   The user can create a game table   |        Setup players<br/>Setup deck<br/>Playable cards in hand         | /<br/>/<br/>/ |     5<br/>2<br/>3     |       |       |       |       |       |       |       |
+|    2     | The user can play a simple card game |     Single turn logics<br/>Draw from deck mechanics<br/>Win rules      | /<br/>/<br/>/ |     2<br/>2<br/>3     |       |       |       |       |       |       |       |
 
 # Sprint Goal
-This sprint's goal 
+This sprint's goal is to make a simple card game to then abstract and package to a DSL library. 
 # Sprint Deadline
 This sprint's deadline is set for 30/06/2025.
 # Sprint Review

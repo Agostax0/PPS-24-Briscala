@@ -20,6 +20,7 @@ jobs:
               uses: actions/setup-java@4
               with:
                 java-version: '21'
+                distribution: 'temurin'
 
             - name: Setup sbt
               uses: sbt/setup-sbt@v1

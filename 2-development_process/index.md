@@ -49,3 +49,6 @@ A build automation tool was chose to ease the development process, [SBT](https:/
 ## Continuous Integration
 Continuous Integration was implemented using GitHub-native workflows, which are tasked with continuous testing at every change/commit on clean machines with varying operative systems.
 These configurations can be found [here](https://github.com/Agostax0/PPS-24-Briscala/tree/master/.github/workflows).
+
+
+| [Previous Chapter](../1-introduction/index.md) | [Index](../index.md) | [Next Chapter](../3-requirements/index.md) |

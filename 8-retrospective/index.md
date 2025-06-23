@@ -11,3 +11,6 @@
 ## Sprint 5
 
 ## Sprint 6
+
+
+| [Previous Chapter](../7-testing/index.md) | [Index](../index.md) | [Next Chapter](../9-conclusion/index.md) |

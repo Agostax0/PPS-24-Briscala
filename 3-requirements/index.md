@@ -48,3 +48,5 @@
   * Team-based play
   * Single play against bots
   * Extension of the engine to support more complex games in which the table is not cleared at the end of each turn
+
+| [Previous Chapter](../2-development_process/index.md) | [Index](../index.md) | [Next Chapter](../4-architectural_design/index.md) |

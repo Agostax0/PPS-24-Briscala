@@ -6,7 +6,7 @@
 |    2     | The user can play a simple card game |     Single turn logics<br/>Draw from deck mechanics<br/>Win rules      | /<br/>/<br/>/ |     2<br/>2<br/>3     |       |       |       |       |       |       |       |
 
 # Sprint Goal
-This sprint's goal is to make a simple card game to then abstract and package to a DSL library. 
+This sprint's goal is to allow the user to create a simple card game and play it to the end.
 # Sprint Deadline
 This sprint's deadline is set for 30/06/2025.
 # Sprint Review

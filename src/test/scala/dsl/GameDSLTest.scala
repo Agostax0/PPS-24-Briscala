@@ -3,7 +3,11 @@ package dsl
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
-import GameDSL._
+import GameDSL.*
+import dsl.syntax.SyntacticSugar._
+
+import scala.language.postfixOps
+
 class GameDSLTest
     extends AnyFlatSpec
     with should.Matchers
@@ -14,3 +18,22 @@ class GameDSLTest
 
   "a dsl" should "allow to make a game with a name" in:
     game shouldBe a [GameBuilder]
+
+  it should "allow to set the name of the game" in:
+    val g = game is "Briscola"
+
+    g.gameName should be("Briscola")
+
+  it should "allow to set the number of players" in:
+    val g = game has 4 players
+
+    g shouldBe a [GameBuilder]
+
+  it should "allow to add players" in:
+    val g = game has 2 players
+
+    game has player called "Alice"
+    game has player called "Bob"
+
+    g shouldBe a [GameBuilder]
+    g.build().players should have size 2

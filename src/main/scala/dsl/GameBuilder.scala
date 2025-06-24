@@ -28,6 +28,6 @@ object GameBuilder:
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
 
-      val game = EngineModel()
+      val game = EngineModel(gameName)
       game.addPlayers(players)
       game

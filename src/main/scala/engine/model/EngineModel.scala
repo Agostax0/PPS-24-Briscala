@@ -15,3 +15,8 @@ class EngineModel(val gameName: String) extends DeckManagement:
   
   def addPlayers(players: List[PlayerModel]): Unit =
     this.players = players
+
+  def giveCardsToPlayers(handSize: Int): Unit =
+    this.players.foreach(
+        player => player.drawFromDeck(deck, handSize)
+    )

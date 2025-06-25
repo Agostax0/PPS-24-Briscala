@@ -55,3 +55,6 @@ class GameBuilderTest
     val suits = List("Cups", "Coins", "Swords", "Batons", "Stars")
     a [IllegalArgumentException] should be thrownBy builder.addSuits(suits)
 
+  it should "allow to set only valid players hands" in:
+    val handSize = 2
+    a [IllegalArgumentException] should be thrownBy builder.setPlayersHands(handSize)

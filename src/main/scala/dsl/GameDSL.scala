@@ -1,7 +1,7 @@
 package dsl
 
 import dsl.syntax.SyntacticSugar.PlayerSyntacticSugar
-import dsl.syntax.SyntacticSugarBuilder.{PlayerBuilder, PlayerCountBuilder}
+import dsl.syntax.SyntacticSugarBuilder.{HandBuilder, PlayerBuilder, PlayerCountBuilder}
 
 object GameDSL:
   private var builder: GameBuilder = _
@@ -47,7 +47,7 @@ object GameDSL:
      * {{{
      *   game has player called "Alice"
      * }}}
-     * @param playerSyntax
+     * @param playerSyntax "PlayerSyntacticSugar" instance representing the player
      * @return The builder for the game
      */
     infix def has(playerSyntax: PlayerSyntacticSugar): PlayerBuilder =
@@ -59,3 +59,5 @@ object GameDSL:
     infix def ranksAre(ranks: String*): GameBuilder =
       gameBuilder.addRanks(ranks.toList)
 
+    infix def gives(handSize: Int): HandBuilder =
+      HandBuilder(gameBuilder, handSize)

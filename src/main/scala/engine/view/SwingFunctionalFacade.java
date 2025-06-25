@@ -24,12 +24,6 @@ class SwingFunctionalFacade {
         return new FrameImpl();
     }
 
-    /*
-    private static class FrameImpl implements Frame {
-      ...
-    }
-    */
-
     private static class FrameImpl implements Frame {
         private final JFrame jframe = new JFrame();
         private final Map<String,JPanel> panels = new HashMap<>();

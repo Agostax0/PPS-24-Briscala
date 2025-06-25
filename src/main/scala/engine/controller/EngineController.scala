@@ -22,14 +22,13 @@ object EngineController:
     override def start(): Unit =
       val initialState =
         for
-
           _ <- model.players.foldLeft(unitState(): State[Window, Unit]):
             (state, player) =>
               for
                 _ <- view.addPlayer(player.name)
                 _ <- state
               yield ()
-        yield()
+        yield ()
 
       val windowCreation = initialState.flatMap(_ => view.show)
 

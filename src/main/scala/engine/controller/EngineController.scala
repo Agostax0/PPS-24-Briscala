@@ -27,6 +27,12 @@ object EngineController:
               for
                 _ <- view.addPlayer(player.name)
                 _ <- state
+                _ <- player.hand.view.foldLeft(unitState(): State[Window, Unit]):
+                  (nestedState, card) =>
+                    for
+                      _ <- nestedState
+                      _ <- view.addCardToPlayer(player.name, card.rank.toString, card.suit)
+                    yield ()
               yield ()
         yield ()
 

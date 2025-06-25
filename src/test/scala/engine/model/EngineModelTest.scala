@@ -25,3 +25,12 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   it should "allow creating a deck" in:
     engine.createDeck(suits, ranks)
     engine.deck.size() should be(40)
+
+  it should "allow giving cards to players" in:
+    engine.createDeck(suits, ranks)
+    engine.addPlayers(List(player1, player2))
+    engine.giveCardsToPlayers(5)
+
+    player1.hand should have size 5
+    player2.hand should have size 5
+    engine.deck should have size 30

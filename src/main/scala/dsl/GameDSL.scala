@@ -58,5 +58,4 @@ object GameDSL:
       
     infix def ranksAre(ranks: String*): GameBuilder =
       gameBuilder.addRanks(ranks.toList)
-      PlayerBuilder(gameBuilder)
 

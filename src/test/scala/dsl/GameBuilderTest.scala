@@ -33,6 +33,16 @@ class GameBuilderTest
   it should "not allow a player count not in between 2 or 4" in:
     a [IllegalArgumentException] should be thrownBy builder.setPlayers(7)
 
+  it should "not allow to define N players and then add a number of players different from N" in:
+    val n = 4
+    builder.setPlayers(n)
+
+    builder.addPlayer("Alice")
+    builder.addPlayer("Bob")
+    builder.addPlayer("Mark")
+
+    a [IllegalArgumentException] should be thrownBy builder.build()
+
   it should "allow to add ranks" in:
     val ranks = List("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
     builder.addRanks(ranks)
@@ -44,3 +54,4 @@ class GameBuilderTest
   it should "allow only 4 suits" in:
     val suits = List("Cups", "Coins", "Swords", "Batons", "Stars")
     a [IllegalArgumentException] should be thrownBy builder.addSuits(suits)
+

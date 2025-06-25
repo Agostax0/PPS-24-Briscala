@@ -37,3 +37,12 @@ class GameDSLTest
 
     g shouldBe a [GameBuilder]
     g.build().players should have size 2
+
+  it should "not allow adding a number of players different from expected" in:
+    game has 2 players
+
+    game has player called "Alice"
+    game has player called "Alice"
+    game has player called "Alice"
+
+    a [IllegalArgumentException] should be thrownBy game.build()

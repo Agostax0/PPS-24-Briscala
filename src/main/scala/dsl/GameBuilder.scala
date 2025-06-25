@@ -1,6 +1,6 @@
 package dsl
 
-import dsl.types.{PlayerCount, Suits}
+import dsl.types.{HandSize, PlayerCount, Suits}
 import engine.model.{EngineModel, PlayerModel}
 
 sealed trait GameBuilder:
@@ -9,6 +9,7 @@ sealed trait GameBuilder:
   def setPlayers(n: Int): GameBuilder
   def addSuits(suits: List[String]): GameBuilder
   def addRanks(ranks: List[String]): GameBuilder
+  def setPlayersHands(handSize: Int): GameBuilder
   def build(): EngineModel
 
 object GameBuilder:
@@ -19,6 +20,7 @@ object GameBuilder:
     private var playerCount: PlayerCount = _
     private var suits: Suits = _
     private var ranks: List[String] = List.empty
+    private var handSize: HandSize = _
 
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
@@ -36,6 +38,10 @@ object GameBuilder:
       this.ranks = ranks
       this
 
+    override def setPlayersHands(handSize: Int): GameBuilder =
+      this.handSize = HandSize(handSize)
+      this
+
     override def build(): EngineModel =
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
@@ -43,4 +49,38 @@ object GameBuilder:
       val game = EngineModel(gameName)
       game.addPlayers(players)
       game.createDeck(suits, ranks)
+      game.giveCardsToPlayers(handSize.value)
       game
+
+class SimpleGameBuilder extends GameBuilder:
+  var players: List[PlayerModel] = List.empty
+  var playerCount: PlayerCount = _
+  var suits: Suits = _
+  var ranks: List[String] = List.empty
+  var handSize: HandSize = _
+
+  override val gameName: String = "Simple Game"
+
+  override def addPlayer(name: String): GameBuilder =
+    players = players :+ PlayerModel(name)
+    this
+
+  override def setPlayers(n: Int): GameBuilder =
+    playerCount = PlayerCount(n)
+    this
+
+  override def addSuits(suits: List[String]): GameBuilder =
+    this.suits = Suits(suits)
+    this
+
+  override def addRanks(ranks: List[String]): GameBuilder =
+    this.ranks = ranks
+    this
+
+  override def setPlayersHands(handSize: Int): GameBuilder =
+    this.handSize = HandSize(handSize)
+    this
+
+  override def build(): EngineModel =
+    EngineModel(gameName)
+

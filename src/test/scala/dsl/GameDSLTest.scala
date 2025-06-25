@@ -28,7 +28,7 @@ class GameDSLTest
     val g = game has 4 players
 
     g match
-      case g: SimpleGameBuilder => g.playerCount shouldBe(PlayerCount(4))
+      case g: SimpleGameBuilder => g.playerCount shouldBe PlayerCount(4)
 
   it should "allow to add players" in:
     val g = game has 2 players

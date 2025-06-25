@@ -47,7 +47,7 @@ object GameDSL:
      * {{{
      *   game has player called "Alice"
      * }}}
-     * @param playerSyntax
+     * @param playerSyntax "PlayerSyntacticSugar" instance representing the player
      * @return The builder for the game
      */
     infix def has(playerSyntax: PlayerSyntacticSugar): PlayerBuilder =

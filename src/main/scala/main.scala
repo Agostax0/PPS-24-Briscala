@@ -13,6 +13,8 @@ def main(): Unit =
 
   game has player called "Alice"
   game has player called "Bob"
+  game suitsAre("Cups", "Coins", "Swords", "Batons")
+  game ranksAre("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
 
   EngineController(game.build()).start()
 

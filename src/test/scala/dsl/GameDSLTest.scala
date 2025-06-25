@@ -46,3 +46,16 @@ class GameDSLTest
     game has player called "Alice"
 
     a [IllegalArgumentException] should be thrownBy game.build()
+
+  it should "allow to create a deck" in:
+    val g = game has 2 players
+
+    game has player called "Alice"
+    game has player called "Bob"
+    game suitsAre ("Cups", "Coins", "Swords", "Batons")
+    game ranksAre ("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
+
+    g shouldBe a [GameBuilder]
+    g.build().deck.size() should be(40)
+
+

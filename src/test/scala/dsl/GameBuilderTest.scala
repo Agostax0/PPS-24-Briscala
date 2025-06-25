@@ -14,6 +14,7 @@ class GameBuilderTest
 
   var builder: GameBuilder = _
   var gameName = "Briscola"
+
   override def beforeEach(): Unit =
     builder = GameBuilder(gameName)
 
@@ -41,3 +42,16 @@ class GameBuilderTest
     builder.addPlayer("Mark")
 
     a [IllegalArgumentException] should be thrownBy builder.build()
+
+  it should "allow to add ranks" in:
+    val ranks = List("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
+    builder.addRanks(ranks)
+
+  it should "allow to add suits" in:
+    val suits = List("Cups", "Coins", "Swords", "Batons")
+    builder.addSuits(suits)
+
+  it should "allow only 4 suits" in:
+    val suits = List("Cups", "Coins", "Swords", "Batons", "Stars")
+    a [IllegalArgumentException] should be thrownBy builder.addSuits(suits)
+

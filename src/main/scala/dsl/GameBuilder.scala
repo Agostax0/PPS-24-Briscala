@@ -1,12 +1,14 @@
 package dsl
 
-import dsl.types.PlayerCount
+import dsl.types.{PlayerCount, Suits}
 import engine.model.{EngineModel, PlayerModel}
 
 sealed trait GameBuilder:
   val gameName: String
   def addPlayer(name: String): GameBuilder
   def setPlayers(n: Int): GameBuilder
+  def addSuits(suits: List[String]): GameBuilder
+  def addRanks(ranks: List[String]): GameBuilder
   def build(): EngineModel
 
 object GameBuilder:
@@ -15,6 +17,8 @@ object GameBuilder:
   private class GameBuilderImpl(val gameName: String) extends GameBuilder:
     private var players: List[PlayerModel] = List.empty
     private var playerCount: PlayerCount = _
+    private var suits: Suits = _
+    private var ranks: List[String] = List.empty
 
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
@@ -24,10 +28,19 @@ object GameBuilder:
       playerCount = PlayerCount(n)
       this
 
+    override def addSuits(suits: List[String]): GameBuilder =
+      this.suits = Suits(suits)
+      this
+
+    override def addRanks(ranks: List[String]): GameBuilder =
+      this.ranks = ranks
+      this
+
     override def build(): EngineModel =
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
 
       val game = EngineModel(gameName)
       game.addPlayers(players)
+      game.createDeck(suits, ranks)
       game

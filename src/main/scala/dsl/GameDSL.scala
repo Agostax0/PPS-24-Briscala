@@ -27,3 +27,9 @@ object GameDSL:
 
     infix def has(playerSyntax: PlayerSyntacticSugar): PlayerBuilder =
       PlayerBuilder(gameBuilder)
+      
+    infix def suitsAre(suits: String*): GameBuilder =
+      gameBuilder.addSuits(suits.toList)
+      
+    infix def ranksAre(ranks: String*): GameBuilder =
+      gameBuilder.addRanks(ranks.toList)

@@ -14,6 +14,9 @@ object HandSize:
     require(size >= 3 && size <= 10, "hand size should be between 3 and 10")
     size
     
+  extension (handSize: HandSize)
+    def value: Int = handSize
+    
 opaque type Suits = List[String]
 object Suits:
   def apply(suits: List[String]): Suits =

@@ -7,12 +7,30 @@ trait WindowState:
   type Window
   def initialWindow: Window
   def setSize(width: Int, height: Int): State[Window, Unit]
+  def addPanel(panelName: String)(pos: (Int, Int))(
+      dims: (Int, Int)
+  ): State[Window, Unit]
+  def setGridLayout(
+      panelName: String,
+      layoutOrientation: GridLayoutOrientation
+  ): State[Window, Unit]
   def addButton(text: String, name: String): State[Window, Unit]
   def addLabel(text: String, name: String): State[Window, Unit]
   def toLabel(text: String, name: String): State[Window, Unit]
   def show(): State[Window, Unit]
   def exec(cmd: => Unit): State[Window, Unit]
   def eventStream(): State[Window, Stream[String]]
+
+trait GridLayoutOrientation:
+  def rows: Int
+  def cols: Int
+object GridLayoutOrientation:
+  case object Vertical extends GridLayoutOrientation:
+    override def rows: Int = 1
+    override def cols: Int = 0
+  case object Horizontal extends GridLayoutOrientation:
+    override def rows: Int = 0
+    override def cols: Int = 1
 
 object WindowStateImpl extends WindowState:
   import SwingFunctionalFacade.*
@@ -31,9 +49,9 @@ object WindowStateImpl extends WindowState:
 
   def setGridLayout(
       panelName: String,
-      layout: (Int, Int)
+      layout: GridLayoutOrientation
   ): State[Window, Unit] =
-    State(w => (w.setGridLayout(panelName, layout._1, layout._2), {}))
+    State(w => (w.setGridLayout(panelName, layout.rows, layout.cols), {}))
 
   def addButton(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addButton(text, name)), {}))

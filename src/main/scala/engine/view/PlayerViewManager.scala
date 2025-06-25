@@ -16,9 +16,10 @@ trait PlayerViewManager:
       _ <- setGridLayout(name, playerInfo._3)
     yield ()
 
-  private def getPlayerInfo: ((Int, Int), (Int, Int), (Int, Int)) =
+  private def getPlayerInfo: ((Int, Int), (Int, Int), GridLayoutOrientation) =
+    import GridLayoutOrientation.*
     players.size match
-      case 1 => (downPlayerCoords, horizontalPlayerDims, (1, 0))
-      case 2 => (upPlayerCoords, verticalPlayerDims, (1, 0))
-      case 3 => (leftPlayerCoords, verticalPlayerDims, (0, 1))
-      case 4 => (rightPlayerCoords, verticalPlayerDims, (0, 1))
+      case 1 => (downPlayerCoords, horizontalPlayerDims, Vertical)
+      case 2 => (upPlayerCoords, verticalPlayerDims, Vertical)
+      case 3 => (leftPlayerCoords, verticalPlayerDims, Horizontal)
+      case 4 => (rightPlayerCoords, verticalPlayerDims, Horizontal)

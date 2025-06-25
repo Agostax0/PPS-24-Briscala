@@ -39,14 +39,37 @@ object WindowStateImpl extends WindowState:
 
   def initialWindow: Window = createFrame
 
+  /** Sets the UI sizes
+    * @param width
+    *   the width the UI will take
+    * @param height
+    *   the height the UI will take
+    * @return
+    */
   def setSize(width: Int, height: Int): State[Window, Unit] =
     State(w => ((w.setSize(width, height)), {}))
 
+  /** Adds a panel to the UI
+    * @param panelName
+    *   the panel's name for querying purposes
+    * @param pos
+    *   the position where to put this new panel
+    * @param dims
+    *   the dimensions that this new panel takes
+    * @return
+    */
   def addPanel(
       panelName: String
   )(pos: (Int, Int))(dims: (Int, Int)): State[Window, Unit] =
     State(w => (w.addPanel(panelName, pos._1, pos._2, dims._1, dims._2), {}))
 
+  /** Sets a Grid Layout to a specific panel
+    * @param panelName
+    *   the panel's name for querying purposes
+    * @param layout
+    *   the panel's configuration
+    * @return
+    */
   def setGridLayout(
       panelName: String,
       layout: GridLayoutOrientation
@@ -55,6 +78,15 @@ object WindowStateImpl extends WindowState:
 
   def addButton(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addButton(text, name)), {}))
+
+  /** Adds a label in the UI
+    *
+    * @param text
+    *   the text displayed by the label
+    * @param name
+    *   the name of the label element for querying purposes
+    * @return
+    */
   def addLabel(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addLabel(text, name)), {}))
   def toLabel(text: String, name: String): State[Window, Unit] =

@@ -1,21 +1,23 @@
 package engine.view
 
+import engine.model.CardModel
 import engine.view.SwingFunctionalFacade.Frame
 import engine.view.monads.States.State
 
 trait CardViewManager:
-  var cards: Map[String, String] = Map.empty
+  var cards: Map[String, CardModel] = Map.empty
 
   def addCardToPlayer(
       playerName: String,
-      cardRank: String,
-      cardSuit: String
+      card: CardModel
   ): State[Frame, Unit] =
-    val cardInfo = cardRank + " " + cardSuit
-    cards = cards + (playerName -> cardInfo)
+    val cardInfo =  card.name + " " + card.suit
+    cards = cards + (playerName -> card)
     import WindowStateImpl.*
-    val componentName = playerName + "_" + cardInfo
+    val componentName = playerName + "_" + card.toString
     for
       _ <- addButton(cardInfo, componentName)
       _ <- moveComponentIntoPanel(componentName, playerName)
     yield ()
+
+//  def cardPlayedFromPlayer(playerName: String,):

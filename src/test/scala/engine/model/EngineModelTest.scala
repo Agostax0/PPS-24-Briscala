@@ -9,14 +9,16 @@ import scala.language.postfixOps
 
 class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAfterEach:
   var engine: FullEngineModel = _
-  val player1: PlayerModel = PlayerModel("Alice")
-  val player2: PlayerModel = PlayerModel("Bob")
+  var player1: PlayerModel = PlayerModel("Alice")
+  var player2: PlayerModel = PlayerModel("Bob")
   val suits: Suits = Suits(List("Cups", "Coins", "Swords", "Batons"))
   val ranks: List[String] = List("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
   
   override def beforeEach(): Unit =
     engine = FullEngineModel("TestGame")
-  
+    player1 = PlayerModel("Alice")
+    player2 = PlayerModel("Bob")
+
   "An EngineModel" should "be correctly instantiated" in:
     engine.players shouldBe empty
 

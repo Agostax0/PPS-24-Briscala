@@ -14,6 +14,7 @@ class SwingFunctionalFacade {
         Frame addPanel(String panelName, int x, int y, int width, int height);
         Frame setGridLayout(String panelName, int rows, int columns);
         Frame moveComponentIntoPanel(String componentName, String panelName);
+        Frame removeComponentFromPanel(String componentName, String panelName);
         Frame addButton(String text, String name);
         Frame addLabel(String text, String name);
         Frame show();
@@ -69,6 +70,18 @@ class SwingFunctionalFacade {
             var panel = this.panels.get(panelName);
             var component = this.components.get(componentName);
             panel.add(component);
+            this.jframe.repaint();
+            panel.revalidate();
+            return this;
+        }
+
+        @Override
+        public Frame removeComponentFromPanel(String componentName, String panelName) {
+            var panel = this.panels.get(panelName);
+            var component = this.components.get(componentName);
+            panel.remove(component);
+            this.jframe.repaint();
+            panel.revalidate();
             return this;
         }
 

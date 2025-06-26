@@ -2,7 +2,7 @@ package engine.controller
 
 import engine.model.{CardModel, FullEngineModel, PlayerModel}
 import engine.view.EngineView
-import engine.view.WindowStateImpl.{Window, initialWindow}
+import engine.view.WindowStateImpl.{Window, initialWindow, removeComponentFromPanel}
 import engine.view.monads.States.State
 import engine.view.ElementsPositionManager.*
 import engine.view.monads.Monads.Monad.seqN
@@ -25,6 +25,7 @@ object EngineController:
     override def start(): Unit =
       val initialState =
         for
+          _ <- view.addTable()
           _ <- model.players.foldLeft(unitState(): State[Window, Unit]):
             (state, player) =>
               for
@@ -57,9 +58,15 @@ object EngineController:
       val card = CardModel(name, rank.toInt, suit)
       println("player "+ playerName +"played"+name)
       model.players.find(playerName == _.name) match
-        case Some(player) => if model.canPlayCard(card) then playCard(player, card) else unitState()
+        case Some(player) =>
+          if model.canPlayCard(card) then
+            for
+              _ <- playCard(player, card)
+              _ <- view.removeCardFromPlayer(playerName, card)
+              _ <- view.addCardToTable(playerName, card)
+            yield()
+          else unitState()
         case _ => throw new NoSuchElementException("Player Not Found")
-
 
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =
       playerTurn += 1

@@ -20,6 +20,10 @@ trait WindowState:
       componentName: String,
       panelName: String
   ): State[Window, Unit]
+  def removeComponentFromPanel(
+      componentName: String,
+      panelName: String
+  ): State[Window, Unit]
   def show(): State[Window, Unit]
   def exec(cmd: => Unit): State[Window, Unit]
   def eventStream(): State[Window, Stream[String]]
@@ -112,6 +116,11 @@ object WindowStateImpl extends WindowState:
       panelName: String
   ): State[Frame, Unit] =
     State(w => (w.moveComponentIntoPanel(componentName, panelName), {}))
+  def removeComponentFromPanel(
+      componentName: String,
+      panelName: String
+  ): State[Frame, Unit] =
+    State(w => (w.removeComponentFromPanel(componentName, panelName), {}))
   def show(): State[Window, Unit] =
     State(w => (w.show, {}))
   def exec(cmd: => Unit): State[Window, Unit] =

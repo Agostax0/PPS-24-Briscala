@@ -1,7 +1,7 @@
 package dsl
 
 import dsl.types.{HandSize, PlayerCount, Suits}
-import engine.model.{EngineModel, PlayerModel}
+import engine.model.{EngineModel, FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
   val gameName: String
@@ -10,7 +10,7 @@ sealed trait GameBuilder:
   def addSuits(suits: List[String]): GameBuilder
   def addRanks(ranks: List[String]): GameBuilder
   def setPlayersHands(handSize: Int): GameBuilder
-  def build(): EngineModel
+  def build(): FullEngineModel
 
 object GameBuilder:
   def apply(gameName: String): GameBuilder = GameBuilderImpl(gameName)
@@ -42,11 +42,11 @@ object GameBuilder:
       this.handSize = HandSize(handSize)
       this
 
-    override def build(): EngineModel =
+    override def build(): FullEngineModel =
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
 
-      val game = EngineModel(gameName)
+      val game = FullEngineModel(gameName)
       game.addPlayers(players)
       game.createDeck(suits, ranks)
       game.giveCardsToPlayers(handSize.value)
@@ -81,6 +81,6 @@ class SimpleGameBuilder extends GameBuilder:
     this.handSize = HandSize(handSize)
     this
 
-  override def build(): EngineModel =
-    EngineModel(gameName)
+  override def build(): FullEngineModel =
+    FullEngineModel(gameName)
 

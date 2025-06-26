@@ -1,6 +1,6 @@
 package engine.controller
 
-import engine.model.EngineModel
+import engine.model.FullEngineModel
 import engine.view.EngineView
 import engine.view.WindowStateImpl.{Window, initialWindow}
 import engine.view.monads.States.State
@@ -10,11 +10,11 @@ sealed trait EngineController:
   def start(): Unit
 
 object EngineController:
-  def apply(model: EngineModel): EngineController = new EngineControllerImpl(
+  def apply(model: FullEngineModel): EngineController = new EngineControllerImpl(
     model
   )
 
-  private class EngineControllerImpl(private val model: EngineModel)
+  private class EngineControllerImpl(private val model: FullEngineModel)
       extends EngineController:
     private val view: EngineView =
       EngineView(model.gameName)(windowWidth, windowHeight)

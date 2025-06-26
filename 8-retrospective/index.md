@@ -1,7 +1,7 @@
 # Retrospective
 
 ## Sprint 1
-
+Details on the sprint 1 can be found [here](./process/sprint1.md) 
 ## Sprint 2
 
 ## Sprint 3

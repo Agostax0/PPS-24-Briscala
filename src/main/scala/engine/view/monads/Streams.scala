@@ -31,7 +31,7 @@ object Streams:
 
     extension [A](stream: Stream[A])
       def filter(pred: A => Boolean): Stream[A] = stream match
-        case Cons(head, tail) if (pred(head())) => cons(head(), tail().filter(pred))
+        case Cons(head, tail) if pred(head()) => cons(head(), tail().filter(pred))
         case Cons(head, tail) => tail().filter(pred)
         case _ => Empty()
 

@@ -35,11 +35,6 @@ trait DeckManagement:
 
 class FullEngineModel(val gameName: String)
     extends EngineModel
-    with DeckManagement:
-  var players: List[PlayerModel] = List.empty
-
-class FullEngineModel(val gameName: String)
-    extends EngineModel
     with DeckManagement
     with RuleManagement
     with TableManagement:

@@ -38,7 +38,7 @@ class SwingFunctionalFacade {
         };
 
         public FrameImpl() {
-            this.jframe.setLayout(new FlowLayout());
+            this.jframe.setLayout(null);
         }
 
         @Override

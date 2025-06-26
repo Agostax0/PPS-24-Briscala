@@ -19,7 +19,7 @@ trait PlayerViewManager:
   private def getPlayerInfo: ((Int, Int), (Int, Int), GridLayoutOrientation) =
     import GridLayoutOrientation.*
     players.size match
-      case 1 => (downPlayerCoords, horizontalPlayerDims, Vertical)
+      case 1 => (downPlayerCoords, verticalPlayerDims, Vertical)
       case 2 => (upPlayerCoords, verticalPlayerDims, Vertical)
-      case 3 => (leftPlayerCoords, verticalPlayerDims, Horizontal)
-      case 4 => (rightPlayerCoords, verticalPlayerDims, Horizontal)
+      case 3 => (leftPlayerCoords, horizontalPlayerDims, Horizontal)
+      case 4 => (rightPlayerCoords, horizontalPlayerDims, Horizontal)

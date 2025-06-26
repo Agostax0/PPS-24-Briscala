@@ -5,6 +5,8 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
+import scala.language.postfixOps
+
 class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAfterEach:
   var engine: FullEngineModel = _
   val player1: PlayerModel = PlayerModel("Alice")
@@ -34,6 +36,18 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     player1.hand should have size 5
     player2.hand should have size 5
     engine.deck should have size 30
+
+  it should "allow players to play a card" in:
+    engine.createDeck(suits, ranks)
+    engine.addPlayers(List(player1, player2))
+    engine.giveCardsToPlayers(5)
+
+    val card = player1.hand.view.head
+    engine.playCard(player1, card)
+
+    player1.hand should have size 4
+    engine.cardsOnTable should contain (card)
+
 
   it should "allow shuffling the deck" in:
     engine.createDeck(suits, ranks)

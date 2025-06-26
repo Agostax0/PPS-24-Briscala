@@ -5,12 +5,13 @@ trait DeckModel:
   def size(): Int
   def addCard(card: CardModel): Unit
   def removeCard(card: CardModel): Unit
-  def shuffle()(random: scala.util.Random): Unit
+  def shuffle()(using random: scala.util.Random): Unit
   def drawCards(numCards: Int): List[CardModel]
   def isEmpty: Boolean
 
 object DeckModel:
   def apply(): DeckModel = DeckModelImpl()
+  given random: scala.util.Random = scala.util.Random()
 
   private final case class DeckModelImpl() extends DeckModel:
     private var cards: List[CardModel] = List.empty
@@ -27,7 +28,7 @@ object DeckModel:
 
     given random: scala.util.Random = scala.util.Random()
     override def shuffle()(using random: scala.util.Random): Unit =
-      random.shuffle(cards)
+      cards = random.shuffle(cards)
 
     override def drawCards(numCards: Int): List[CardModel] =
       if cards.isEmpty || cards.size < numCards then

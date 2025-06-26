@@ -49,10 +49,8 @@ class DeckModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAfter
 
   it should "randomly shuffle cards" in:
     listOfCards.foreach(card => deck.addCard(card))
-
+    val initialCards = deck.view
     given scala.util.Random = scala.util.Random(42) // Fixed seed for reproducibility
     deck.shuffle()
-    val drawnCards = deck.drawCards(listOfCards.size)
-
-    drawnCards should not be listOfCards
-    drawnCards should contain theSameElementsAs listOfCards
+    deck.view should not be initialCards
+    deck.view should contain theSameElementsAs listOfCards

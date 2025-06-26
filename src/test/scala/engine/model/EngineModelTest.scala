@@ -34,3 +34,14 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     player1.hand should have size 5
     player2.hand should have size 5
     engine.deck should have size 30
+
+  it should "allow shuffling the deck" in:
+    engine.createDeck(suits, ranks)
+    engine.addPlayers(List(player1, player2))
+    engine.giveCardsToPlayers(5)
+    given scala.util.Random = scala.util.Random(42)
+    val initialDeck = engine.deck.view
+    engine.deck.shuffle()
+
+    initialDeck should not be engine.deck.view
+    initialDeck should contain theSameElementsAs engine.deck.view

@@ -14,6 +14,8 @@ trait CardViewManager:
     val cardInfo = cardRank + " " + cardSuit
     cards = cards + (playerName -> cardInfo)
     import WindowStateImpl.*
+    val componentName = playerName + "_" + cardInfo
     for
-      _ <- addLabel(cardInfo, playerName + "_" + cardInfo)
+      _ <- addButton(cardInfo, componentName)
+      _ <- moveComponentIntoPanel(componentName, playerName)
     yield ()

@@ -16,7 +16,10 @@ trait WindowState:
   ): State[Window, Unit]
   def addButton(text: String, name: String): State[Window, Unit]
   def addLabel(text: String, name: String): State[Window, Unit]
-  def toLabel(text: String, name: String): State[Window, Unit]
+  def moveComponentIntoPanel(
+      componentName: String,
+      panelName: String
+  ): State[Window, Unit]
   def show(): State[Window, Unit]
   def exec(cmd: => Unit): State[Window, Unit]
   def eventStream(): State[Window, Stream[String]]
@@ -76,6 +79,13 @@ object WindowStateImpl extends WindowState:
   ): State[Window, Unit] =
     State(w => (w.setGridLayout(panelName, layout.rows, layout.cols), {}))
 
+  /** Adds a button to the available components
+    * @param text
+    *   the text displayed by the button
+    * @param name
+    *   the button's name for querying purposes
+    * @return
+    */
   def addButton(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addButton(text, name)), {}))
 
@@ -89,8 +99,19 @@ object WindowStateImpl extends WindowState:
     */
   def addLabel(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addLabel(text, name)), {}))
-  def toLabel(text: String, name: String): State[Window, Unit] =
-    State(w => ((w.showToLabel(text, name)), {}))
+
+  /** Moves a component inside a panel
+    * @param componentName
+    *   the component's name
+    * @param panelName
+    *   the panel's name
+    * @return
+    */
+  def moveComponentIntoPanel(
+      componentName: String,
+      panelName: String
+  ): State[Frame, Unit] =
+    State(w => (w.moveComponentIntoPanel(componentName, panelName), {}))
   def show(): State[Window, Unit] =
     State(w => (w.show, {}))
   def exec(cmd: => Unit): State[Window, Unit] =

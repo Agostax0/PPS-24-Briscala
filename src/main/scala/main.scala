@@ -9,10 +9,12 @@ import scala.language.postfixOps
 def main(): Unit =
 
   game is "Briscala"
-  game has 2 players
+  game has 4 players
 
   game has player called "Alice"
   game has player called "Bob"
+  game has player called "Rob"
+  game has player called "Mark"
   game suitsAre ("Cups", "Coins", "Swords", "Batons")
   game ranksAre ("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
   game gives 3 cards to every player

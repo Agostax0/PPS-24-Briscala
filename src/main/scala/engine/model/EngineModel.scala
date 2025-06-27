@@ -4,22 +4,32 @@ import dsl.types.Suits
 
 trait EngineModel:
   var players: List[PlayerModel] = List.empty
+  var activePlayer: PlayerModel = _
   def addPlayers(players: List[PlayerModel]): Unit
+  def setStartingPlayer(index: Int): Unit
   def playCard(player: PlayerModel, card: CardModel): Boolean
 
 trait RuleManagement:
   def canPlayCard(card: CardModel): Boolean = true
 
 trait TableManagement:
+  engineModel: EngineModel =>
   var cardsOnTable: Map[PlayerModel, CardModel] = Map.empty
+
   def addCardToTable(player: PlayerModel, card: CardModel): Unit =
     cardsOnTable = cardsOnTable + (player -> card)
-  def clearTable(): Unit = cardsOnTable = Map.empty
-  def computeTurn(): Unit =
-    val maxCard = cardsOnTable.values.max(Ordering.by(_.rank))
-    val winningPlayer = cardsOnTable.find(_._2 == maxCard).map(_._1).get
-    winningPlayer.increaseScore(1)
 
+  def clearTable(): Unit = cardsOnTable = Map.empty
+
+  def computeTurn(): Unit =
+    val playedSuit = cardsOnTable(activePlayer).suit
+    val maxCard = cardsOnTable.values.filter(_.suit == playedSuit).max(Ordering.by(_.rank))
+    val winningPlayer = cardsOnTable.find(_._2 == maxCard).map(_._1).get
+    addScoreToWinningPlayer(winningPlayer)
+    setStartingPlayer(players.indexOf(winningPlayer))
+
+  private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
+    winningPlayer.increaseScore(1)
 
 trait DeckManagement:
   engineModel: EngineModel =>
@@ -43,7 +53,6 @@ class FullEngineModel(val gameName: String)
     with DeckManagement
     with RuleManagement
     with TableManagement:
-  private var activePlayer: PlayerModel = _
 
   override def playCard(player: PlayerModel, card: CardModel): Boolean =
     if player.eq(activePlayer) && canPlayCard(card) then
@@ -57,7 +66,7 @@ class FullEngineModel(val gameName: String)
     this.players = players
     setStartingPlayer(0)
 
-  private def setStartingPlayer(index: Int): Unit =
+  override def setStartingPlayer(index: Int): Unit =
     activePlayer = players(index)
 
   private def nextPlayerTurn(): Unit =

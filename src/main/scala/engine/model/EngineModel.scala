@@ -54,5 +54,5 @@ class FullEngineModel(val gameName: String)
     activePlayer = players(index)
 
   private def nextPlayerTurn(): Unit =
-    val playerIndex = players.indexOf(activePlayer) + 1 % players.size
+    val playerIndex = (players.indexOf(activePlayer) + 1) % players.size
     activePlayer = players(playerIndex)

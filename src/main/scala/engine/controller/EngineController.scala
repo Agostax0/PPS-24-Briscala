@@ -59,7 +59,7 @@ object EngineController:
       println("player "+ playerName +"played"+name)
       model.players.find(playerName == _.name) match
         case Some(player) =>
-          if model.canPlayCard(card) then
+          if model.canPlayCard(card) && model.players.indexOf(player).eq(playerTurn) then
             for
               _ <- playCard(player, card)
               _ <- view.removeCardFromPlayer(playerName, card)
@@ -71,7 +71,8 @@ object EngineController:
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =
       playerTurn += 1
       model.playCard(player, card)
-      if playerTurn == model.players.size then playerTurn = 0
+      if playerTurn == model.players.size then
+        playerTurn = 0
       unitState()
 
     private def unitState(): State[Window, Unit] = State(s => (s, ()))

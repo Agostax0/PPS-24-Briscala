@@ -1,6 +1,6 @@
 package engine.model
 
-import dsl.types.Suits
+import dsl.types.{PointsRule, Suits}
 
 trait EngineModel:
   var players: List[PlayerModel] = List.empty
@@ -15,6 +15,7 @@ trait RuleManagement:
 
 trait TableManagement:
   var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty
+  var pointRules: List[PointsRule] = List.empty
 
   def addCardToTable(player: PlayerModel, card: CardModel): Unit =
     cardsOnTable = cardsOnTable :+ (player, card)
@@ -24,13 +25,21 @@ trait TableManagement:
   def calculateWinningPlayer(): PlayerModel =
     val firstCardPlayed = cardsOnTable.head._2
     val playedSuit = firstCardPlayed.suit
-    val maxCardByPlayer = cardsOnTable.filter(_._2.suit == playedSuit).max(Ordering.by(_._2.rank))
+    val maxCardByPlayer =
+      cardsOnTable.filter(_._2.suit == playedSuit).max(Ordering.by(_._2.rank))
     val winningPlayer = cardsOnTable.find(_.eq(maxCardByPlayer)).get._1
     addScoreToWinningPlayer(winningPlayer)
     winningPlayer
 
   private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
-    winningPlayer.increaseScore(1)
+    val points = (for
+      card <- cardsOnTable.map(_._2)
+      rule <- pointRules
+    yield rule(card.name, card.suit)).sum
+    winningPlayer.increaseScore(points)
+    clearTable()
+
+  def setPointRules(rules: List[PointsRule]): Unit = this.pointRules = rules
 
 trait DeckManagement:
   engineModel: EngineModel =>

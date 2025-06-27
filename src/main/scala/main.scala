@@ -22,6 +22,17 @@ def main(): Unit =
 
   game firstTurn starts from "Bob"
 
+  val rule = (name: String, suit: String) => if (name == "Ace") 11 else 0
+
+  game card points are:
+    (name, suit) => name match
+        case "Ace" => 11
+        case "3" => 10
+        case "King" => 4
+        case "Knight" => 3
+        case "Knave" => 2
+        case _ => 0
+
   EngineController(game.build()).start()
 
 end main

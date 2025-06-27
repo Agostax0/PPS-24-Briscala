@@ -1,6 +1,6 @@
 package dsl
 
-import dsl.types.{HandSize, PlayerCount, Suits}
+import dsl.types.{HandSize, PlayerCount, PointsRule, Suits}
 import engine.model.{FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
@@ -11,6 +11,7 @@ sealed trait GameBuilder:
   def addRanks(ranks: List[String]): GameBuilder
   def setPlayersHands(handSize: Int): GameBuilder
   def setStartingPlayer(name: String): GameBuilder
+  def addPointRule(rule: PointsRule): GameBuilder
   def build(): FullEngineModel
 
 object GameBuilder:
@@ -23,6 +24,8 @@ object GameBuilder:
     private var ranks: List[String] = List.empty
     private var handSize: HandSize = _
     private var startingPlayerIndex: Option[Int] = None
+    private var pointRules: List[PointsRule] = List.empty
+
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
       this
@@ -53,6 +56,10 @@ object GameBuilder:
         case _ => Some(players.map(_.name).indexOf(name))
       this
 
+    override def addPointRule(rule: PointsRule): GameBuilder =
+      this.pointRules = this.pointRules :+ rule
+      this
+
     override def build(): FullEngineModel =
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
@@ -62,6 +69,7 @@ object GameBuilder:
       game.createDeck(suits, ranks)
       game.giveCardsToPlayers(handSize.value)
       game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
+      game.setPointRules(pointRules)
       game
 
 class SimpleGameBuilder extends GameBuilder:
@@ -71,6 +79,7 @@ class SimpleGameBuilder extends GameBuilder:
   var ranks: List[String] = List.empty
   var handSize: HandSize = _
   var startingPlayerIndex: Option[Int] = None
+  var pointRules: List[PointsRule] = List.empty
 
   override val gameName: String = "Simple Game"
 
@@ -102,6 +111,10 @@ class SimpleGameBuilder extends GameBuilder:
       case Some(index) =>
         throw new IllegalArgumentException("Starting player already set")
       case _ => Some(players.map(_.name).indexOf(name))
+    this
+
+  override def addPointRule(rule: PointsRule): GameBuilder =
+    this.pointRules = this.pointRules :+ rule
     this
 
   override def build(): FullEngineModel =

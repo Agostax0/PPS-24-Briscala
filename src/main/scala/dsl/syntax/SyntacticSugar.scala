@@ -7,6 +7,7 @@ object SyntacticSugar:
   implicit val to: ToSyntacticSugar = ToSyntacticSugar
   implicit val from: FromSyntacticSugar = FromSyntacticSugar
   implicit val starts: StartsSyntacticSugar = StartsSyntacticSugar
+  implicit val points: PointsSyntacticSugar = PointsSyntacticSugar
 
   trait PlayerSyntacticSugar extends SyntacticSugar
   private object PlayerSyntacticSugar extends PlayerSyntacticSugar
@@ -19,3 +20,6 @@ object SyntacticSugar:
 
   trait StartsSyntacticSugar extends SyntacticSugar
   private object StartsSyntacticSugar extends StartsSyntacticSugar
+
+  trait PointsSyntacticSugar extends SyntacticSugar
+  private object PointsSyntacticSugar extends PointsSyntacticSugar

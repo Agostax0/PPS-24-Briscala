@@ -106,6 +106,8 @@ object EngineController:
     private def endGame(): State[Window, Unit] =
       if model.players.forall(_.hand.isEmpty) then
         println("End Game")
+
+        model.players.foreach(player => println(player.score))
         view.declareWinner(model.activePlayer.name)
 
       unitState()

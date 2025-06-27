@@ -2,7 +2,7 @@ package dsl
 
 import dsl.GameDSL.{firstTurn, *}
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.{HandSize, PlayerCount, Suits}
+import dsl.types.{HandSize, PlayerCount, PointsRule, Suits}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -111,3 +111,14 @@ class GameDSLTest
     g match
       case g: SimpleGameBuilder =>
         a [IllegalArgumentException] should be thrownBy (game firstTurn starts from alice)
+
+  it should "allow to create point rules" in:
+    val rule: (String, String) => Int = (name: String, suit: String) => if (name == "Ace") 11 else 0
+
+    val g = game card points are rule
+
+    import dsl.types.PointsRule
+    g match 
+      case g: SimpleGameBuilder =>
+        g.pointRules should contain (PointsRule(rule))
+    

@@ -2,6 +2,7 @@ package dsl.syntax
 
 import dsl.GameBuilder
 import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
+import dsl.types.PointsRule
 
 object SyntacticSugarBuilder:
 
@@ -66,3 +67,18 @@ object SyntacticSugarBuilder:
         extends StartingTurnBuilder:
       override infix def from(name: String): GameBuilder =
         builder.setStartingPlayer(name)
+
+  trait PointsBuilder:
+    infix def are(pointRules: ((String, String) => Int)*): GameBuilder
+
+  object PointsBuilder:
+    def apply(gameBuilder: GameBuilder): PointsBuilder = new PointsBuilderImpl(
+      gameBuilder
+    )
+
+    private class PointsBuilderImpl(builder: GameBuilder) extends PointsBuilder:
+      override infix def are(
+          pointRules: ((String, String) => Int)*
+      ): GameBuilder =
+        pointRules.foreach(rule => builder.addPointRule(PointsRule(rule)))
+        builder

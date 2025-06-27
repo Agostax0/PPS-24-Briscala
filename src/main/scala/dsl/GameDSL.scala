@@ -1,12 +1,7 @@
 package dsl
 
-import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, StartsSyntacticSugar}
-import dsl.syntax.SyntacticSugarBuilder.{
-  HandBuilder,
-  PlayerBuilder,
-  PlayerCountBuilder,
-  StartingTurnBuilder
-}
+import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, PointsSyntacticSugar, StartsSyntacticSugar}
+import dsl.syntax.SyntacticSugarBuilder.{HandBuilder, PlayerBuilder, PlayerCountBuilder, PointsBuilder, StartingTurnBuilder}
 
 object GameDSL:
   private var builder: GameBuilder = _
@@ -83,3 +78,6 @@ object GameDSL:
       */
     infix def firstTurn(starts: StartsSyntacticSugar): StartingTurnBuilder =
       StartingTurnBuilder(gameBuilder)
+
+    infix def card(points: PointsSyntacticSugar): PointsBuilder =
+      PointsBuilder(gameBuilder)

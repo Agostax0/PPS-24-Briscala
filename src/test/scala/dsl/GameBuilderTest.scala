@@ -1,5 +1,6 @@
 package dsl
 
+import dsl.types.PointsRule
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -81,3 +82,7 @@ class GameBuilderTest
 
     builder.setStartingPlayer(startingPlayer)
     a [IllegalArgumentException] should be thrownBy builder.setStartingPlayer(anotherStartingPlayer)
+
+  it should "allow to add a point rule" in:
+    val pointRule: PointsRule = PointsRule((name: String, suit: String) => if (name == "Ace") 11 else 0)
+    builder.addPointRule(pointRule)

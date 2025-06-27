@@ -1,8 +1,9 @@
 package engine.model
 
-import dsl.types.Suits
+import dsl.types.{PointsRule, Suits}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers.be
 import org.scalatest.matchers.should
 
 import scala.language.postfixOps
@@ -13,6 +14,14 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   var player2: PlayerModel = PlayerModel("Bob")
   val suits: Suits = Suits(List("Cups", "Coins", "Swords", "Batons"))
   val ranks: List[String] = List("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
+  val pointsRule: PointsRule = PointsRule((name: String, suit: String) => name match {
+    case "Ace" => 11
+    case "3" => 10
+    case "King" => 4
+    case "Knight" => 3
+    case "Knave" => 2
+    case _ => 0
+  })
   
   override def beforeEach(): Unit =
     engine = FullEngineModel("TestGame")
@@ -61,6 +70,19 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     initialDeck should not be engine.deck.view
     initialDeck should contain theSameElementsAs engine.deck.view
 
+  it should "allow to add points to cards" in:
+    engine.createDeck(suits, ranks)
+    engine.addPlayers(List(player1, player2))
+    engine.giveCardsToPlayers(5)
+
+    val pointRule: PointsRule = PointsRule((name: String, suit: String) => if (name == "Ace") 11 else 0)
+
+    engine.setPointRules(
+      List(
+        pointRule
+      )
+    )
+
   it should "allow computing the turn" in:
     engine.createDeck(suits, ranks)
     engine.addPlayers(List(player1, player2))
@@ -71,5 +93,25 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     val card2 = player2.hand.view.head
     engine.playCard(player2, card2)
 
+    engine.setPointRules(List(pointsRule))
+
     engine.computeTurn()
     player1.score + player2.score should be > 0
+
+  it should "allow to correctly assign winning hand points" in:
+    engine.createDeck(suits, List("Ace"))
+
+    engine.addPlayers(List(player1, player2))
+    engine.setStartingPlayer(0)
+
+    engine.giveCardsToPlayers(1)
+
+    val card1 = player1.hand.view.head
+    engine.playCard(player1, card1)
+    val card2 = player2.hand.view.head
+    engine.playCard(player2, card2)
+
+    engine.setPointRules(List(pointsRule))
+
+    engine.computeTurn()
+    player1.score shouldBe pointsRule.apply("Ace", "Cups") * 2

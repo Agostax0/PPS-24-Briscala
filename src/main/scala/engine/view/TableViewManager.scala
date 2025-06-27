@@ -10,8 +10,7 @@ trait TableViewManager:
   def addTable(): State[Frame, Unit] =
     cardsPlayed = Map.empty
     import WindowStateImpl.*
-    for
-      _ <- addPanel("Table")(widthCenter, heightCenter)(cardHeigth, cardHeigth)
+    for _ <- addPanel("Table")(centerTableCoords)(centerTableDims)
     yield ()
   def addCardToTable(playerName: String, card: CardModel): State[Frame, Unit] =
     cardsPlayed = cardsPlayed + (playerName -> card)

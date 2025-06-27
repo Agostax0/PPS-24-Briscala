@@ -7,19 +7,18 @@ import engine.view.monads.States.State
 trait PlayerViewManager:
   var players: List[String] = List.empty
 
-  def addPlayer(name: String): State[Frame, Unit] =
+  def addPlayer(name: String, numberOfPlayers: Int): State[Frame, Unit] =
     players = players :+ name
     import WindowStateImpl.*
-    val playerInfo = getPlayerInfo
+    val playerInfo = getPlayerInfo(numberOfPlayers)
     for
       _ <- addPanel(name)(playerInfo._1)(playerInfo._2)
       _ <- setGridLayout(name, playerInfo._3)
     yield ()
 
-  private def getPlayerInfo: ((Int, Int), (Int, Int), GridLayoutOrientation) =
-    import GridLayoutOrientation.*
-    players.size match
-      case 1 => (downPlayerCoords, verticalPlayerDims, Vertical)
-      case 2 => (upPlayerCoords, verticalPlayerDims, Vertical)
-      case 3 => (leftPlayerCoords, horizontalPlayerDims, Horizontal)
-      case 4 => (rightPlayerCoords, horizontalPlayerDims, Horizontal)
+  private def getPlayerInfo(
+      numberOfPlayers: Int
+  ): ((Int, Int), (Int, Int), GridLayoutOrientation) =
+    val config = playerPositionConfigurations(numberOfPlayers)(players.size - 1)
+
+    config

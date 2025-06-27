@@ -1,5 +1,7 @@
 package engine.view
 
+import engine.view.GridLayoutOrientation.{Horizontal, Vertical}
+
 object ElementsPositionManager:
 
   val windowWidth = 1000
@@ -19,7 +21,9 @@ object ElementsPositionManager:
   val horizontalPlayerDims = (cardHeigth, playerWidth)
   val verticalPlayerDims = (playerWidth, cardHeigth)
 
-  val centerPlayerCoords = (widthCenter, heightCenter)
+  val centerTableCoords =
+    (widthCenter - cardHeigth / 2, heightCenter - cardHeigth / 2)
+  val centerTableDims = (cardHeigth, cardHeigth)
 
   val upPlayerCoords = (cardHeigth, 0)
 
@@ -35,3 +39,20 @@ object ElementsPositionManager:
     windowWidth - cardHeigth,
     cardHeigth
   )
+
+  val downPlayerConfig = (downPlayerCoords, verticalPlayerDims, Vertical)
+  val upPlayerConfig = (upPlayerCoords, verticalPlayerDims, Vertical)
+  val leftPlayerConfig = (leftPlayerCoords, horizontalPlayerDims, Horizontal)
+  val rightPlayerConfig = (rightPlayerCoords, horizontalPlayerDims, Horizontal)
+
+  val playerPositionConfigurations
+      : Map[Int, List[((Int, Int), (Int, Int), GridLayoutOrientation)]] =
+    Map.empty
+      + (2 -> List(downPlayerConfig, upPlayerConfig))
+      + (3 -> List(leftPlayerConfig, downPlayerConfig, rightPlayerConfig))
+      + (4 -> List(
+        upPlayerConfig,
+        leftPlayerConfig,
+        downPlayerConfig,
+        rightPlayerConfig
+      ))

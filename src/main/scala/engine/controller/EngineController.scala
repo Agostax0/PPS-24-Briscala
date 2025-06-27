@@ -64,24 +64,53 @@ object EngineController:
               _ <- playCard(player, card)
               _ <- view.removeCardFromPlayer(playerName, card)
               _ <- view.addCardToTable(playerName, card)
-              _ <- clearTable()
+              _ <- endTurn()
             yield()
           else unitState()
         case _ => throw new NoSuchElementException("Player Not Found")
 
-    private def resetTurn(): State[Window, Unit] = {
+    private def resetTurn(): State[Window, Unit] =
       playerTurn = 0
       unitState()
-    }
 
-    private def clearTable(): State[Window, Unit] =
+
+    private def drawCard(): State[Window, Unit] =
+      try
+        model.giveCardsToPlayers(1)
+      catch {
+        case e: NoSuchElementException => println("Finished cards in the deck")
+      }
+      for
+        _ <- model.players.foldLeft( unitState(): State[Window, Unit]):
+          (state, player) =>
+            for
+              _ <- state
+              _ <- view.removeCardsFromPlayer(player.name)
+              _ <- player.hand.view.foldLeft(unitState(): State[Window, Unit]):
+                (nestedState, card) =>
+                  for
+                    _ <- nestedState
+                    _ <- view.addCardToPlayer(player.name, card)
+                  yield ()
+            yield()
+      yield()
+
+    private def endTurn(): State[Window, Unit] =
       if playerTurn == model.players.size then
         for
           _ <- resetTurn()
           _ <- view.clearTable()
+          _ <- drawCard()
+          - <- endGame()
         yield()
       else
         unitState()
+
+    private def endGame(): State[Window, Unit] =
+      if model.players.forall(_.hand.isEmpty) then
+        println("End Game")
+      //view.endGame()
+      unitState()
 
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =
       playerTurn += 1

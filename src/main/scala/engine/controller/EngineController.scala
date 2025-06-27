@@ -29,7 +29,7 @@ object EngineController:
           _ <- model.players.foldLeft(unitState(): State[Window, Unit]):
             (state, player) =>
               for
-                _ <- view.addPlayer(player.name)
+                _ <- view.addPlayer(player.name, model.players.size)
                 _ <- state
                 _ <- player.hand.view.foldLeft(unitState(): State[Window, Unit]):
                   (nestedState, card) =>

@@ -64,15 +64,28 @@ object EngineController:
               _ <- playCard(player, card)
               _ <- view.removeCardFromPlayer(playerName, card)
               _ <- view.addCardToTable(playerName, card)
+              _ <- clearTable()
             yield()
           else unitState()
         case _ => throw new NoSuchElementException("Player Not Found")
 
+    private def resetTurn(): State[Window, Unit] = {
+      playerTurn = 0
+      unitState()
+    }
+
+    private def clearTable(): State[Window, Unit] =
+      if playerTurn == model.players.size then
+        for
+          _ <- resetTurn()
+          _ <- view.clearTable()
+        yield()
+      else
+        unitState()
+
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =
       playerTurn += 1
       model.playCard(player, card)
-      if playerTurn == model.players.size then
-        playerTurn = 0
       unitState()
 
     private def unitState(): State[Window, Unit] = State(s => (s, ()))

@@ -4,23 +4,28 @@ import engine.model.CardModel
 import engine.view.SwingFunctionalFacade.Frame
 import engine.view.monads.States.State
 import ElementsPositionManager.*
+import engine.view.GridLayoutOrientation.{Horizontal, Vertical}
 
 trait TableViewManager:
   private var cardsPlayed: Map[String, CardModel] = _
+  private var panelName = "Table"
   def addTable(): State[Frame, Unit] =
     cardsPlayed = Map.empty
     import WindowStateImpl.*
-    for _ <- addPanel("Table")(centerTableCoords)(centerTableDims)
+    for
+      _ <- addPanel(panelName)(centerTableCoords)(centerTableDims)
+      _ <- setGridLayout(panelName, Horizontal)
     yield ()
   def addCardToTable(playerName: String, card: CardModel): State[Frame, Unit] =
     cardsPlayed = cardsPlayed + (playerName -> card)
+    val labelName = panelName + " " + playerName
     import WindowStateImpl.*
     for
       _ <- addLabel(
-        "Turn " + cardsPlayed.size + " Player: " + playerName + " Card: " + card.name,
-        "Table " + playerName
+        playerName+ ": " + card.name + " of " + card.suit,
+        labelName
       )
-      - <- moveComponentIntoPanel("Table " + playerName, "Table")
+      - <- moveComponentIntoPanel("Table " + playerName, panelName)
     yield ()
 
   def clearTable(): State[Frame, Unit] =
@@ -29,7 +34,8 @@ trait TableViewManager:
       val listPlayers = cardsPlayed.keys.toList
       cardsPlayed = Map.empty
       listPlayers.foreach(playerName =>
-        removeComponentFromPanel("Table " + playerName, "Table")(frame)
+        val labelName = panelName + " " + playerName
+        removeComponentFromPanel(labelName, panelName)(frame)
       )
       (frame, ())
     )

@@ -12,6 +12,7 @@ class SwingFunctionalFacade {
     public static interface Frame {
         Frame setSize(int width, int height);
         Frame addPanel(String panelName, int x, int y, int width, int height);
+        Frame addScrollablePanel(String panelName, int x, int y, int width, int height);
         Frame setGridLayout(String panelName, int rows, int columns);
         Frame moveComponentIntoPanel(String componentName, String panelName);
         Frame removeComponentFromPanel(String componentName, String panelName);
@@ -55,6 +56,23 @@ class SwingFunctionalFacade {
             jp.setBounds(x, y, width, height);
             jp.setBorder(BorderFactory.createTitledBorder(panelName));
             this.jframe.getContentPane().add(jp);
+            return this;
+        }
+
+        @Override
+        public Frame addScrollablePanel(String panelName, int x, int y, int width, int height) {
+            JPanel contentPanel = new JPanel();
+            this.panels.put(panelName, contentPanel);
+            contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+            contentPanel.add(new JLabel("PROVA"));
+
+            JScrollPane scrollPane = new JScrollPane(contentPanel);
+            scrollPane.setPreferredSize(new Dimension(width, height));
+            scrollPane.setBorder(BorderFactory.createTitledBorder(panelName));
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+            this.jframe.add(scrollPane);
             return this;
         }
 

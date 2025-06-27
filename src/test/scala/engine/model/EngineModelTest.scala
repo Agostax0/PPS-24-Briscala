@@ -84,7 +84,7 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     )
 
   it should "allow computing the turn" in:
-    engine.createDeck(suits, ranks)
+    engine.createDeck(suits, List("Ace", "3", "King", "Knight", "Knave"))
     engine.addPlayers(List(player1, player2))
     engine.giveCardsToPlayers(5)
 

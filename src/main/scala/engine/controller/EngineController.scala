@@ -22,10 +22,12 @@ object EngineController:
       EngineView(model.gameName)(windowWidth, windowHeight)
 
     private var playerTurn = 0
+    private var totalRounds = 0
 
     override def start(): Unit =
       val initialState =
         for
+          _ <- view.addTurnHistory()
           _ <- view.addTable()
           _ <- model.players.foldLeft(unitState(): State[Window, Unit]):
             (state, player) =>
@@ -65,6 +67,7 @@ object EngineController:
 
     private def resetTurn(): Unit =
       playerTurn = 0
+      totalRounds += 1
 
     private def drawCards(): State[Window, Unit] =
       try
@@ -93,6 +96,7 @@ object EngineController:
         resetTurn()
         for
           _ <- view.clearTable()
+          _ <- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)
           _ <- drawCards()
           - <- endGame()
         yield()
@@ -102,7 +106,8 @@ object EngineController:
     private def endGame(): State[Window, Unit] =
       if model.players.forall(_.hand.isEmpty) then
         println("End Game")
-      //view.endGame()
+        view.declareWinner(model.activePlayer.name)
+
       unitState()
 
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =

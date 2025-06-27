@@ -10,15 +10,15 @@ trait CardViewManager:
   def addCardToPlayer(
       playerName: String,
       card: CardModel
-  ): State[Frame, Unit] = { 
+  ): State[Frame, Unit] =
     cards = cards.updatedWith(playerName) {
-      case Some(existingCards) if !existingCards.contains(card) => Some(existingCards :+ card)
+      case Some(existingCards) if !existingCards.contains(card) =>
+        Some(existingCards :+ card)
       case Some(existingCards) => Some(existingCards)
       case _                   => Some(List(card))
     }
-    
+
     displayCard(playerName, card)
-  }
 
   def removeCardFromPlayer(
       playerName: String,
@@ -31,8 +31,8 @@ trait CardViewManager:
     val componentName = playerName + "_" + card.toString
     for _ <- removeComponentFromPanel(componentName, playerName)
     yield ()
-  
-  def removeCardsFromPlayer(playerName: String): State[Frame, Unit]  =
+
+  def removeCardsFromPlayer(playerName: String): State[Frame, Unit] =
     import WindowStateImpl.*
     State(frame =>
       cards(playerName).foreach(card =>
@@ -41,9 +41,11 @@ trait CardViewManager:
       )
       (frame, ())
     )
-    
-  
-  private def displayCard(playerName: String, card: CardModel): State[Frame, Unit] =
+
+  private def displayCard(
+      playerName: String,
+      card: CardModel
+  ): State[Frame, Unit] =
     import WindowStateImpl.*
     val cardInfo = card.name + " " + card.suit
     val componentName = playerName + "_" + card.toString

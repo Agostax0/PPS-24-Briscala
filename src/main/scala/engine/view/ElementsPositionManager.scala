@@ -7,6 +7,9 @@ object ElementsPositionManager:
   val windowWidth = 1000
   val windowHeight = 1000
 
+  val historyCoords: (Int, Int) = (0,0)
+  val historyDims: (Int, Int) = (cardHeigth, cardHeigth)
+
   val widthCenter: Int = windowWidth / 2
   val heightCenter: Int = windowHeight / 2
 

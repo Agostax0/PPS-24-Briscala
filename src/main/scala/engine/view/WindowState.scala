@@ -10,6 +10,9 @@ trait WindowState:
   def addPanel(panelName: String)(pos: (Int, Int))(
       dims: (Int, Int)
   ): State[Window, Unit]
+  def addScrollablePanel(panelName: String)(pos: (Int, Int))(
+      dims: (Int, Int)
+  ): State[Window, Unit]
   def setGridLayout(
       panelName: String,
       layoutOrientation: GridLayoutOrientation
@@ -38,6 +41,9 @@ object GridLayoutOrientation:
   case object Horizontal extends GridLayoutOrientation:
     override def rows: Int = 0
     override def cols: Int = 1
+//  case object Table extends GridLayoutOrientation:
+//    override def rows: Int = 4
+//    override def cols: Int = 1
 
 object WindowStateImpl extends WindowState:
   import SwingFunctionalFacade.*
@@ -69,6 +75,21 @@ object WindowStateImpl extends WindowState:
       panelName: String
   )(pos: (Int, Int))(dims: (Int, Int)): State[Window, Unit] =
     State(w => (w.addPanel(panelName, pos._1, pos._2, dims._1, dims._2), {}))
+
+  /** Adds a scrollbale panel to the UI the panel's name for querying purposes
+    * @param panelName
+    *   the position where to put this new panel
+    * @param pos
+    *   the dimensions that this new panel takes
+    * @param dims
+    * @return
+    */
+  def addScrollablePanel(
+      panelName: String
+  )(pos: (Int, Int))(dims: (Int, Int)): State[Window, Unit] =
+    State(w =>
+      (w.addScrollablePanel(panelName, pos._1, pos._2, dims._1, dims._2), {})
+    )
 
   /** Sets a Grid Layout to a specific panel
     * @param panelName

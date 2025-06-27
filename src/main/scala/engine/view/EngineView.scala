@@ -4,7 +4,11 @@ import engine.view.SwingFunctionalFacade.Frame
 import engine.view.monads.States.State
 import engine.view.monads.Streams.*
 
-sealed trait EngineView extends PlayerViewManager with CardViewManager with TableViewManager:
+sealed trait EngineView
+    extends PlayerViewManager
+    with CardViewManager
+    with TableViewManager
+    with TurnHistoryViewManager:
   def show: State[Frame, Stream[String]]
   def end(): State[Frame, Unit]
 

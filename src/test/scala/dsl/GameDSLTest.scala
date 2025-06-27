@@ -1,11 +1,11 @@
 package dsl
 
+import dsl.GameDSL.{firstTurn, *}
+import dsl.syntax.SyntacticSugar.*
+import dsl.types.{HandSize, PlayerCount, Suits}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
-import GameDSL.*
-import dsl.syntax.SyntacticSugar.*
-import dsl.types.{HandSize, PlayerCount, Suits}
 
 import scala.language.postfixOps
 
@@ -55,3 +55,53 @@ class GameDSLTest
     g match
       case g: SimpleGameBuilder => g.handSize shouldBe HandSize(3)
 
+
+  it should "allow to set the first turn" in:
+    val g = game has 2 players
+
+    game has player called "Alice"
+    game has player called "Bob"
+
+    game firstTurn starts from "Alice"
+
+    g match
+      case g: SimpleGameBuilder =>
+        println(g.players.map(_.name))
+        println(g.startingPlayerIndex)
+        g.startingPlayerIndex shouldBe Some(g.players.map(_.name).indexOf("Alice"))
+
+
+  it should "allow to set the first turn correctly" in :
+    val g = game has 2 players
+
+    game has player called "Alice"
+    game has player called "Bob"
+
+    game firstTurn starts from "Bob"
+
+    g match
+      case g: SimpleGameBuilder =>
+
+        g.startingPlayerIndex shouldBe Some((g.players.map(_.name).indexOf("Bob")))
+
+  it should "not allow to set the first turn to a non-existent player" in:
+    val g = game has 2 players
+
+    game has player called "Alice"
+    game has player called "Bob"
+
+    g match
+      case g: SimpleGameBuilder =>
+        a [IllegalArgumentException] should be thrownBy (game firstTurn starts from "Merk")
+
+  it should "not allow to set multiple start turns" in:
+    val g = game has 2 players
+
+    game has player called "Alice"
+    game has player called "Bob"
+
+    game firstTurn starts from "Bob"
+
+    g match
+      case g: SimpleGameBuilder =>
+        a [IllegalArgumentException] should be thrownBy (game firstTurn starts from "Alice")

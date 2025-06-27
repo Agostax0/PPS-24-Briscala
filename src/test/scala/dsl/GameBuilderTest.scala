@@ -58,3 +58,26 @@ class GameBuilderTest
   it should "allow to set only valid players hands" in:
     val handSize = 2
     a [IllegalArgumentException] should be thrownBy builder.setPlayersHands(handSize)
+
+  it should "allow to set a starting player" in:
+    val startingPlayer = "Alice"
+    a [IllegalArgumentException] should be thrownBy builder.setStartingPlayer(startingPlayer)
+
+  it should "not allow to set a starting player that is not in the list of players" in:
+    val startingPlayer = "Bob"
+    a [IllegalArgumentException] should be thrownBy builder.setStartingPlayer(startingPlayer)
+
+  it should "not allow to set the first turn more than once" in:
+    val startingPlayer = "Alice"
+    val anotherStartingPlayer = "Bob"
+
+    val n = 4
+    builder.setPlayers(n)
+
+    builder.addPlayer("Alice")
+    builder.addPlayer("Bob")
+    builder.addPlayer("Bob1")
+    builder.addPlayer("Bob2")
+
+    builder.setStartingPlayer(startingPlayer)
+    a [IllegalArgumentException] should be thrownBy builder.setStartingPlayer(anotherStartingPlayer)

@@ -6,25 +6,28 @@ import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
 object SyntacticSugarBuilder:
 
   object PlayerCountBuilder:
-    def apply(gameBuilder: GameBuilder, playerCount: Int): PlayerCountBuilder = 
+    def apply(gameBuilder: GameBuilder, playerCount: Int): PlayerCountBuilder =
       new PlayerCountBuilderImpl(gameBuilder, playerCount)
 
   trait PlayerCountBuilder:
     infix def players: GameBuilder
-      
-  private class PlayerCountBuilderImpl(gameBuilder: GameBuilder, playerCount: Int)
-    extends PlayerCountBuilder:
+
+  private class PlayerCountBuilderImpl(
+      gameBuilder: GameBuilder,
+      playerCount: Int
+  ) extends PlayerCountBuilder:
     infix def players: GameBuilder =
       gameBuilder.setPlayers(playerCount)
-      
+
   object PlayerBuilder:
-    def apply(gameBuilder: GameBuilder): PlayerBuilder = 
+    def apply(gameBuilder: GameBuilder): PlayerBuilder =
       new PlayerBuilderImpl(gameBuilder)
-      
+
   trait PlayerBuilder:
     infix def called(name: String): GameBuilder
 
-  private class PlayerBuilderImpl(gameBuilder: GameBuilder) extends PlayerBuilder:
+  private class PlayerBuilderImpl(gameBuilder: GameBuilder)
+      extends PlayerBuilder:
     infix def called(name: String): GameBuilder =
       gameBuilder.addPlayer(name)
 
@@ -35,17 +38,31 @@ object SyntacticSugarBuilder:
   trait HandBuilder:
     infix def cards(to: ToSyntacticSugar): HandSyntaxBuilder
 
-  private class HandBuilderImpl(gameBuilder: GameBuilder, handSize: Int) extends HandBuilder:
+  private class HandBuilderImpl(gameBuilder: GameBuilder, handSize: Int)
+      extends HandBuilder:
     infix def cards(to: ToSyntacticSugar): HandSyntaxBuilder =
       HandSyntaxBuilder(gameBuilder, handSize)
 
   object HandSyntaxBuilder:
     def apply(gameBuilder: GameBuilder, handSize: Int): HandSyntaxBuilder =
       new HandSyntaxBuilderImpl(gameBuilder, handSize)
-      
+
   trait HandSyntaxBuilder:
     infix def every(player: PlayerSyntacticSugar): GameBuilder
-    
-  private class HandSyntaxBuilderImpl(gameBuilder: GameBuilder, handSize: Int) extends HandSyntaxBuilder:
+
+  private class HandSyntaxBuilderImpl(gameBuilder: GameBuilder, handSize: Int)
+      extends HandSyntaxBuilder:
     infix def every(player: PlayerSyntacticSugar): GameBuilder =
       gameBuilder.setPlayersHands(handSize)
+
+  trait StartingTurnBuilder:
+    infix def from(name: String): GameBuilder
+
+  object StartingTurnBuilder:
+    def apply(gameBuilder: GameBuilder): StartingTurnBuilder =
+      new StartingTurnBuilderImpl(gameBuilder)
+
+    private class StartingTurnBuilderImpl(builder: GameBuilder)
+        extends StartingTurnBuilder:
+      override infix def from(name: String): GameBuilder =
+        builder.setStartingPlayer(name)

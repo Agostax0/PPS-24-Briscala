@@ -1,7 +1,7 @@
 package dsl
 
 import dsl.types.{HandSize, PlayerCount, Suits}
-import engine.model.{EngineModel, FullEngineModel, PlayerModel}
+import engine.model.{FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
   val gameName: String
@@ -10,6 +10,7 @@ sealed trait GameBuilder:
   def addSuits(suits: List[String]): GameBuilder
   def addRanks(ranks: List[String]): GameBuilder
   def setPlayersHands(handSize: Int): GameBuilder
+  def setStartingPlayer(name: String): GameBuilder
   def build(): FullEngineModel
 
 object GameBuilder:
@@ -21,7 +22,7 @@ object GameBuilder:
     private var suits: Suits = _
     private var ranks: List[String] = List.empty
     private var handSize: HandSize = _
-
+    private var startingPlayerIndex: Option[Int] = None
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
       this
@@ -42,6 +43,16 @@ object GameBuilder:
       this.handSize = HandSize(handSize)
       this
 
+    override def setStartingPlayer(name: String): GameBuilder =
+      if (players.isEmpty || !players.map(_.name).contains(name)) then
+        throw new IllegalArgumentException("Player not found")
+
+      this.startingPlayerIndex = this.startingPlayerIndex match
+        case Some(index) =>
+          throw new IllegalArgumentException("Starting player already set")
+        case _ => Some(players.map(_.name).indexOf(name))
+      this
+
     override def build(): FullEngineModel =
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
@@ -50,6 +61,7 @@ object GameBuilder:
       game.addPlayers(players)
       game.createDeck(suits, ranks)
       game.giveCardsToPlayers(handSize.value)
+      game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
       game
 
 class SimpleGameBuilder extends GameBuilder:
@@ -58,6 +70,7 @@ class SimpleGameBuilder extends GameBuilder:
   var suits: Suits = _
   var ranks: List[String] = List.empty
   var handSize: HandSize = _
+  var startingPlayerIndex: Option[Int] = None
 
   override val gameName: String = "Simple Game"
 
@@ -81,6 +94,15 @@ class SimpleGameBuilder extends GameBuilder:
     this.handSize = HandSize(handSize)
     this
 
+  override def setStartingPlayer(name: String): GameBuilder =
+    if (players.isEmpty || !players.map(_.name).contains(name)) then
+      throw new IllegalArgumentException("Player not found")
+
+    this.startingPlayerIndex = this.startingPlayerIndex match
+      case Some(index) =>
+        throw new IllegalArgumentException("Starting player already set")
+      case _ => Some(players.map(_.name).indexOf(name))
+    this
+
   override def build(): FullEngineModel =
     FullEngineModel(gameName)
-

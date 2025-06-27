@@ -17,6 +17,7 @@ object EngineController:
 
   private class EngineControllerImpl(private val model: FullEngineModel)
       extends EngineController:
+
     private val view: EngineView =
       EngineView(model.gameName)(windowWidth, windowHeight)
 
@@ -62,11 +63,10 @@ object EngineController:
           playCard(player, card)
         case _ => throw new NoSuchElementException("Player Not Found")
 
-    private def resetTurn(): State[Window, Unit] =
+    private def resetTurn(): Unit =
       playerTurn = 0
-      unitState()
 
-    private def drawCard(): State[Window, Unit] =
+    private def drawCards(): State[Window, Unit] =
       try
         model.giveCardsToPlayers(1)
       catch {
@@ -90,10 +90,10 @@ object EngineController:
     private def endTurn(): State[Window, Unit] =
       if playerTurn == model.players.size then
         model.computeTurn()
+        resetTurn()
         for
-          _ <- resetTurn()
           _ <- view.clearTable()
-          _ <- drawCard()
+          _ <- drawCards()
           - <- endGame()
         yield()
       else

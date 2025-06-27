@@ -3,16 +3,16 @@ package engine.model
 sealed trait PlayerModel:
   val name: String
   val hand: DeckModel
-  val score: Int
+  var score: Int = 0
   def playCard(card: CardModel): Unit
   def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit
+  def increaseScore(score: Int): Unit = this.score += score
 
 object PlayerModel:
   def apply(name: String): PlayerModel = PlayerModelImpl(name)
 
   private class PlayerModelImpl(val name: String) extends PlayerModel:
     val hand: DeckModel = DeckModel()
-    val score: Int = 0
 
     override def playCard(card: CardModel): Unit =
       hand.removeCard(card)

@@ -22,3 +22,14 @@ trait TableViewManager:
       )
       - <- moveComponentIntoPanel("Table " + playerName, "Table")
     yield ()
+
+  def clearTable(): State[Frame, Unit] =
+    import WindowStateImpl.*
+    State(frame =>
+      val listPlayers = cardsPlayed.keys.toList
+      cardsPlayed = Map.empty
+      listPlayers.foreach(playerName =>
+        removeComponentFromPanel("Table " + playerName, "Table")(frame)
+      )
+      (frame, ())
+    )

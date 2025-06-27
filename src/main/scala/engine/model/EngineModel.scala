@@ -5,16 +5,21 @@ import dsl.types.Suits
 trait EngineModel:
   var players: List[PlayerModel] = List.empty
   def addPlayers(players: List[PlayerModel]): Unit
-  def playCard(player: PlayerModel, card: CardModel): Unit
+  def playCard(player: PlayerModel, card: CardModel): Boolean
 
 trait RuleManagement:
   def canPlayCard(card: CardModel): Boolean = true
 
 trait TableManagement:
-  var cardsOnTable: List[CardModel] = List.empty
-  def addCardToTable(card: CardModel): Unit =
-    cardsOnTable = cardsOnTable :+ card
-  def clearTable(): Unit = cardsOnTable = List.empty
+  var cardsOnTable: Map[PlayerModel, CardModel] = Map.empty
+  def addCardToTable(player: PlayerModel, card: CardModel): Unit =
+    cardsOnTable = cardsOnTable + (player -> card)
+  def clearTable(): Unit = cardsOnTable = Map.empty
+  def computeTurn(): Unit =
+    val maxCard = cardsOnTable.values.max(Ordering.by(_.rank))
+    val winningPlayer = cardsOnTable.find(_._2 == maxCard).map(_._1).get
+    winningPlayer.increaseScore(1)
+
 
 trait DeckManagement:
   engineModel: EngineModel =>
@@ -40,11 +45,13 @@ class FullEngineModel(val gameName: String)
     with TableManagement:
   private var activePlayer: PlayerModel = _
 
-  override def playCard(player: PlayerModel, card: CardModel): Unit =
-    if player.eq(activePlayer) then
+  override def playCard(player: PlayerModel, card: CardModel): Boolean =
+    if player.eq(activePlayer) && canPlayCard(card) then
       player.playCard(card)
-      addCardToTable(card)
+      addCardToTable(player, card)
       nextPlayerTurn()
+      true
+    else false
 
   override def addPlayers(players: List[PlayerModel]): Unit =
     this.players = players

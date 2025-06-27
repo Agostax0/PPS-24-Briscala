@@ -59,20 +59,12 @@ object EngineController:
       println("player "+ playerName +"played"+name)
       model.players.find(playerName == _.name) match
         case Some(player) =>
-          if model.canPlayCard(card) && model.players.indexOf(player).eq(playerTurn) then
-            for
-              _ <- playCard(player, card)
-              _ <- view.removeCardFromPlayer(playerName, card)
-              _ <- view.addCardToTable(playerName, card)
-              _ <- endTurn()
-            yield()
-          else unitState()
+          playCard(player, card)
         case _ => throw new NoSuchElementException("Player Not Found")
 
     private def resetTurn(): State[Window, Unit] =
       playerTurn = 0
       unitState()
-
 
     private def drawCard(): State[Window, Unit] =
       try
@@ -97,6 +89,7 @@ object EngineController:
 
     private def endTurn(): State[Window, Unit] =
       if playerTurn == model.players.size then
+        model.computeTurn()
         for
           _ <- resetTurn()
           _ <- view.clearTable()
@@ -113,8 +106,14 @@ object EngineController:
       unitState()
 
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =
-      playerTurn += 1
-      model.playCard(player, card)
-      unitState()
+      if model.playCard(player, card) then
+        playerTurn += 1
+        for
+          _ <- view.removeCardFromPlayer(player.name, card)
+          _ <- view.addCardToTable(player.name, card)
+          _ <- endTurn()
+        yield()
+      else
+        unitState()
 
     private def unitState(): State[Window, Unit] = State(s => (s, ()))

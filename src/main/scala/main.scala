@@ -20,6 +20,8 @@ def main(): Unit =
   game ranksAre ("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
   game gives 7 cards to every player
 
+  game firstTurn starts from "Bob"
+
   EngineController(game.build()).start()
 
 end main

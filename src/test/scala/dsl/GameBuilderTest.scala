@@ -11,13 +11,15 @@ class GameBuilderTest
     extends AnyFlatSpec
       with should.Matchers
     with BeforeAndAfterEach:
-
   var builder: GameBuilder = _
+
   var gameName = "Briscola"
+  private val alice = "Alice"
+  private val bob = "Bob"
+  val mark = "Mark"
 
   override def beforeEach(): Unit =
     builder = GameBuilder(gameName)
-
   "A game" should "be correctly instantiated" in :
     builder.gameName should be(gameName)
 
@@ -27,7 +29,7 @@ class GameBuilderTest
     builder.gameName should not be incorrectName
 
   it should "allow a player to join" in:
-    val playerName = "Bob"
+    val playerName = bob
     builder.addPlayer(playerName)
 
   it should "not allow a player count not in between 2 or 4" in:
@@ -37,9 +39,9 @@ class GameBuilderTest
     val n = 4
     builder.setPlayers(n)
 
-    builder.addPlayer("Alice")
-    builder.addPlayer("Bob")
-    builder.addPlayer("Mark")
+    builder.addPlayer(alice)
+    builder.addPlayer(bob)
+    builder.addPlayer(mark)
 
     a [IllegalArgumentException] should be thrownBy builder.build()
 
@@ -58,3 +60,24 @@ class GameBuilderTest
   it should "allow to set only valid players hands" in:
     val handSize = 2
     a [IllegalArgumentException] should be thrownBy builder.setPlayersHands(handSize)
+
+  it should "allow to set a starting player" in:
+    val startingPlayer = alice
+    a [IllegalArgumentException] should be thrownBy builder.setStartingPlayer(startingPlayer)
+
+  it should "not allow to set a starting player that is not in the list of players" in:
+    val startingPlayer = bob
+    a [IllegalArgumentException] should be thrownBy builder.setStartingPlayer(startingPlayer)
+
+  it should "not allow to set the first turn more than once" in:
+    val startingPlayer = alice
+    val anotherStartingPlayer = bob
+
+    val n = 4
+    builder.setPlayers(n)
+
+    builder.addPlayer(alice)
+    builder.addPlayer(bob)
+
+    builder.setStartingPlayer(startingPlayer)
+    a [IllegalArgumentException] should be thrownBy builder.setStartingPlayer(anotherStartingPlayer)

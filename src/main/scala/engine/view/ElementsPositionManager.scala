@@ -21,7 +21,9 @@ object ElementsPositionManager:
   val horizontalPlayerDims = (cardHeigth, playerWidth)
   val verticalPlayerDims = (playerWidth, cardHeigth)
 
-  val centerPlayerCoords = (widthCenter, heightCenter)
+  val centerTableCoords =
+    (widthCenter - cardHeigth / 2, heightCenter - cardHeigth / 2)
+  val centerTableDims = (cardHeigth, cardHeigth)
 
   val upPlayerCoords = (cardHeigth, 0)
 

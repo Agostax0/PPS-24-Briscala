@@ -6,6 +6,7 @@ trait EngineModel:
   var players: List[PlayerModel] = List.empty
   var activePlayer: PlayerModel = _
   def addPlayers(players: List[PlayerModel]): Unit
+  def computeTurn(): Unit
   def setStartingPlayer(index: Int): Unit
   def playCard(player: PlayerModel, card: CardModel): Boolean
 
@@ -13,20 +14,20 @@ trait RuleManagement:
   def canPlayCard(card: CardModel): Boolean = true
 
 trait TableManagement:
-  engineModel: EngineModel =>
-  var cardsOnTable: Map[PlayerModel, CardModel] = Map.empty
+  var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty
 
   def addCardToTable(player: PlayerModel, card: CardModel): Unit =
-    cardsOnTable = cardsOnTable + (player -> card)
+    cardsOnTable = cardsOnTable :+ (player, card)
 
-  def clearTable(): Unit = cardsOnTable = Map.empty
+  def clearTable(): Unit = cardsOnTable = List.empty
 
-  def computeTurn(): Unit =
-    val playedSuit = cardsOnTable(activePlayer).suit
-    val maxCard = cardsOnTable.values.filter(_.suit == playedSuit).max(Ordering.by(_.rank))
-    val winningPlayer = cardsOnTable.find(_._2 == maxCard).map(_._1).get
+  def calculateWinningPlayer(): PlayerModel =
+    val firstCardPlayed = cardsOnTable.head._2
+    val playedSuit = firstCardPlayed.suit
+    val maxCardByPlayer = cardsOnTable.filter(_._2.suit == playedSuit).max(Ordering.by(_._2.rank))
+    val winningPlayer = cardsOnTable.find(_.eq(maxCardByPlayer)).get._1
     addScoreToWinningPlayer(winningPlayer)
-    setStartingPlayer(players.indexOf(winningPlayer))
+    winningPlayer
 
   private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
     winningPlayer.increaseScore(1)
@@ -61,6 +62,10 @@ class FullEngineModel(val gameName: String)
       nextPlayerTurn()
       true
     else false
+
+  override def computeTurn(): Unit =
+    val winningPlayer = calculateWinningPlayer()
+    setStartingPlayer(players.indexOf(winningPlayer))
 
   override def addPlayers(players: List[PlayerModel]): Unit =
     this.players = players

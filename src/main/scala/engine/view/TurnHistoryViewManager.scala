@@ -5,9 +5,10 @@ import engine.view.SwingFunctionalFacade.Frame
 import engine.view.monads.States.State
 
 trait TurnHistoryViewManager:
+  val panelName = "History"
   def addTurnHistory(): State[Frame, Unit] =
     import WindowStateImpl.*
-    for _ <- addPanel("History")(historyCoords)(centerTableDims)
+    for _ <- addPanel(panelName)(historyCoords)(centerTableDims)
     yield ()
 
   def addTurnWinner(playerName: String, round: String): State[Frame, Unit] =
@@ -15,11 +16,11 @@ trait TurnHistoryViewManager:
     for
       _ <- addLabel(
         "Turn " + round + " Winner is " + playerName,
-        "History " + playerName + " " + round
+        panelName + " " + playerName + " " + round
       )
       - <- moveComponentIntoPanel(
-        "History " + playerName + " " + round,
-        "History"
+        panelName + " " + playerName + " " + round,
+        panelName
       )
     yield ()
 
@@ -32,6 +33,6 @@ trait TurnHistoryViewManager:
       )
       - <- moveComponentIntoPanel(
         "WINNER " + playerName,
-        "History"
+        panelName
       )
     yield ()

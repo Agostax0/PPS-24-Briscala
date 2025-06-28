@@ -82,3 +82,15 @@ object SyntacticSugarBuilder:
       ): GameBuilder =
         pointRules.foreach(rule => builder.addPointRule(PointsRule(rule)))
         builder
+
+  trait TeamBuilder:
+    infix def composedOf(name: String*): GameBuilder
+
+  object TeamBuilder:
+    def apply(gameBuilder: GameBuilder): TeamBuilder = new TeamBuilderImpl(
+      gameBuilder
+    )
+
+    private class TeamBuilderImpl(builder: GameBuilder) extends TeamBuilder:
+      override infix def composedOf(name: String*): GameBuilder =
+        builder

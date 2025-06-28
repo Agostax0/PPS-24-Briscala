@@ -1,7 +1,19 @@
 package dsl
 
-import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, PointsSyntacticSugar, StartsSyntacticSugar}
-import dsl.syntax.SyntacticSugarBuilder.{HandBuilder, PlayerBuilder, PlayerCountBuilder, PointsBuilder, StartingTurnBuilder}
+import dsl.syntax.SyntacticSugar.{
+  PlayerSyntacticSugar,
+  PointsSyntacticSugar,
+  StartsSyntacticSugar,
+  TeamSyntacticSugar
+}
+import dsl.syntax.SyntacticSugarBuilder.{
+  HandBuilder,
+  PlayerBuilder,
+  PlayerCountBuilder,
+  PointsBuilder,
+  StartingTurnBuilder,
+  TeamBuilder
+}
 
 object GameDSL:
   private var builder: GameBuilder = _
@@ -54,6 +66,9 @@ object GameDSL:
       */
     infix def has(playerSyntax: PlayerSyntacticSugar): PlayerBuilder =
       PlayerBuilder(gameBuilder)
+
+    infix def has(teamSyntax: TeamSyntacticSugar): TeamBuilder =
+      TeamBuilder(gameBuilder)
 
     infix def suitsAre(suits: String*): GameBuilder =
       gameBuilder.addSuits(suits.toList)

@@ -1,7 +1,7 @@
 package dsl
 
-import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, PointsSyntacticSugar, StartsSyntacticSugar}
-import dsl.syntax.SyntacticSugarBuilder.{HandBuilder, PlayerBuilder, PlayerCountBuilder, PointsBuilder, StartingTurnBuilder}
+import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, PointsSyntacticSugar, RulesSyntacticSugar, StartsSyntacticSugar}
+import dsl.syntax.SyntacticSugarBuilder.{HandBuilder, HandRuleBuilder, PlayerBuilder, PlayerCountBuilder, PointsBuilder, StartingTurnBuilder}
 
 object GameDSL:
   private var builder: GameBuilder = _
@@ -84,3 +84,6 @@ object GameDSL:
 
     infix def briscolaIs(suit: String): GameBuilder =
       gameBuilder.addBriscolaSuit(suit)
+
+    infix def hand(rules: RulesSyntacticSugar): HandRuleBuilder =
+      HandRuleBuilder(gameBuilder)

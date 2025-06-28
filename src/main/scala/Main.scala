@@ -2,6 +2,7 @@ import dsl.GameDSL
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
 import engine.controller.EngineController
+import engine.model.{CardModel, DeckModel}
 
 import scala.language.implicitConversions
 import scala.language.postfixOps
@@ -33,6 +34,12 @@ def main(): Unit =
         case "Knight" => 3
         case "Knave" => 2
         case _ => 0
+        
+  game hand rules are:
+    (cardsOnTable, playerHand, playedCard) =>
+      cardsOnTable.isEmpty ||
+      cardsOnTable.head.suit == playedCard.suit ||
+      !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
 
   EngineController(game.build()).start()
 

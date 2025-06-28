@@ -3,6 +3,7 @@ package dsl
 import dsl.GameDSL.{firstTurn, *}
 import dsl.syntax.SyntacticSugar.*
 import dsl.types.{HandSize, PlayerCount, Suits}
+import engine.model.{CardModel, DeckModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -138,4 +139,27 @@ class GameDSLTest
 
     g match
       case g: SimpleGameBuilder => g.briscolaSuit shouldBe "Cups"
+      case _ => fail(wrongClassText)
+
+  it should "allow to set a hand rule" in:
+    val marafoneHandRule: (List[CardModel], DeckModel, CardModel) => Boolean =
+      (cardsOnTable, playerHand, playedCard) =>
+        cardsOnTable.isEmpty ||
+          cardsOnTable.head.suit == playedCard.suit ||
+          !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+
+    val g = game hand rules are marafoneHandRule
+
+    import dsl.types.HandRule
+    g match
+      case g: SimpleGameBuilder =>
+        g.handRule.get should be (HandRule(marafoneHandRule))
+      case _ => fail(wrongClassText)
+
+  it should "allow to not set a hand rule" in:
+    val g = game has 2 players
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.handRule shouldBe None
       case _ => fail(wrongClassText)

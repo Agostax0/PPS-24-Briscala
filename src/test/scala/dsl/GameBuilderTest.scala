@@ -111,3 +111,23 @@ class GameBuilderTest
   it should "allow to add a play rule" in:
     val rule: PlayRule = PlayRule((cards: List[(PlayerModel,CardModel)]) => Some(cards.head._1))
     builder.addPlayRule(rule)
+
+  it should "allow a team to be created" in :
+    builder.addPlayer(alice)
+    builder.addPlayer(bob)
+    builder.addTeam(List(alice, bob))
+
+  it should "not allow a team to be created with non existent players" in :
+    builder.addPlayer(alice)
+    builder.addPlayer(bob)
+
+    a [IllegalArgumentException] should be thrownBy builder.addTeam(List(alice, "Charlie"))
+
+  it should "not allow a team to be created with already teamed up players" in :
+    builder.addPlayer(alice)
+    builder.addPlayer(bob)
+    builder.addPlayer("Charlie")
+    builder.addTeam(List(alice, bob))
+    a[IllegalArgumentException] should be thrownBy builder.addTeam(List(alice, "Charlie"))
+
+

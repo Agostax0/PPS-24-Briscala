@@ -72,6 +72,19 @@ object SyntacticSugarBuilder:
         pointRules.foreach(rule => builder.addPointRule(PointsRule(rule)))
         builder
 
+  trait TeamBuilder:
+    infix def composedOf(name: String*): GameBuilder
+
+  object TeamBuilder:
+    def apply(gameBuilder: GameBuilder): TeamBuilder = new TeamBuilderImpl(
+      gameBuilder
+    )
+
+    private class TeamBuilderImpl(builder: GameBuilder) extends TeamBuilder:
+      override infix def composedOf(names: String*): GameBuilder =
+        builder.addTeam(names.toList)
+        builder
+
   trait HandRuleBuilder:
     infix def are(
         handRules: (List[CardModel], DeckModel, CardModel) => Boolean

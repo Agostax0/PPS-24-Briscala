@@ -58,6 +58,9 @@ def marafone(): GameBuilder =
   game has player called "Bob1"
   game has player called "Bob2"
 
+  game has team composedOf("Alice", "Bob")
+  game has team composedOf("Bob1", "Bob2")
+
   game suitsAre("Cups", "Coins", "Swords", "Batons")
   game ranksAre("4", "5", "6", "7", "Knave", "Knight", "King", "Ace", "2", "3")
   game gives 10 cards to every player

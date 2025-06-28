@@ -184,7 +184,6 @@ class GameDSLTest
         g.handRule shouldBe None
       case _ => fail(wrongClassText)
 
-
   it should "allow to create a rule for choosing the player who wins a round" in:
 
 
@@ -205,6 +204,43 @@ class GameDSLTest
           given List[(PlayerModel, CardModel)] = cards
           highestCardTakes
       )
+
+  it should "allow to set teams for existing players" in :
+    val g = game has 2 players
+
+    game has player called alice
+    game has player called bob
+
+    game has team composedOf (alice, bob)
+
+    g match
+      case g: SimpleGameBuilder => g.teams should have size 1
+      case _ => fail(wrongClassText)
+
+  it should "not allow to set teams for non-existing players" in :
+    val g = game has 2 players
+
+    game has player called alice
+    game has player called bob
+
+    g match
+      case g: SimpleGameBuilder =>
+        a [IllegalArgumentException] should be thrownBy (game has team composedOf(alice, "Charlie"))
+      case _ => fail(wrongClassText)
+
+  it should "not allow to set teams for already teamed up players" in :
+    val g = game has 2 players
+
+    game has player called alice
+    game has player called bob
+    game has player called "Charlie"
+
+    game has team composedOf(alice, bob)
+
+    g match
+      case g: SimpleGameBuilder =>
+        a [IllegalArgumentException] should be thrownBy (game has team composedOf(alice, "Charlie"))
+      case _ => fail(wrongClassText)
 
 
 

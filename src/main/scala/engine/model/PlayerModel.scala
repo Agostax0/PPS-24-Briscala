@@ -8,6 +8,7 @@ sealed trait PlayerModel:
   def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit
   def increaseScore(score: Int): Unit = this.score += score
 
+
 object PlayerModel:
   def apply(name: String): PlayerModel = PlayerModelImpl(name)
 
@@ -16,9 +17,7 @@ object PlayerModel:
 
     override def playCard(card: CardModel): Unit =
       hand.removeCard(card)
-      
+
     override def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit =
       val cards = deckModel.drawCards(numCards)
-      cards.foreach(
-        card => hand.addCard(card)
-      )
+      cards.foreach(card => hand.addCard(card))

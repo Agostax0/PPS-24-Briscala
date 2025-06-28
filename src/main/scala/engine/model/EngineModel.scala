@@ -1,14 +1,18 @@
 package engine.model
 
 import dsl.types.{HandRule, PlayRule, PointsRule, Suits}
+import dsl.types.{HandRule, PointsRule, Suits, Team}
 
 trait EngineModel:
   var players: List[PlayerModel] = List.empty
+  var teams: List[Team] = List.empty
   var activePlayer: PlayerModel = _
   def addPlayers(players: List[PlayerModel]): Unit
+  def addTeams(teams: List[Team]): Unit
   def computeTurn(): Unit
   def setStartingPlayer(index: Int): Unit
   def playCard(player: PlayerModel, card: CardModel): Boolean
+  def winningGamePlayers(): List[PlayerModel]
 
 trait HandRuleManagement:
   table: TableManagement =>
@@ -90,6 +94,10 @@ class FullEngineModel(val gameName: String)
       true
     else false
 
+  override def winningGamePlayers(): List[PlayerModel] =
+    val winningPlayers = players.sortWith(_.score > _.score)
+    winningPlayers
+
   override def computeTurn(): Unit =
     val winningPlayer = calculateWinningPlayer()
     setStartingPlayer(players.indexOf(winningPlayer))
@@ -97,6 +105,23 @@ class FullEngineModel(val gameName: String)
   override def addPlayers(players: List[PlayerModel]): Unit =
     this.players = players
     setStartingPlayer(0)
+
+  override def addTeams(teams: List[Team]): Unit =
+    if teams.isEmpty then {
+      this.teams = players.map(player => List(player.name).asInstanceOf[Team])
+      println(this.teams)
+    } else
+      val existingPlayers = teams.flatMap(Team.toList).toSet
+      val missingPlayers = players.map(p=>p.name).filterNot(existingPlayers.contains)
+      val missingTeams = missingPlayers.map(player => List(player).asInstanceOf[Team])
+      this.teams = teams ++ missingTeams
+      println(this.teams)
+
+    if this.players.size == 4 && this.teams.size == 2 && this.teams.head.size == 2 then {
+      val playersOrder = List(this.teams.head(0), this.teams(1)(0), this.teams.head(1), this.teams(1)(1))
+      this.players = players.sortBy(player => playersOrder.indexOf(player.name))
+      println(this.players)
+    }
 
   override def setStartingPlayer(index: Int): Unit =
     activePlayer = players(index)

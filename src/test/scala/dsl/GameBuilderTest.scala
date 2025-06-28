@@ -1,6 +1,7 @@
 package dsl
 
-import dsl.types.PointsRule
+import dsl.types.{HandRule, PointsRule}
+import engine.model.{CardModel, DeckModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -21,6 +22,7 @@ class GameBuilderTest
 
   override def beforeEach(): Unit =
     builder = GameBuilder(gameName)
+
   "A game" should "be correctly instantiated" in :
     builder.gameName should be(gameName)
 
@@ -98,3 +100,10 @@ class GameBuilderTest
     val briscolaSuit = "Stars"
     builder.addSuits(suits)
     a [IllegalArgumentException] should be thrownBy builder.addBriscolaSuit(briscolaSuit)
+
+  it should "allow to add a hand rule" in:
+    val handRule: HandRule = HandRule((cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel) =>
+      cardsOnTable.isEmpty ||
+        cardsOnTable.head.suit == playedCard.suit
+    )
+    builder.addHandRule(handRule)

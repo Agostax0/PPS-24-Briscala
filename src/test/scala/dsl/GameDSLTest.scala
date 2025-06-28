@@ -2,8 +2,9 @@ package dsl
 
 import dsl.GameDSL.{firstTurn, *}
 import dsl.syntax.SyntacticSugar.*
+import dsl.types.PlayRule.prevails
 import dsl.types.{HandSize, PlayerCount, Suits}
-import engine.model.{CardModel, DeckModel}
+import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -163,3 +164,11 @@ class GameDSLTest
       case g: SimpleGameBuilder =>
         g.handRule shouldBe None
       case _ => fail(wrongClassText)
+
+
+  it should "allow to create a rule for choosing the player who wins a round" in:
+
+
+    game play rules are:
+      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1)) prevails
+      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))

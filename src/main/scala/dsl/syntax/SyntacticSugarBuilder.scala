@@ -4,6 +4,9 @@ import dsl.GameBuilder
 import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
 import dsl.types.{HandRule, PointsRule}
 import engine.model.{CardModel, DeckModel}
+import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar, rules}
+import dsl.types.{PlayRule, PointsRule}
+import engine.model.{CardModel, PlayerModel}
 
 object SyntacticSugarBuilder:
 
@@ -85,15 +88,37 @@ object SyntacticSugarBuilder:
         builder
 
   object HandRuleBuilder:
-    def apply(gameBuilder: GameBuilder): HandRuleBuilder = new HandRulesBuilderImpl(
-      gameBuilder
-    )
+    def apply(gameBuilder: GameBuilder): HandRuleBuilder =
+      new HandRulesBuilderImpl(
+        gameBuilder
+      )
   trait HandRuleBuilder:
-    infix def are(handRules: (List[CardModel], DeckModel, CardModel) => Boolean): GameBuilder
-    
-  private class HandRulesBuilderImpl(builder: GameBuilder) extends HandRuleBuilder:
+    infix def are(
+        handRules: (List[CardModel], DeckModel, CardModel) => Boolean
+    ): GameBuilder
+
+  private class HandRulesBuilderImpl(builder: GameBuilder)
+      extends HandRuleBuilder:
     override infix def are(
         handRules: (List[CardModel], DeckModel, CardModel) => Boolean
     ): GameBuilder =
       builder.addHandRule(HandRule(handRules))
       builder
+  trait PlayRulesBuilder:
+    infix def are(
+        playRules: (List[(PlayerModel, CardModel)] => Option[PlayerModel])*
+    ): GameBuilder
+
+  object PlayRulesBuilder:
+    def apply(gameBuilder: GameBuilder): PlayRulesBuilder =
+      new PlayRulesBuilderImpl(
+        gameBuilder
+      )
+
+    private class PlayRulesBuilderImpl(builder: GameBuilder)
+        extends PlayRulesBuilder:
+      override infix def are(
+          playRules: (List[(PlayerModel, CardModel)] => Option[PlayerModel])*
+      ): GameBuilder =
+        playRules.foreach(rule => builder.addPlayRule(PlayRule(rule)))
+        builder

@@ -38,10 +38,43 @@ object PointsRule:
     def apply(name: String, suit: String): Int = rule(name, suit)
 
 /** (CardsOnTable, PlayerCards, CardPlayed) => CardPlayed can be played
- */
+  */
 opaque type HandRule = (List[CardModel], DeckModel, CardModel) => Boolean
 object HandRule:
-  def apply(rule: (List[CardModel], DeckModel, CardModel) => Boolean): HandRule = rule
+  def apply(
+      rule: (List[CardModel], DeckModel, CardModel) => Boolean
+  ): HandRule = rule
   extension (rule: HandRule)
-    def apply(cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel): Boolean =
+    def apply(
+        cardsOnTable: List[CardModel],
+        playerHand: DeckModel,
+        playedCard: CardModel
+    ): Boolean =
       rule(cardsOnTable, playerHand, playedCard)
+
+opaque type PlayRule = List[(PlayerModel, CardModel)] => Option[PlayerModel]
+object PlayRule:
+
+  def apply(
+      rule: List[(PlayerModel, CardModel)] => Option[PlayerModel]
+  ): PlayRule =
+    rule
+
+  extension (rule: PlayRule)
+    def apply(
+        cardsOnTable: List[(PlayerModel, CardModel)]
+    ): Option[PlayerModel] =
+      rule(cardsOnTable)
+
+  extension (rule: List[(PlayerModel, CardModel)] => Option[PlayerModel])
+    infix def prevails(
+        other: List[(PlayerModel, CardModel)] => Option[PlayerModel]
+    ): List[(PlayerModel, CardModel)] => Option[PlayerModel] =
+      (cardsOnTable: List[(PlayerModel, CardModel)]) =>
+        rule(cardsOnTable) orElse other(cardsOnTable)
+
+  extension (cardsOnTable: List[(PlayerModel, CardModel)])
+    def firstCardPlayed: Option[(PlayerModel, CardModel)] =
+      cardsOnTable.headOption
+    def lastCardPlayed: Option[(PlayerModel, CardModel)] =
+      cardsOnTable.lastOption

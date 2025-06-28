@@ -1,6 +1,6 @@
 package dsl
 
-import dsl.types.{HandRule, HandSize, PlayerCount, PointsRule, Suits}
+import dsl.types.{HandRule, HandSize, PlayRule, PlayerCount, PointsRule, Suits}
 import engine.model.{FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
@@ -12,8 +12,9 @@ sealed trait GameBuilder:
   def setPlayersHands(handSize: Int): GameBuilder
   def setStartingPlayer(name: String): GameBuilder
   def addPointRule(rule: PointsRule): GameBuilder
-  def addBriscolaSuit(suit: String): GameBuilder
+  def addPlayRule(rule: PlayRule): GameBuilder
   def addHandRule(rule: HandRule): GameBuilder
+  def addBriscolaSuit(suit: String): GameBuilder
   def build(): FullEngineModel
 
 object GameBuilder:
@@ -27,6 +28,7 @@ object GameBuilder:
     private var handSize: HandSize = _
     private var startingPlayerIndex: Option[Int] = None
     private var pointRules: List[PointsRule] = List.empty
+    private var playRules: List[PlayRule] = List.empty
     private var briscolaSuit: String = ""
     private var handRule: Option[HandRule] = None
 
@@ -64,6 +66,10 @@ object GameBuilder:
       this.pointRules = this.pointRules :+ rule
       this
 
+    override def addPlayRule(rule: PlayRule): GameBuilder =
+      this.playRules = this.playRules :+ rule
+      this
+
     override def addBriscolaSuit(suit: String): GameBuilder =
       if !this.suits.contains(suit) then
         throw new IllegalArgumentException("Briscola suit is not defined")
@@ -84,6 +90,7 @@ object GameBuilder:
       game.giveCardsToPlayers(handSize.value)
       game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
       game.setPointRules(pointRules)
+      game.setPlayRules(playRules)
       game.setBriscolaSuit(briscolaSuit)
       handRule match
         case Some(rule) => game.setHandRules(rule)
@@ -98,6 +105,7 @@ class SimpleGameBuilder extends GameBuilder:
   var handSize: HandSize = _
   var startingPlayerIndex: Option[Int] = None
   var pointRules: List[PointsRule] = List.empty
+  var playRules: List[PlayRule] = List.empty
   var briscolaSuit: String = ""
   var handRule: Option[HandRule] = None
 
@@ -135,6 +143,10 @@ class SimpleGameBuilder extends GameBuilder:
 
   override def addPointRule(rule: PointsRule): GameBuilder =
     this.pointRules = this.pointRules :+ rule
+    this
+
+  override def addPlayRule(rule: PlayRule): GameBuilder =
+    this.playRules = this.playRules :+ rule
     this
 
   override def addBriscolaSuit(suit: String): GameBuilder =

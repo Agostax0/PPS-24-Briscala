@@ -1,7 +1,7 @@
 package dsl
 
-import dsl.types.{HandRule, PointsRule}
-import engine.model.{CardModel, DeckModel}
+import dsl.types.{PlayRule, HandRule, PointsRule}
+import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -107,3 +107,7 @@ class GameBuilderTest
         cardsOnTable.head.suit == playedCard.suit
     )
     builder.addHandRule(handRule)
+
+  it should "allow to add a play rule" in:
+    val rule: PlayRule = PlayRule((cards: List[(PlayerModel,CardModel)]) => Some(cards.head._1))
+    builder.addPlayRule(rule)

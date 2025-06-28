@@ -1,8 +1,9 @@
 import dsl.GameDSL
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
+import dsl.types.PlayRule.{prevails, firstCardPlayed}
 import engine.controller.EngineController
-import engine.model.{CardModel, DeckModel}
+import engine.model.{CardModel, DeckModel, PlayerModel}
 
 import scala.language.implicitConversions
 import scala.language.postfixOps
@@ -37,9 +38,17 @@ def main(): Unit =
         
   game hand rules are:
     (cardsOnTable, playerHand, playedCard) =>
-      cardsOnTable.isEmpty ||
-      cardsOnTable.head.suit == playedCard.suit ||
-      !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+      true
+
+
+  val highestCardTakes = (cards: List[(PlayerModel, CardModel)]) =>
+    val suit = cards.firstCardPlayed.get._2.suit
+    cards.filter(_._2.suit == suit).sortBy(_._2.rank).map(_._1).headOption
+  val highestTrumpTakes = (cards: List[(PlayerModel, CardModel)]) =>
+    cards.filter(_._2.suit equals "Cups").sortBy(_._2.rank).map(_._1).headOption
+
+  game play rules are:
+    highestTrumpTakes prevails highestCardTakes
 
   EngineController(game.build()).start()
 

@@ -1,7 +1,7 @@
-import dsl.GameDSL
+import dsl.{GameBuilder, GameDSL}
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.HandRule._
+import dsl.types.HandRule.*
 import dsl.types.PlayRule.{firstCardPlayed, prevails}
 import engine.controller.EngineController
 import engine.model.{CardModel, DeckModel, PlayerModel}
@@ -9,7 +9,7 @@ import engine.model.{CardModel, DeckModel, PlayerModel}
 import scala.language.implicitConversions
 import scala.language.postfixOps
 
-def briscola() =
+def briscola(): GameBuilder =
   game is "Briscala"
   game has 4 players
 
@@ -47,7 +47,7 @@ def briscola() =
 
   game
 
-def marafone()=
+def marafone(): GameBuilder =
   game is "Briscala"
   game has 4 players
 
@@ -64,7 +64,7 @@ def marafone()=
 
   game briscolaIs "Cups"
 
-  game card points are :
+  game card points are:
     (name, suit) =>
       name match
         case "Ace" => 10
@@ -77,8 +77,7 @@ def marafone()=
       given DeckModel = playerHand
       given CardModel = playedCard
 
-      freeStart or
-        followFirstSuit
+      freeStart or followFirstSuit
       //marafoneRuleset
 
   val highestCardTakes = (cards: List[(PlayerModel, CardModel)]) =>

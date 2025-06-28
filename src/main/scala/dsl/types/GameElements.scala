@@ -1,6 +1,6 @@
 package dsl.types
 
-import engine.model.PlayerModel
+import engine.model.{CardModel, DeckModel, PlayerModel}
 
 opaque type PlayerCount = Int
 object PlayerCount:
@@ -36,3 +36,12 @@ object PointsRule:
   def apply(rule: (String, String) => Int): PointsRule = rule
   extension (rule: PointsRule)
     def apply(name: String, suit: String): Int = rule(name, suit)
+
+/** (CardsOnTable, PlayerCards, CardPlayed) => CardPlayed can be played
+ */
+opaque type HandRule = (List[CardModel], DeckModel, CardModel) => Boolean
+object HandRule:
+  def apply(rule: (List[CardModel], DeckModel, CardModel) => Boolean): HandRule = rule
+  extension (rule: HandRule)
+    def apply(cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel): Boolean =
+      rule(cardsOnTable, playerHand, playedCard)

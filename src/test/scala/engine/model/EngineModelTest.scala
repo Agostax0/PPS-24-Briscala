@@ -1,7 +1,7 @@
 package engine.model
 
 import dsl.types.PlayRule.prevails
-import dsl.types.{HandRule, PlayRule, PointsRule, Suits}
+import dsl.types.{HandRule, PlayRule, PointsRule, Suits, Team}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -43,6 +43,10 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   it should "allow adding players" in:
     engine.addPlayers(List(player1, player2))
     engine.players should contain theSameElementsAs List(player1, player2)
+
+  it should "allow adding teams" in :
+    engine.addTeams(List(Team(List(player1.name, player2.name))))
+    engine.teams should contain theSameElementsAs List(Team(List(player1.name, player2.name)))
     
   it should "allow creating a deck" in:
     engine.createDeck(suits, ranks)

@@ -1,6 +1,6 @@
 package dsl
 
-import dsl.types.{HandSize, PlayerCount, PointsRule, Suits}
+import dsl.types.{HandRule, HandSize, PlayerCount, PointsRule, Suits}
 import engine.model.{FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
@@ -13,6 +13,7 @@ sealed trait GameBuilder:
   def setStartingPlayer(name: String): GameBuilder
   def addPointRule(rule: PointsRule): GameBuilder
   def addBriscolaSuit(suit: String): GameBuilder
+  def addHandRule(rule: HandRule): GameBuilder
   def build(): FullEngineModel
 
 object GameBuilder:
@@ -27,6 +28,7 @@ object GameBuilder:
     private var startingPlayerIndex: Option[Int] = None
     private var pointRules: List[PointsRule] = List.empty
     private var briscolaSuit: String = ""
+    private var handRule: Option[HandRule] = None
 
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
@@ -68,6 +70,10 @@ object GameBuilder:
       else this.briscolaSuit = suit
       this
 
+    override def addHandRule(rule: HandRule): GameBuilder =
+      this.handRule = Some(rule)
+      this
+
     override def build(): FullEngineModel =
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
@@ -79,6 +85,9 @@ object GameBuilder:
       game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
       game.setPointRules(pointRules)
       game.setBriscolaSuit(briscolaSuit)
+      handRule match
+        case Some(rule) => game.setHandRules(rule)
+        case None =>
       game
 
 class SimpleGameBuilder extends GameBuilder:
@@ -90,6 +99,7 @@ class SimpleGameBuilder extends GameBuilder:
   var startingPlayerIndex: Option[Int] = None
   var pointRules: List[PointsRule] = List.empty
   var briscolaSuit: String = ""
+  var handRule: Option[HandRule] = None
 
   override val gameName: String = "Simple Game"
 
@@ -129,6 +139,10 @@ class SimpleGameBuilder extends GameBuilder:
 
   override def addBriscolaSuit(suit: String): GameBuilder =
     this.briscolaSuit = suit
+    this
+
+  override def addHandRule(rule: HandRule): GameBuilder =
+    this.handRule = Some(rule)
     this
 
   override def build(): FullEngineModel =

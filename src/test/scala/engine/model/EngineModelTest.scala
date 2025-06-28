@@ -141,4 +141,19 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.briscolaSuit shouldBe "Cups"
 
   it should "allow to set hand rules" in:
-    engine.setHandRules(List(handRule))
+    val playOnlySameSuitRule: HandRule = HandRule((cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel) =>
+      cardsOnTable.isEmpty ||
+        cardsOnTable.head.suit == playedCard.suit
+    )
+    engine.setHandRules(playOnlySameSuitRule)
+    engine.createDeck(suits, List("Ace"))
+
+    engine.addPlayers(List(player1, player2))
+    engine.setStartingPlayer(0)
+
+    engine.giveCardsToPlayers(1)
+
+    val card1 = player1.hand.view.head
+    engine.playCard(player1, card1)
+    val card2 = player2.hand.view.head
+    engine.playCard(player2, card2) shouldBe false

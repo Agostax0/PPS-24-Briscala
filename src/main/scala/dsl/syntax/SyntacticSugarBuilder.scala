@@ -2,7 +2,8 @@ package dsl.syntax
 
 import dsl.GameBuilder
 import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
-import dsl.types.PointsRule
+import dsl.types.{HandRule, PointsRule}
+import engine.model.{CardModel, DeckModel}
 
 object SyntacticSugarBuilder:
 
@@ -82,3 +83,17 @@ object SyntacticSugarBuilder:
       ): GameBuilder =
         pointRules.foreach(rule => builder.addPointRule(PointsRule(rule)))
         builder
+
+  object HandRuleBuilder:
+    def apply(gameBuilder: GameBuilder): HandRuleBuilder = new HandRulesBuilderImpl(
+      gameBuilder
+    )
+  trait HandRuleBuilder:
+    infix def are(handRules: (List[CardModel], DeckModel, CardModel) => Boolean): GameBuilder
+    
+  private class HandRulesBuilderImpl(builder: GameBuilder) extends HandRuleBuilder:
+    override infix def are(
+        handRules: (List[CardModel], DeckModel, CardModel) => Boolean
+    ): GameBuilder =
+      builder.addHandRule(HandRule(handRules))
+      builder

@@ -1,10 +1,11 @@
-import dsl.{GameBuilder, GameDSL}
+import dsl.GameDSL
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
 import engine.controller.EngineController
 
 import scala.language.implicitConversions
 import scala.language.postfixOps
+
 @main
 def main(): Unit =
 
@@ -22,7 +23,7 @@ def main(): Unit =
 
   game firstTurn starts from "Bob"
 
-  val rule = (name: String, suit: String) => if (name == "Ace") 11 else 0
+  game briscolaIs "Cups"
 
   game card points are:
     (name, suit) => name match

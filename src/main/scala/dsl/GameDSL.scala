@@ -81,3 +81,6 @@ object GameDSL:
 
     infix def card(points: PointsSyntacticSugar): PointsBuilder =
       PointsBuilder(gameBuilder)
+
+    infix def briscolaIs(suit: String): GameBuilder =
+      gameBuilder.addBriscolaSuit(suit)

@@ -2,7 +2,7 @@ package dsl
 
 import dsl.GameDSL.{firstTurn, *}
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.{HandSize, PlayerCount, PointsRule, Suits}
+import dsl.types.{HandSize, PlayerCount, Suits}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -19,6 +19,7 @@ class GameDSLTest
   val gameName = "Briscola"
   private val alice = "Alice"
   private val bob = "Bob"
+  private val wrongClassText = "GameBuilder is not of type SimpleGameBuilder"
 
   "a dsl" should "allow to make a game with a name" in:
     game shouldBe a [GameBuilder]
@@ -33,6 +34,7 @@ class GameDSLTest
 
     g match
       case g: SimpleGameBuilder => g.playerCount shouldBe PlayerCount(4)
+      case _ => fail(wrongClassText)
 
   it should "allow to add players" in:
     val g = game has 2 players
@@ -42,23 +44,28 @@ class GameDSLTest
 
     g match
       case g: SimpleGameBuilder => g.players should have size 2
+      case _ => fail(wrongClassText)
 
-  it should "allow to create a deck" in:
-    val g = game has 2 players
+  it should "allow to set card suits" in:
+    val g = game suitsAre ("Cups", "Coins", "Swords", "Batons")
+    g match
+      case g: SimpleGameBuilder =>
+        g.suits.size shouldBe 4
+      case _ => fail(wrongClassText)
 
-    game suitsAre ("Cups", "Coins", "Swords", "Batons")
-    game ranksAre ("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
+  it should "allow to set card ranks" in:
+    val g = game ranksAre ("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
     g match
-      case g: SimpleGameBuilder => g.suits.size shouldBe 4
-    g match
-      case g: SimpleGameBuilder => g.ranks should have size 10
+      case g: SimpleGameBuilder =>
+        g.ranks should have size 10
+      case _ => fail(wrongClassText)
 
   it should "allow to give cards to players" in:
     val g = game gives 3 cards to every player
 
     g match
       case g: SimpleGameBuilder => g.handSize shouldBe HandSize(3)
-
+      case _ => fail(wrongClassText)
 
   it should "allow to set the first turn" in:
     val g = game has 2 players
@@ -73,7 +80,7 @@ class GameDSLTest
         println(g.players.map(_.name))
         println(g.startingPlayerIndex)
         g.startingPlayerIndex shouldBe Some(g.players.map(_.name).indexOf(alice))
-
+      case _ => fail(wrongClassText)
 
   it should "allow to set the first turn correctly" in :
     val g = game has 2 players
@@ -85,8 +92,8 @@ class GameDSLTest
 
     g match
       case g: SimpleGameBuilder =>
-
-        g.startingPlayerIndex shouldBe Some((g.players.map(_.name).indexOf(bob)))
+        g.startingPlayerIndex shouldBe Some(g.players.map(_.name).indexOf(bob))
+      case _ => fail(wrongClassText)
 
   it should "not allow to set the first turn to a non-existent player" in:
     val g = game has 2 players
@@ -99,6 +106,7 @@ class GameDSLTest
     g match
       case g: SimpleGameBuilder =>
         a [IllegalArgumentException] should be thrownBy (game firstTurn starts from nonPlayer)
+      case _ => fail(wrongClassText)
 
   it should "not allow to set multiple start turns" in:
     val g = game has 2 players
@@ -111,6 +119,7 @@ class GameDSLTest
     g match
       case g: SimpleGameBuilder =>
         a [IllegalArgumentException] should be thrownBy (game firstTurn starts from alice)
+      case _ => fail(wrongClassText)
 
   it should "allow to create point rules" in:
     val rule: (String, String) => Int = (name: String, suit: String) => if (name == "Ace") 11 else 0
@@ -121,4 +130,12 @@ class GameDSLTest
     g match 
       case g: SimpleGameBuilder =>
         g.pointRules should contain (PointsRule(rule))
-    
+      case _ => fail(wrongClassText)
+
+  it should "allow to set the briscola suit" in:
+    val g = game suitsAre ("Cups", "Coins", "Swords", "Batons")
+      game briscolaIs "Cups"
+
+    g match
+      case g: SimpleGameBuilder => g.briscolaSuit shouldBe "Cups"
+      case _ => fail(wrongClassText)

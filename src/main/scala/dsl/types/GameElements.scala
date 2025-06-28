@@ -101,13 +101,13 @@ object PlayRule:
   ): PlayRule =
     rule
 
-  def highestTrumpTakes(using
+  def highestBriscolaTakes(using
       cardsOnTable: List[(PlayerModel, CardModel)]
   )(using
-      trump: String
+      briscola: String
   ): Option[PlayerModel] =
     cardsOnTable
-      .filter(_._2.suit equals trump)
+      .filter(_._2.suit equals briscola)
       .sortBy(_._2.rank)
       .map(_._1)
       .headOption

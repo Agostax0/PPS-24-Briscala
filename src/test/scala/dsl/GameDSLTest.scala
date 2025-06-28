@@ -1,8 +1,8 @@
 package dsl
 
-import dsl.GameDSL.{firstTurn, *}
+import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.PlayRule.{highestCardTakes, highestTrumpTakes, prevails}
+import dsl.types.PlayRule.{highestCardTakes, highestBriscolaTakes, prevails}
 import dsl.types.{HandSize, PlayerCount, Suits}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
@@ -199,7 +199,7 @@ class GameDSLTest
       ((cards: List[(PlayerModel, CardModel)]) =>
         given List[(PlayerModel, CardModel)] = cards
         given String = "Cups"
-        highestTrumpTakes
+        highestBriscolaTakes
       ).prevails(
         (cards: List[(PlayerModel, CardModel)]) =>
           given List[(PlayerModel, CardModel)] = cards

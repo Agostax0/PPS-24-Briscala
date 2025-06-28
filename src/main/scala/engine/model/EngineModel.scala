@@ -9,6 +9,7 @@ trait EngineModel:
   def computeTurn(): Unit
   def setStartingPlayer(index: Int): Unit
   def playCard(player: PlayerModel, card: CardModel): Boolean
+  def winningGamePlayers(): List[PlayerModel]
 
 trait RuleManagement:
   def canPlayCard(card: CardModel): Boolean = true
@@ -74,6 +75,11 @@ class FullEngineModel(val gameName: String)
       nextPlayerTurn()
       true
     else false
+
+  override def winningGamePlayers(): List[PlayerModel] = {
+    val winningPlayers = players.sortWith(_.score > _.score)
+    winningPlayers
+  }
 
   override def computeTurn(): Unit =
     val winningPlayer = calculateWinningPlayer()

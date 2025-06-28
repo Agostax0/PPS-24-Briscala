@@ -101,12 +101,31 @@ object PlayRule:
   ): PlayRule =
     rule
 
+  def highestTrumpTakes(using
+      cardsOnTable: List[(PlayerModel, CardModel)]
+  )(using
+      trump: String
+  ): Option[PlayerModel] =
+    cardsOnTable
+      .filter(_._2.suit equals trump)
+      .sortBy(_._2.rank)
+      .map(_._1)
+      .headOption
+
+  def highestCardTakes(using
+      cardsOnTable: List[(PlayerModel, CardModel)]
+  ): Option[PlayerModel] =
+    val suit = cardsOnTable.firstCardPlayed.get._2.suit
+    cardsOnTable
+      .filter(_._2.suit == suit)
+      .sortBy(_._2.rank)
+      .map(_._1)
+      .headOption
   extension (rule: PlayRule)
     def apply(
         cardsOnTable: List[(PlayerModel, CardModel)]
     ): Option[PlayerModel] =
       rule(cardsOnTable)
-
   extension (rule: List[(PlayerModel, CardModel)] => Option[PlayerModel])
     infix def prevails(
         other: List[(PlayerModel, CardModel)] => Option[PlayerModel]

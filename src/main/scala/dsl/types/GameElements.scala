@@ -41,9 +41,44 @@ object PointsRule:
   */
 opaque type HandRule = (List[CardModel], DeckModel, CardModel) => Boolean
 object HandRule:
+  def freeStart(using cardsOnTable: List[CardModel]): Boolean =
+    cardsOnTable.isEmpty
+  def startWithHigherCard(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    cardsOnTable.isEmpty &&
+      !playerHand.view.exists(_.rank > playedCard.rank)
+  def followFirstSuit(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    cardsOnTable.nonEmpty &&
+      (cardsOnTable.head.suit == playedCard.suit ||
+        !playerHand.view.exists(_.suit == cardsOnTable.head.suit))
+  def followPreviousSuit(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    val previousSuit = cardsOnTable.lastOption.map(_.suit).get
+    previousSuit == playedCard.suit ||
+    !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+
+  def marafoneRuleset(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    freeStart ||
+      followFirstSuit
+
   def apply(
       rule: (List[CardModel], DeckModel, CardModel) => Boolean
   ): HandRule = rule
+
   extension (rule: HandRule)
     def apply(
         cardsOnTable: List[CardModel],
@@ -51,6 +86,12 @@ object HandRule:
         playedCard: CardModel
     ): Boolean =
       rule(cardsOnTable, playerHand, playedCard)
+
+  extension (rule: Boolean)
+    def or(other: Boolean): Boolean =
+      rule || other
+    def and(other: Boolean): Boolean =
+      rule && other
 
 opaque type PlayRule = List[(PlayerModel, CardModel)] => Option[PlayerModel]
 object PlayRule:

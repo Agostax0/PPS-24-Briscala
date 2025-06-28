@@ -12,14 +12,14 @@ trait EngineModel:
 
 trait HandRuleManagement:
   table: TableManagement =>
-  var handRules: List[HandRule] = List.empty
+  var handRule: Option[HandRule] = None
 
-  def setHandRules(rules: List[HandRule]): Unit = this.handRules = rules
+  def setHandRules(rule: HandRule): Unit = this.handRule = Some(rule)
 
   def canPlayCard(playerHand: DeckModel, playedCard: CardModel): Boolean =
-    if handRules.isEmpty then true
-    else
-      handRules.forall(rule => rule(table.cardsOnTable.map(_._2), playerHand, playedCard))
+    handRule match
+      case Some(rule) => rule(table.cardsOnTable.map(_._2), playerHand, playedCard)
+      case None => true
 
 trait TableManagement extends HandRuleManagement:
   var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty

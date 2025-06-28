@@ -48,7 +48,7 @@ def briscola() =
   game
 
 def marafone()=
-  game is "Briscala"
+  game is "Marafone"
   game has 4 players
 
   game has player called "Alice"
@@ -95,11 +95,14 @@ def marafone()=
 @main
 def main(): Unit =
 
-  val selectedGame = "marafone" // oppure "marafone"
+  val briscolaGame: String = "briscola"
+  val marafoneGame: String = "marafone"
+
+  val selectedGame = briscolaGame // oppure "marafone"
 
   val gameConfig = selectedGame match {
-    case "briscola" => briscola()
-    case "marafone" => marafone()
+    case game if game == briscolaGame => briscola()
+    case game if game == marafoneGame => marafone()
     case _ => throw new IllegalArgumentException(s"Unknown game: $selectedGame")
   }
 

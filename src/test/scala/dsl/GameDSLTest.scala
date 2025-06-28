@@ -1,8 +1,10 @@
 package dsl
 
-import dsl.GameDSL.{firstTurn, *}
+import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
+import dsl.types.PlayRule.{highestCardTakes, highestBriscolaTakes, prevails}
 import dsl.types.{HandSize, PlayerCount, Suits}
+import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -139,3 +141,70 @@ class GameDSLTest
     g match
       case g: SimpleGameBuilder => g.briscolaSuit shouldBe "Cups"
       case _ => fail(wrongClassText)
+
+  it should "allow to set a hand rule" in:
+    val marafoneHandRule: (List[CardModel], DeckModel, CardModel) => Boolean =
+      (cardsOnTable, playerHand, playedCard) =>
+        cardsOnTable.isEmpty ||
+          cardsOnTable.head.suit == playedCard.suit ||
+          !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+
+    val g = game hand rules are marafoneHandRule
+
+    import dsl.types.HandRule
+    g match
+      case g: SimpleGameBuilder =>
+        g.handRule.get should be (HandRule(marafoneHandRule))
+      case _ => fail(wrongClassText)
+
+  it should "allow to set a hand rule using advanced syntax" in :
+    import dsl.types.HandRule._
+    val marafoneHandRule: (List[CardModel], DeckModel, CardModel) => Boolean =
+      (cardsOnTable, playerHand, playedCard) =>
+        given List[CardModel] = cardsOnTable
+        given DeckModel = playerHand
+        given CardModel = playedCard
+
+        freeStart or
+          followFirstSuit
+
+    val g = game hand rules are marafoneHandRule
+
+    import dsl.types.HandRule
+    g match
+      case g: SimpleGameBuilder =>
+        g.handRule.get should be(HandRule(marafoneHandRule))
+      case _ => fail(wrongClassText)
+
+  it should "allow to not set a hand rule" in:
+    val g = game has 2 players
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.handRule shouldBe None
+      case _ => fail(wrongClassText)
+
+
+  it should "allow to create a rule for choosing the player who wins a round" in:
+
+
+    game play rules are:
+      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1)) prevails
+      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
+
+  it should "allow to create a play rule using advanced syntax" in:
+
+
+    game play rules are:
+      ((cards: List[(PlayerModel, CardModel)]) =>
+        given List[(PlayerModel, CardModel)] = cards
+        given String = "Cups"
+        highestBriscolaTakes
+      ).prevails(
+        (cards: List[(PlayerModel, CardModel)]) =>
+          given List[(PlayerModel, CardModel)] = cards
+          highestCardTakes
+      )
+
+
+

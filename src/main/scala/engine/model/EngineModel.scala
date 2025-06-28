@@ -1,5 +1,6 @@
 package engine.model
 
+import dsl.types.{HandRule, PlayRule, PointsRule, Suits}
 import dsl.types.{HandRule, PointsRule, Suits, Team}
 
 trait EngineModel:
@@ -15,39 +16,31 @@ trait EngineModel:
 
 trait HandRuleManagement:
   table: TableManagement =>
-  var handRules: List[HandRule] = List.empty
+  var handRule: Option[HandRule] = None
 
-  def setHandRules(rules: List[HandRule]): Unit = this.handRules = rules
+  def setHandRules(rule: HandRule): Unit = this.handRule = Some(rule)
 
   def canPlayCard(playerHand: DeckModel, playedCard: CardModel): Boolean =
-    if handRules.isEmpty then true
-    else
-      handRules.forall(rule =>
+    handRule match
+      case Some(rule) =>
         rule(table.cardsOnTable.map(_._2), playerHand, playedCard)
-      )
+      case None => true
 
-trait TableManagement extends HandRuleManagement:
-  var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty
-  var pointRules: List[PointsRule] = List.empty
-  var briscolaSuit: String = ""
+trait PlayRuleManagement:
+  table: TableManagement =>
+  var playRules: List[PlayRule] = List.empty
 
-  def addCardToTable(player: PlayerModel, card: CardModel): Unit =
-    cardsOnTable = cardsOnTable :+ (player, card)
+  def setPlayRules(rules: List[PlayRule]): Unit = this.playRules = rules
 
   def calculateWinningPlayer(): PlayerModel =
-    val firstCardPlayed = cardsOnTable.head._2
-    val playedSuit = firstCardPlayed.suit
-    val maxCardByPlayer =
-      cardsOnTable.filter(_._2.suit == playedSuit).max(Ordering.by(_._2.rank))
-    val winningPlayer = cardsOnTable.find(_.eq(maxCardByPlayer)).get._1
+    val winningPlayers: List[PlayerModel] = playRules.map(rule => rule(cardsOnTable)).filter(_.isDefined).map(_.get)
+
+    if (winningPlayers.size > 1) then
+      throw new IllegalStateException("More than one winning player")
+
+    val winningPlayer = winningPlayers.head
     addScoreToWinningPlayer(winningPlayer)
     winningPlayer
-
-  def setPointRules(rules: List[PointsRule]): Unit = this.pointRules = rules
-
-  def setBriscolaSuit(suit: String): Unit = this.briscolaSuit = suit
-
-  private def clearTable(): Unit = cardsOnTable = List.empty
 
   private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
     val points = (for
@@ -56,6 +49,20 @@ trait TableManagement extends HandRuleManagement:
     yield rule(card.name, card.suit)).sum
     winningPlayer.increaseScore(points)
     clearTable()
+
+trait TableManagement extends HandRuleManagement with PlayRuleManagement:
+  var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty
+  var pointRules: List[PointsRule] = List.empty
+  var briscolaSuit: String = ""
+
+  def addCardToTable(player: PlayerModel, card: CardModel): Unit =
+    cardsOnTable = cardsOnTable :+ (player, card)
+
+  def setPointRules(rules: List[PointsRule]): Unit = this.pointRules = rules
+
+  def setBriscolaSuit(suit: String): Unit = this.briscolaSuit = suit
+
+  def clearTable(): Unit = cardsOnTable = List.empty
 
 trait DeckManagement:
   engineModel: EngineModel =>

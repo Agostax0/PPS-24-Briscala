@@ -1,6 +1,7 @@
 package dsl
 
 import dsl.types.{HandSize, PlayerCount, PointsRule, Suits, Team}
+import dsl.types.{HandRule, HandSize, PlayRule, PlayerCount, PointsRule, Suits}
 import engine.model.{FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
@@ -12,6 +13,8 @@ sealed trait GameBuilder:
   def setPlayersHands(handSize: Int): GameBuilder
   def setStartingPlayer(name: String): GameBuilder
   def addPointRule(rule: PointsRule): GameBuilder
+  def addPlayRule(rule: PlayRule): GameBuilder
+  def addHandRule(rule: HandRule): GameBuilder
   def addBriscolaSuit(suit: String): GameBuilder
   def addTeam(names: List[String]): GameBuilder
   def build(): FullEngineModel
@@ -27,14 +30,13 @@ object GameBuilder:
     private var handSize: HandSize = _
     private var startingPlayerIndex: Option[Int] = None
     private var pointRules: List[PointsRule] = List.empty
+    private var playRules: List[PlayRule] = List.empty
     private var briscolaSuit: String = ""
     private var teams: List[Team] = List.empty
+    private var handRule: Option[HandRule] = None
 
     override def addPlayer(name: String): GameBuilder =
-      val newPlayer = PlayerModel(name)
-      if players.contains(newPlayer) then
-        throw new IllegalArgumentException("Player with the same name already exists")
-      players = players :+ newPlayer
+      players = players :+ PlayerModel(name)
       this
 
     override def addTeam(names: List[String]): GameBuilder = {
@@ -47,7 +49,7 @@ object GameBuilder:
       //check whether a player is already inside another team
       if  teams.exists(team => names.toSet.subsetOf(team.toSet)) then
         throw IllegalArgumentException("Players already inside another team")
-        
+
       teams = teams :+ Team(names)
       this
     }
@@ -82,10 +84,18 @@ object GameBuilder:
       this.pointRules = this.pointRules :+ rule
       this
 
+    override def addPlayRule(rule: PlayRule): GameBuilder =
+      this.playRules = this.playRules :+ rule
+      this
+
     override def addBriscolaSuit(suit: String): GameBuilder =
       if !this.suits.contains(suit) then
         throw new IllegalArgumentException("Briscola suit is not defined")
       else this.briscolaSuit = suit
+      this
+
+    override def addHandRule(rule: HandRule): GameBuilder =
+      this.handRule = Some(rule)
       this
 
     override def build(): FullEngineModel =
@@ -99,7 +109,11 @@ object GameBuilder:
       game.giveCardsToPlayers(handSize.value)
       game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
       game.setPointRules(pointRules)
+      game.setPlayRules(playRules)
       game.setBriscolaSuit(briscolaSuit)
+      handRule match
+        case Some(rule) => game.setHandRules(rule)
+        case None =>
       game
 
 class SimpleGameBuilder extends GameBuilder:
@@ -110,8 +124,10 @@ class SimpleGameBuilder extends GameBuilder:
   var handSize: HandSize = _
   var startingPlayerIndex: Option[Int] = None
   var pointRules: List[PointsRule] = List.empty
+  var playRules: List[PlayRule] = List.empty
   var briscolaSuit: String = ""
   var teams: List[List[String]] = List.empty
+  var handRule: Option[HandRule] = None
 
   override val gameName: String = "Simple Game"
 
@@ -164,8 +180,16 @@ class SimpleGameBuilder extends GameBuilder:
     this.pointRules = this.pointRules :+ rule
     this
 
+  override def addPlayRule(rule: PlayRule): GameBuilder =
+    this.playRules = this.playRules :+ rule
+    this
+
   override def addBriscolaSuit(suit: String): GameBuilder =
     this.briscolaSuit = suit
+    this
+
+  override def addHandRule(rule: HandRule): GameBuilder =
+    this.handRule = Some(rule)
     this
 
   override def build(): FullEngineModel =

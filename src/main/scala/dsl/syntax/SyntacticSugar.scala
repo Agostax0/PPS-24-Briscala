@@ -9,6 +9,7 @@ object SyntacticSugar:
   implicit val starts: StartsSyntacticSugar = StartsSyntacticSugar
   implicit val points: PointsSyntacticSugar = PointsSyntacticSugar
   implicit val team: TeamSyntacticSugar = TeamSyntacticSugar
+  implicit val rules: RulesSyntacticSugar = RulesSyntacticSugar
 
   trait PlayerSyntacticSugar extends SyntacticSugar
   private object PlayerSyntacticSugar extends PlayerSyntacticSugar
@@ -27,3 +28,6 @@ object SyntacticSugar:
 
   trait TeamSyntacticSugar extends SyntacticSugar
   private object TeamSyntacticSugar extends TeamSyntacticSugar
+
+  trait RulesSyntacticSugar extends SyntacticSugar
+  private object RulesSyntacticSugar extends RulesSyntacticSugar

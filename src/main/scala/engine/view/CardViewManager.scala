@@ -47,7 +47,8 @@ trait CardViewManager:
       card: CardModel
   ): State[Frame, Unit] =
     import WindowStateImpl.*
-    val cardInfo = card.name + " " + card.suit
+    val cardInfo =
+      "<html><body>" + card.name + "<br>" + card.suit + "</body></html>"
     val componentName = playerName + "_" + card.toString
     for
       _ <- addButton(cardInfo, componentName)

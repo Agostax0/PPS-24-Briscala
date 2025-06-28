@@ -53,9 +53,44 @@ object PointsRule:
   */
 opaque type HandRule = (List[CardModel], DeckModel, CardModel) => Boolean
 object HandRule:
+  def freeStart(using cardsOnTable: List[CardModel]): Boolean =
+    cardsOnTable.isEmpty
+  def startWithHigherCard(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    cardsOnTable.isEmpty &&
+      !playerHand.view.exists(_.rank > playedCard.rank)
+  def followFirstSuit(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    cardsOnTable.nonEmpty &&
+      (cardsOnTable.head.suit == playedCard.suit ||
+        !playerHand.view.exists(_.suit == cardsOnTable.head.suit))
+  def followPreviousSuit(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    val previousSuit = cardsOnTable.lastOption.map(_.suit).get
+    previousSuit == playedCard.suit ||
+    !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+
+  def marafoneRuleset(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    freeStart ||
+      followFirstSuit
+
   def apply(
       rule: (List[CardModel], DeckModel, CardModel) => Boolean
   ): HandRule = rule
+
   extension (rule: HandRule)
     def apply(
         cardsOnTable: List[CardModel],
@@ -63,3 +98,55 @@ object HandRule:
         playedCard: CardModel
     ): Boolean =
       rule(cardsOnTable, playerHand, playedCard)
+
+  extension (rule: Boolean)
+    def or(other: Boolean): Boolean =
+      rule || other
+    def and(other: Boolean): Boolean =
+      rule && other
+
+opaque type PlayRule = List[(PlayerModel, CardModel)] => Option[PlayerModel]
+object PlayRule:
+
+  def apply(
+      rule: List[(PlayerModel, CardModel)] => Option[PlayerModel]
+  ): PlayRule =
+    rule
+
+  def highestBriscolaTakes(using
+      cardsOnTable: List[(PlayerModel, CardModel)]
+  )(using
+      briscola: String
+  ): Option[PlayerModel] =
+    cardsOnTable
+      .filter(_._2.suit equals briscola)
+      .sortBy(_._2.rank)
+      .map(_._1)
+      .headOption
+
+  def highestCardTakes(using
+      cardsOnTable: List[(PlayerModel, CardModel)]
+  ): Option[PlayerModel] =
+    val suit = cardsOnTable.firstCardPlayed.get._2.suit
+    cardsOnTable
+      .filter(_._2.suit == suit)
+      .sortBy(_._2.rank)
+      .map(_._1)
+      .headOption
+  extension (rule: PlayRule)
+    def apply(
+        cardsOnTable: List[(PlayerModel, CardModel)]
+    ): Option[PlayerModel] =
+      rule(cardsOnTable)
+  extension (rule: List[(PlayerModel, CardModel)] => Option[PlayerModel])
+    infix def prevails(
+        other: List[(PlayerModel, CardModel)] => Option[PlayerModel]
+    ): List[(PlayerModel, CardModel)] => Option[PlayerModel] =
+      (cardsOnTable: List[(PlayerModel, CardModel)]) =>
+        rule(cardsOnTable) orElse other(cardsOnTable)
+
+  extension (cardsOnTable: List[(PlayerModel, CardModel)])
+    def firstCardPlayed: Option[(PlayerModel, CardModel)] =
+      cardsOnTable.headOption
+    def lastCardPlayed: Option[(PlayerModel, CardModel)] =
+      cardsOnTable.lastOption

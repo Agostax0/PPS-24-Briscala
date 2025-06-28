@@ -12,6 +12,7 @@ sealed trait GameBuilder:
   def setPlayersHands(handSize: Int): GameBuilder
   def setStartingPlayer(name: String): GameBuilder
   def addPointRule(rule: PointsRule): GameBuilder
+  def addBriscolaSuit(suit: String): GameBuilder
   def build(): FullEngineModel
 
 object GameBuilder:
@@ -25,6 +26,7 @@ object GameBuilder:
     private var handSize: HandSize = _
     private var startingPlayerIndex: Option[Int] = None
     private var pointRules: List[PointsRule] = List.empty
+    private var briscolaSuit: String = ""
 
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
@@ -47,7 +49,7 @@ object GameBuilder:
       this
 
     override def setStartingPlayer(name: String): GameBuilder =
-      if (players.isEmpty || !players.map(_.name).contains(name)) then
+      if players.isEmpty || !players.map(_.name).contains(name) then
         throw new IllegalArgumentException("Player not found")
 
       this.startingPlayerIndex = this.startingPlayerIndex match
@@ -60,6 +62,12 @@ object GameBuilder:
       this.pointRules = this.pointRules :+ rule
       this
 
+    override def addBriscolaSuit(suit: String): GameBuilder =
+      if !this.suits.contains(suit) then
+        throw new IllegalArgumentException("Briscola suit is not defined")
+      else this.briscolaSuit = suit
+      this
+
     override def build(): FullEngineModel =
       if !playerCount.equals(PlayerCount(players.size)) then
         throw new IllegalArgumentException("Incorrect number of players joined")
@@ -70,6 +78,7 @@ object GameBuilder:
       game.giveCardsToPlayers(handSize.value)
       game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
       game.setPointRules(pointRules)
+      game.setBriscolaSuit(briscolaSuit)
       game
 
 class SimpleGameBuilder extends GameBuilder:
@@ -80,6 +89,7 @@ class SimpleGameBuilder extends GameBuilder:
   var handSize: HandSize = _
   var startingPlayerIndex: Option[Int] = None
   var pointRules: List[PointsRule] = List.empty
+  var briscolaSuit: String = ""
 
   override val gameName: String = "Simple Game"
 
@@ -104,7 +114,7 @@ class SimpleGameBuilder extends GameBuilder:
     this
 
   override def setStartingPlayer(name: String): GameBuilder =
-    if (players.isEmpty || !players.map(_.name).contains(name)) then
+    if players.isEmpty || !players.map(_.name).contains(name) then
       throw new IllegalArgumentException("Player not found")
 
     this.startingPlayerIndex = this.startingPlayerIndex match
@@ -115,6 +125,10 @@ class SimpleGameBuilder extends GameBuilder:
 
   override def addPointRule(rule: PointsRule): GameBuilder =
     this.pointRules = this.pointRules :+ rule
+    this
+
+  override def addBriscolaSuit(suit: String): GameBuilder =
+    this.briscolaSuit = suit
     this
 
   override def build(): FullEngineModel =

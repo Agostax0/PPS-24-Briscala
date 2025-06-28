@@ -92,5 +92,6 @@ object SyntacticSugarBuilder:
     )
 
     private class TeamBuilderImpl(builder: GameBuilder) extends TeamBuilder:
-      override infix def composedOf(name: String*): GameBuilder =
+      override infix def composedOf(names: String*): GameBuilder =
+        builder.addTeam(names.toList)
         builder

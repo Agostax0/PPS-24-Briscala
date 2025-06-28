@@ -1,6 +1,6 @@
 package dsl
 
-import dsl.types.{HandSize, PlayerCount, PointsRule, Suits}
+import dsl.types.{HandSize, PlayerCount, PointsRule, Suits, Team}
 import engine.model.{FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
@@ -13,6 +13,7 @@ sealed trait GameBuilder:
   def setStartingPlayer(name: String): GameBuilder
   def addPointRule(rule: PointsRule): GameBuilder
   def addBriscolaSuit(suit: String): GameBuilder
+  def addTeam(names: List[String]): GameBuilder
   def build(): FullEngineModel
 
 object GameBuilder:
@@ -27,10 +28,29 @@ object GameBuilder:
     private var startingPlayerIndex: Option[Int] = None
     private var pointRules: List[PointsRule] = List.empty
     private var briscolaSuit: String = ""
+    private var teams: List[Team] = List.empty
 
     override def addPlayer(name: String): GameBuilder =
-      players = players :+ PlayerModel(name)
+      val newPlayer = PlayerModel(name)
+      if players.contains(newPlayer) then
+        throw new IllegalArgumentException("Player with the same name already exists")
+      players = players :+ newPlayer
       this
+
+    override def addTeam(names: List[String]): GameBuilder = {
+      //check whether the player exist
+      names.foreach( newPlayerName =>
+        val playerExists = players.exists(p => p.name == newPlayerName)
+        if !playerExists then
+          throw IllegalArgumentException("Player/s doesn't exists")
+      )
+      //check whether a player is already inside another team
+      if  teams.exists(team => names.toSet.subsetOf(team.toSet)) then
+        throw IllegalArgumentException("Players already inside another team")
+        
+      teams = teams :+ Team(names)
+      this
+    }
 
     override def setPlayers(n: Int): GameBuilder =
       playerCount = PlayerCount(n)
@@ -74,6 +94,7 @@ object GameBuilder:
 
       val game = FullEngineModel(gameName)
       game.addPlayers(players)
+      game.addTeams(teams)
       game.createDeck(suits, ranks)
       game.giveCardsToPlayers(handSize.value)
       game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
@@ -90,12 +111,28 @@ class SimpleGameBuilder extends GameBuilder:
   var startingPlayerIndex: Option[Int] = None
   var pointRules: List[PointsRule] = List.empty
   var briscolaSuit: String = ""
+  var teams: List[List[String]] = List.empty
 
   override val gameName: String = "Simple Game"
 
   override def addPlayer(name: String): GameBuilder =
     players = players :+ PlayerModel(name)
     this
+
+  override def addTeam(names: List[String]): GameBuilder = {
+    //check whether the player exist
+    names.foreach(newPlayerName =>
+      val playerExists = players.exists(p => p.name == newPlayerName)
+      if !playerExists then
+        throw IllegalArgumentException("Player/s doesn't exists")
+    )
+    //check whether a player is already inside another team
+    if teams.exists(team => names.toSet.subsetOf(team.toSet)) then
+      throw IllegalArgumentException("Players already inside another team")
+
+    teams = teams :+ names
+    this
+  }
 
   override def setPlayers(n: Int): GameBuilder =
     playerCount = PlayerCount(n)

@@ -8,6 +8,18 @@ object PlayerCount:
     require(count >= 2 && count <= 4, "player count should be between 2 and 4")
     count
 
+opaque type Team = List[String]
+object Team:
+  def apply(team: List[String]): Team =
+    require(team.size <= 4)
+    team
+  extension (team: Team)
+    def size: Int = team.size
+    def toSet: Set[String] = team.toSet
+    def zipWithIndex: List[(String, Int)] = team.zipWithIndex
+    def toList: List[String] = team.toList
+    def apply(n: Int): String = team.apply(n)
+
 opaque type HandSize = Int
 object HandSize:
   def apply(size: Int): HandSize =
@@ -38,10 +50,16 @@ object PointsRule:
     def apply(name: String, suit: String): Int = rule(name, suit)
 
 /** (CardsOnTable, PlayerCards, CardPlayed) => CardPlayed can be played
- */
+  */
 opaque type HandRule = (List[CardModel], DeckModel, CardModel) => Boolean
 object HandRule:
-  def apply(rule: (List[CardModel], DeckModel, CardModel) => Boolean): HandRule = rule
+  def apply(
+      rule: (List[CardModel], DeckModel, CardModel) => Boolean
+  ): HandRule = rule
   extension (rule: HandRule)
-    def apply(cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel): Boolean =
+    def apply(
+        cardsOnTable: List[CardModel],
+        playerHand: DeckModel,
+        playedCard: CardModel
+    ): Boolean =
       rule(cardsOnTable, playerHand, playedCard)

@@ -115,3 +115,7 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
 
     engine.computeTurn()
     player1.score shouldBe pointsRule.apply("Ace", "Cups") * 2
+
+  it should "allow to set the briscola suit" in:
+    engine.setBriscolaSuit("Cups")
+    engine.briscolaSuit shouldBe "Cups"

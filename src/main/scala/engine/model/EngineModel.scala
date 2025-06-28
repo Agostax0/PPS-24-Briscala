@@ -16,11 +16,10 @@ trait RuleManagement:
 trait TableManagement:
   var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty
   var pointRules: List[PointsRule] = List.empty
+  var briscolaSuit: String = ""
 
   def addCardToTable(player: PlayerModel, card: CardModel): Unit =
     cardsOnTable = cardsOnTable :+ (player, card)
-
-  def clearTable(): Unit = cardsOnTable = List.empty
 
   def calculateWinningPlayer(): PlayerModel =
     val firstCardPlayed = cardsOnTable.head._2
@@ -31,6 +30,12 @@ trait TableManagement:
     addScoreToWinningPlayer(winningPlayer)
     winningPlayer
 
+  def setPointRules(rules: List[PointsRule]): Unit = this.pointRules = rules
+
+  def setBriscolaSuit(suit: String): Unit = this.briscolaSuit = suit
+
+  private def clearTable(): Unit = cardsOnTable = List.empty
+  
   private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
     val points = (for
       card <- cardsOnTable.map(_._2)
@@ -38,8 +43,6 @@ trait TableManagement:
     yield rule(card.name, card.suit)).sum
     winningPlayer.increaseScore(points)
     clearTable()
-
-  def setPointRules(rules: List[PointsRule]): Unit = this.pointRules = rules
 
 trait DeckManagement:
   engineModel: EngineModel =>

@@ -157,6 +157,25 @@ class GameDSLTest
         g.handRule.get should be (HandRule(marafoneHandRule))
       case _ => fail(wrongClassText)
 
+  it should "allow to set a hand rule using advanced syntax" in :
+    import dsl.types.HandRule._
+    val marafoneHandRule: (List[CardModel], DeckModel, CardModel) => Boolean =
+      (cardsOnTable, playerHand, playedCard) =>
+        given List[CardModel] = cardsOnTable
+        given DeckModel = playerHand
+        given CardModel = playedCard
+
+        freeStart or
+          followFirstSuit
+
+    val g = game hand rules are marafoneHandRule
+
+    import dsl.types.HandRule
+    g match
+      case g: SimpleGameBuilder =>
+        g.handRule.get should be(HandRule(marafoneHandRule))
+      case _ => fail(wrongClassText)
+
   it should "allow to not set a hand rule" in:
     val g = game has 2 players
 

@@ -39,20 +39,19 @@ object GameBuilder:
       players = players :+ PlayerModel(name)
       this
 
-    override def addTeam(names: List[String]): GameBuilder = {
+    override def addTeam(names: List[String]): GameBuilder =
       //check whether the player exist
-      names.foreach( newPlayerName =>
+      names.foreach(newPlayerName =>
         val playerExists = players.exists(p => p.name == newPlayerName)
         if !playerExists then
           throw IllegalArgumentException("Player/s doesn't exists")
       )
       //check whether a player is already inside another team
-      if  teams.exists(team => names.toSet.subsetOf(team.toSet)) then
+      if names.intersect(teams.flatMap(t => t.toList)).nonEmpty then
         throw IllegalArgumentException("Players already inside another team")
 
       teams = teams :+ Team(names)
       this
-    }
 
     override def setPlayers(n: Int): GameBuilder =
       playerCount = PlayerCount(n)
@@ -113,7 +112,7 @@ object GameBuilder:
       game.setBriscolaSuit(briscolaSuit)
       handRule match
         case Some(rule) => game.setHandRules(rule)
-        case None =>
+        case None       =>
       game
 
 class SimpleGameBuilder extends GameBuilder:
@@ -135,7 +134,7 @@ class SimpleGameBuilder extends GameBuilder:
     players = players :+ PlayerModel(name)
     this
 
-  override def addTeam(names: List[String]): GameBuilder = {
+  override def addTeam(names: List[String]): GameBuilder =
     //check whether the player exist
     names.foreach(newPlayerName =>
       val playerExists = players.exists(p => p.name == newPlayerName)
@@ -143,12 +142,11 @@ class SimpleGameBuilder extends GameBuilder:
         throw IllegalArgumentException("Player/s doesn't exists")
     )
     //check whether a player is already inside another team
-    if teams.exists(team => names.toSet.subsetOf(team.toSet)) then
+    if names.intersect(teams.flatMap(t => t.toList)).nonEmpty then
       throw IllegalArgumentException("Players already inside another team")
 
     teams = teams :+ names
     this
-  }
 
   override def setPlayers(n: Int): GameBuilder =
     playerCount = PlayerCount(n)

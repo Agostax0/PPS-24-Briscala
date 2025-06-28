@@ -29,6 +29,7 @@ object Suits:
     def map[B](f: String => B): List[B] = suits.map(f)
     def flatMap[B](f: String => List[B]): List[B] = suits.flatMap(f)
     def foreach(f: String => Unit): Unit = suits.foreach(f)
+    def contains(suit: String): Boolean = suits.contains(suit)
 
 opaque type PointsRule = (String, String) => Int
 object PointsRule:

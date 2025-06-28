@@ -86,3 +86,15 @@ class GameBuilderTest
   it should "allow to add a point rule" in:
     val pointRule: PointsRule = PointsRule((name: String, suit: String) => if (name == "Ace") 11 else 0)
     builder.addPointRule(pointRule)
+
+  it should "allow to add a briscola suit" in:
+    val suits = List("Cups", "Coins", "Swords", "Batons")
+    val briscolaSuit = "Cups"
+    builder.addSuits(suits)
+    builder.addBriscolaSuit(briscolaSuit)
+
+  it should "not allow to add a briscola suit that is not in the list of suits" in:
+    val suits = List("Cups", "Coins", "Swords", "Batons")
+    val briscolaSuit = "Stars"
+    builder.addSuits(suits)
+    a [IllegalArgumentException] should be thrownBy builder.addBriscolaSuit(briscolaSuit)

@@ -1,6 +1,6 @@
 package engine.model
 
-import dsl.types.{PointsRule, Suits}
+import dsl.types.{HandRule, PointsRule, Suits}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -22,6 +22,11 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     case "Knave" => 2
     case _ => 0
   })
+  val handRule: HandRule = HandRule((cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel) =>
+    cardsOnTable.isEmpty ||
+    cardsOnTable.head.suit == playedCard.suit ||
+    !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+  )
   
   override def beforeEach(): Unit =
     engine = FullEngineModel("TestGame")
@@ -98,6 +103,21 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.computeTurn()
     player1.score + player2.score should be > 0
 
+  it should "clear the table after a turn" in :
+    engine.createDeck(suits, List("Ace", "3", "King", "Knight", "Knave"))
+    engine.addPlayers(List(player1, player2))
+    engine.giveCardsToPlayers(5)
+
+    val card1 = player1.hand.view.head
+    engine.playCard(player1, card1)
+    val card2 = player2.hand.view.head
+    engine.playCard(player2, card2)
+
+    engine.setPointRules(List(pointsRule))
+
+    engine.computeTurn()
+    engine.cardsOnTable shouldBe empty
+
   it should "allow to correctly assign winning hand points" in:
     engine.createDeck(suits, List("Ace"))
 
@@ -119,3 +139,6 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   it should "allow to set the briscola suit" in:
     engine.setBriscolaSuit("Cups")
     engine.briscolaSuit shouldBe "Cups"
+
+  it should "allow to set hand rules" in:
+    engine.setHandRules(List(handRule))

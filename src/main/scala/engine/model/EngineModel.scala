@@ -1,6 +1,6 @@
 package engine.model
 
-import dsl.types.{PointsRule, Suits}
+import dsl.types.{HandRule, PointsRule, Suits}
 
 trait EngineModel:
   var players: List[PlayerModel] = List.empty
@@ -10,10 +10,18 @@ trait EngineModel:
   def setStartingPlayer(index: Int): Unit
   def playCard(player: PlayerModel, card: CardModel): Boolean
 
-trait RuleManagement:
-  def canPlayCard(card: CardModel): Boolean = true
+trait HandRuleManagement:
+  table: TableManagement =>
+  var handRules: List[HandRule] = List.empty
 
-trait TableManagement:
+  def setHandRules(rules: List[HandRule]): Unit = this.handRules = rules
+
+  def canPlayCard(playerHand: DeckModel, playedCard: CardModel): Boolean =
+    if handRules.isEmpty then true
+    else
+      handRules.forall(rule => rule(table.cardsOnTable.map(_._2), playerHand, playedCard))
+
+trait TableManagement extends HandRuleManagement:
   var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty
   var pointRules: List[PointsRule] = List.empty
   var briscolaSuit: String = ""
@@ -35,7 +43,7 @@ trait TableManagement:
   def setBriscolaSuit(suit: String): Unit = this.briscolaSuit = suit
 
   private def clearTable(): Unit = cardsOnTable = List.empty
-  
+
   private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
     val points = (for
       card <- cardsOnTable.map(_._2)
@@ -64,11 +72,10 @@ trait DeckManagement:
 class FullEngineModel(val gameName: String)
     extends EngineModel
     with DeckManagement
-    with RuleManagement
     with TableManagement:
 
   override def playCard(player: PlayerModel, card: CardModel): Boolean =
-    if player.eq(activePlayer) && canPlayCard(card) then
+    if player.eq(activePlayer) && canPlayCard(player.hand, card) then
       player.playCard(card)
       addCardToTable(player, card)
       nextPlayerTurn()

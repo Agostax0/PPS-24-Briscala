@@ -2,8 +2,9 @@ package dsl
 
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.PlayRule.{highestCardTakes, highestBriscolaTakes, prevails}
-import dsl.types.{HandSize, PlayerCount, Suits}
+import dsl.types.PlayRule.{highestBriscolaTakes, highestCardTakes, prevails}
+import dsl.types.WinRule.highest
+import dsl.types.{HandSize, PlayerCount, Suits, Team, WinRule}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -241,6 +242,33 @@ class GameDSLTest
       case g: SimpleGameBuilder =>
         a [IllegalArgumentException] should be thrownBy (game has team composedOf(alice, "Charlie"))
       case _ => fail(wrongClassText)
+
+  it should "allow to set a win rule" in :
+    val winRule:(List[Team], List[PlayerModel]) => List[Team] =
+      (team, players)=> team
+
+    val g = game win rules is winRule
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.winRule should be(WinRule(winRule))
+      case _ => fail(wrongClassText)
+
+  it should "allow to set a win rule using advanced syntax" in :
+    val winRule: (List[Team], List[PlayerModel]) => List[Team] =
+      (teams, listOfPlayers) =>
+        given List[Team] = teams
+        given List[PlayerModel] = listOfPlayers
+        highest
+
+    val g = game win rules is winRule
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.winRule should be(WinRule(winRule))
+      case _ => fail(wrongClassText)
+
+
 
 
 

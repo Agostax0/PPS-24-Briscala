@@ -1,6 +1,6 @@
 package dsl
 
-import dsl.types.{PlayRule, HandRule, PointsRule}
+import dsl.types.{PlayRule, HandRule, PointsRule, Team, WinRule}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -130,4 +130,8 @@ class GameBuilderTest
     builder.addTeam(List(alice, bob))
     a[IllegalArgumentException] should be thrownBy builder.addTeam(List(alice, "Charlie"))
 
-
+  it should "allow to add a win rule" in :
+    val winRule: WinRule = WinRule((teams: List[Team], players: List[PlayerModel]) =>
+      teams
+    )
+    builder.addWinRule(winRule)

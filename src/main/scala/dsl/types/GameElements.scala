@@ -168,8 +168,6 @@ object WinRule:
     )
 
     val orderedTeams = teamsWithScores.sortBy(-_._2).map(_._1)
-    println(teamsWithScores)
-    println("Team " + orderedTeams)
     orderedTeams
 
   def lowest(using
@@ -178,15 +176,12 @@ object WinRule:
   ): List[Team] =
     val playerScores = players.map(player => player.name -> player.score).toMap
 
-    // Calculate the total score for each team
     val teamsWithScores = teams.map ( team =>
       val totalScore = team.map(playerName => playerScores.getOrElse(playerName, 0)).sum
       (team, totalScore)
     )
 
-    // Sort the teams by total score in descending order
     val orderedTeams = teamsWithScores.sortBy(_._2).map(_._1)
-    println("Teams: " + orderedTeams)
     orderedTeams
 
   def apply(

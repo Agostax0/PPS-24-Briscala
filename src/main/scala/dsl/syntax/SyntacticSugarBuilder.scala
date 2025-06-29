@@ -134,11 +134,12 @@ object SyntacticSugarBuilder:
       override infix def is(briscola: String)(using
           cardsOnTable: List[(PlayerModel, CardModel)]
       ): Option[PlayerModel] =
-        cardsOnTable
+        val winner = cardsOnTable
           .filter(_._2.suit equals briscola)
-          .sortBy(_._2.rank)
+          .sortBy(_._2.rank)(using Ordering.Int.reverse)
           .map(_._1)
           .headOption
+        winner
 
   trait HighestRankBuilder:
     infix def that(takes: TakesSyntacticSugar): HighestCardBuilder
@@ -182,11 +183,12 @@ object SyntacticSugarBuilder:
           case _: LastCardSyntacticSugar  => cardsOnTable.last._2
           case _ => throw new IllegalArgumentException("Illegal card position")
         val suit = card.suit
-        cardsOnTable
+        val winner = cardsOnTable
           .filter(_._2.suit == suit)
-          .sortBy(_._2.rank)
+          .sortBy(_._2.rank)(using Ordering.Int.reverse)
           .map(_._1)
           .headOption
+        winner
   implicit def highest(suit: SuitSyntacticSugar): HighestSuitBuilder =
     HighestSuitBuilder.apply
   implicit def highest(rank: RankSyntacticSugar): HighestRankBuilder =

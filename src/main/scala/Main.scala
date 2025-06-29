@@ -4,6 +4,9 @@ import dsl.syntax.SyntacticSugar.*
 import dsl.syntax.SyntacticSugarBuilder.highest
 import dsl.types.HandRule.*
 import dsl.types.PlayRule.prevailsOn
+import dsl.types.WinRule.*
+import dsl.types.PlayRule.{highestBriscolaTakes, highestCardTakes, prevails}
+import dsl.types.Team
 import engine.controller.EngineController
 import engine.model.{CardModel, DeckModel, PlayerModel}
 
@@ -49,6 +52,14 @@ def briscola(): GameBuilder =
   game play rules are :
      highestBriscolaTakesRule prevailsOn highestCardTakesRule
 
+  game win rules is :
+    (teams, listOfPlayers) =>
+      given List[Team] = teams
+
+      given List[PlayerModel] = listOfPlayers
+
+      highest
+
   game
 
 def marafone(): GameBuilder =
@@ -59,6 +70,9 @@ def marafone(): GameBuilder =
   game has player called "Bob"
   game has player called "Bob1"
   game has player called "Bob2"
+
+  game has team composedOf("Alice", "Bob")
+  game has team composedOf("Bob1", "Bob2")
 
   game suitsAre("Cups", "Coins", "Swords", "Batons")
   game ranksAre("4", "5", "6", "7", "Knave", "Knight", "King", "Ace", "2", "3")
@@ -94,6 +108,13 @@ def marafone(): GameBuilder =
 
   game play rules are:
     highestBriscolaTakesRule prevailsOn highestCardTakesRule
+
+  game win rules is:
+    (teams, listOfPlayers) =>
+      given List[Team] = teams
+      given List[PlayerModel] = listOfPlayers
+
+      highest
 
   game
 

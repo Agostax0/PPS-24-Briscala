@@ -9,6 +9,19 @@ object PlayerCount:
     require(count >= 2 && count <= 4, "player count should be between 2 and 4")
     count
 
+opaque type Team = List[String]
+object Team:
+  def apply(team: List[String]): Team =
+    require(team.size <= 4)
+    team
+  extension (team: Team)
+    def size: Int = team.size
+    def toSet: Set[String] = team.toSet
+    def zipWithIndex: List[(String, Int)] = team.zipWithIndex
+    def toList: List[String] = team.toList
+    def apply(n: Int): String = team.apply(n)
+    def reduce(f:(String, String)=>String): String = team.reduce(f)
+
 opaque type HandSize = Int
 object HandSize:
   def apply(size: Int): HandSize =
@@ -112,3 +125,52 @@ object PlayRule:
     ): List[(PlayerModel, CardModel)] => Option[PlayerModel] =
       (cardsOnTable: List[(PlayerModel, CardModel)]) =>
         rule(cardsOnTable) orElse other(cardsOnTable)
+
+opaque type WinRule = (List[Team], List[PlayerModel]) => List[Team]
+object WinRule:
+
+  def highest(using
+      teams: List[Team],
+      players: List[PlayerModel]
+  ): List[Team] =
+    val playerScores = players.map(player => player.name -> player.score).toMap
+
+    // Calculate the total score for each team
+    val teamsWithScores = teams.map ( team =>
+      val totalScore = team.map(playerName => playerScores.getOrElse(playerName, 0)).sum
+      (team, totalScore)
+    )
+
+    val orderedTeams = teamsWithScores.sortBy(-_._2).map(_._1)
+    println(teamsWithScores)
+    println("Team " + orderedTeams)
+    orderedTeams
+
+  def lowest(using
+      teams: List[Team],
+      players: List[PlayerModel]
+  ): List[Team] =
+    val playerScores = players.map(player => player.name -> player.score).toMap
+
+    // Calculate the total score for each team
+    val teamsWithScores = teams.map ( team =>
+      val totalScore = team.map(playerName => playerScores.getOrElse(playerName, 0)).sum
+      (team, totalScore)
+    )
+
+    // Sort the teams by total score in descending order
+    val orderedTeams = teamsWithScores.sortBy(_._2).map(_._1)
+    println("Teams: " + orderedTeams)
+    orderedTeams
+
+  def apply(
+      rule: (List[Team], List[PlayerModel]) => List[Team]
+  ): WinRule =
+    rule
+
+  extension (rule: WinRule)
+    def apply(
+        teams: List[Team],
+        players: List[PlayerModel]
+    ): List[Team] =
+      rule(teams, players)

@@ -5,6 +5,9 @@ import dsl.syntax.SyntacticSugar
 import dsl.syntax.SyntacticSugar.*
 import dsl.types.PlayRule.prevailsOn
 import dsl.types.{HandSize, PlayerCount, Suits}
+import dsl.types.PlayRule.{highestBriscolaTakes, highestCardTakes, prevails}
+import dsl.types.WinRule.highest
+import dsl.types.{HandSize, PlayerCount, Suits, Team, WinRule}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -160,7 +163,7 @@ class GameDSLTest
       case _ => fail(wrongClassText)
 
   it should "allow to set a hand rule using advanced syntax" in :
-    import dsl.types.HandRule.*
+    import dsl.types.HandRule._
     val marafoneHandRule: (List[CardModel], DeckModel, CardModel) => Boolean =
       (cardsOnTable, playerHand, playedCard) =>
         given List[CardModel] = cardsOnTable
@@ -185,7 +188,6 @@ class GameDSLTest
       case g: SimpleGameBuilder =>
         g.handRule shouldBe None
       case _ => fail(wrongClassText)
-
 
   it should "allow to create a rule for choosing the player who wins a round" in:
 
@@ -219,6 +221,70 @@ class GameDSLTest
       given List[(PlayerModel, CardModel)] = cards
 
       highest(rank) that takes follows last card suit
+  it should "allow to set teams for existing players" in :
+    val g = game has 2 players
+
+    game has player called alice
+    game has player called bob
+
+    game has team composedOf (alice, bob)
+
+    g match
+      case g: SimpleGameBuilder => g.teams should have size 1
+      case _ => fail(wrongClassText)
+
+  it should "not allow to set teams for non-existing players" in :
+    val g = game has 2 players
+
+    game has player called alice
+    game has player called bob
+
+    g match
+      case g: SimpleGameBuilder =>
+        a [IllegalArgumentException] should be thrownBy (game has team composedOf(alice, "Charlie"))
+      case _ => fail(wrongClassText)
+
+  it should "not allow to set teams for already teamed up players" in :
+    val g = game has 2 players
+
+    game has player called alice
+    game has player called bob
+    game has player called "Charlie"
+
+    game has team composedOf(alice, bob)
+
+    g match
+      case g: SimpleGameBuilder =>
+        a [IllegalArgumentException] should be thrownBy (game has team composedOf(alice, "Charlie"))
+      case _ => fail(wrongClassText)
+
+  it should "allow to set a win rule" in :
+    val winRule:(List[Team], List[PlayerModel]) => List[Team] =
+      (team, players)=> team
+
+    val g = game win rules is winRule
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.winRule should be(WinRule(winRule))
+      case _ => fail(wrongClassText)
+
+  it should "allow to set a win rule using advanced syntax" in :
+    val winRule: (List[Team], List[PlayerModel]) => List[Team] =
+      (teams, listOfPlayers) =>
+        given List[Team] = teams
+        given List[PlayerModel] = listOfPlayers
+        highest
+
+    val g = game win rules is winRule
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.winRule should be(WinRule(winRule))
+      case _ => fail(wrongClassText)
+
+
+
 
     val aliceP = PlayerModel(alice)
     val bobP = PlayerModel(bob)

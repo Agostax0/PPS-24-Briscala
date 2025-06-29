@@ -1,7 +1,7 @@
 package engine.model
 
 import dsl.types.PlayRule.prevailsOn
-import dsl.types.{HandRule, PlayRule, PointsRule, Suits}
+import dsl.types.{HandRule, PlayRule, PointsRule, Suits, Team, WinRule}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -43,7 +43,11 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   it should "allow adding players" in:
     engine.addPlayers(List(player1, player2))
     engine.players should contain theSameElementsAs List(player1, player2)
-    
+
+  it should "allow adding teams" in :
+    engine.addTeams(List(Team(List(player1.name, player2.name))))
+    engine.teams should contain theSameElementsAs List(Team(List(player1.name, player2.name)))
+
   it should "allow creating a deck" in:
     engine.createDeck(suits, ranks)
     engine.deck.size() should be(40)
@@ -223,3 +227,31 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
 
     engine.computeTurn()
     bob.score shouldBe pointsRule.apply("Ace", "Cups") * 2
+
+  it should "allow to set win rule" in:
+
+    val lastPlayerAlwaysWinsRule: PlayRule = PlayRule((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
+    val winRule: WinRule = WinRule((teams: List[Team], players:List[PlayerModel])=>
+      val firstPlayerName = players.maxBy(p => p.score).name
+      val secondPlayerName = players.map(p=>p.name).filter(name=> !name.equals(firstPlayerName)).head
+      List(Team(List(firstPlayerName)), Team(List(secondPlayerName)))
+    )
+
+    engine.createDeck(suits, List("Ace"))
+
+    engine.addPlayers(List(player1, player2))
+    engine.setStartingPlayer(0)
+
+    engine.giveCardsToPlayers(1)
+
+    val card1 = player1.hand.view.head
+    engine.playCard(player1, card1)
+    val card2 = player2.hand.view.head
+    engine.playCard(player2, card2)
+
+    engine.setPointRules(List(pointsRule))
+    engine.setPlayRules(List(lastPlayerAlwaysWinsRule))
+    engine.setWinRule(winRule)
+
+    engine.computeTurn()
+    engine.winningGamePlayers()(0) shouldBe player2.name

@@ -5,6 +5,8 @@ import dsl.syntax.SyntacticSugar.*
 import dsl.syntax.SyntacticSugarBuilder.HighestSuitBuilder.HighestSuitBuilderImpl
 import dsl.syntax.SyntacticSugarBuilder.HighestSuitBuilderWith.HighestSuitBuilderWithImpl
 import dsl.types.{HandRule, PlayRule, PointsRule}
+import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
+import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 
 import scala.language.implicitConversions
@@ -76,6 +78,19 @@ object SyntacticSugarBuilder:
         pointRules.foreach(rule => builder.addPointRule(PointsRule(rule)))
         builder
 
+  trait TeamBuilder:
+    infix def composedOf(name: String*): GameBuilder
+
+  object TeamBuilder:
+    def apply(gameBuilder: GameBuilder): TeamBuilder = new TeamBuilderImpl(
+      gameBuilder
+    )
+
+    private class TeamBuilderImpl(builder: GameBuilder) extends TeamBuilder:
+      override infix def composedOf(names: String*): GameBuilder =
+        builder.addTeam(names.toList)
+        builder
+
   trait HandRuleBuilder:
     infix def are(
         handRules: (List[CardModel], DeckModel, CardModel) => Boolean
@@ -109,6 +124,26 @@ object SyntacticSugarBuilder:
       ): GameBuilder =
         playRules.foreach(rule => builder.addPlayRule(PlayRule(rule)))
         builder
+
+  trait WinRulesBuilder:
+    infix def is(
+        winRules: (List[Team], List[PlayerModel]) => List[Team]
+    ): GameBuilder
+
+  object WinRulesBuilder:
+    def apply(gameBuilder: GameBuilder): WinRulesBuilder =
+      new WinRulesBuilderImpl(
+        gameBuilder
+      )
+
+    private class WinRulesBuilderImpl(builder: GameBuilder)
+        extends WinRulesBuilder:
+      override infix def is(
+          winRules: (List[Team], List[PlayerModel]) => List[Team]
+      ): GameBuilder = {
+        builder.addWinRule(WinRule(winRules))
+        builder
+      }
 
   trait HighestSuitBuilder:
     infix def that(takes: TakesSyntacticSugar): HighestSuitBuilderWith

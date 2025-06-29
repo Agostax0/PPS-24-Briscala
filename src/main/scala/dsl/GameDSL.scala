@@ -203,3 +203,6 @@ object GameDSL:
      */
     infix def play(rules: RulesSyntacticSugar): PlayRulesBuilder =
       PlayRulesBuilder(gameBuilder)
+
+    infix def win(rules: RulesSyntacticSugar): WinRulesBuilder =
+      WinRulesBuilder(gameBuilder)

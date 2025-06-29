@@ -106,8 +106,8 @@ object EngineController:
     private def endGame(): State[Window, Unit] =
       if model.players.forall(_.hand.isEmpty) then
         println("End Game")
-        val winningPlayers = model.winningGamePlayers().map[String](p=> p.name).reduce((a, b)=>a + " " + b)
-        println(winningPlayers)
+        val winningPlayers = model.winningGamePlayers().reduce((a:String, b:String)=>a + " " + b)
+        println("THE WINNER IS: "+winningPlayers)
         view.declareWinner(winningPlayers)
 
         model.players.foreach(player => println(player.score))

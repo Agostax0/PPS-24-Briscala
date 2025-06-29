@@ -216,11 +216,7 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.setPointRules(List(pointsRule))
 
     val firstPlayerAlwaysWinsRule = ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1))
-
-
     val lastPlayerAlwaysWinsRule = ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
-
-
     val playRule = lastPlayerAlwaysWinsRule prevailsOn firstPlayerAlwaysWinsRule
 
     engine.setPlayRules(List(PlayRule(playRule)))

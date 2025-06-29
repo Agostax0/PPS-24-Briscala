@@ -1,14 +1,16 @@
 package dsl
 
 import dsl.GameDSL.*
+import dsl.syntax.SyntacticSugar
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.PlayRule.{highestBriscolaTakes, highestCardTakes, prevailsOn}
+import dsl.types.PlayRule.prevailsOn
 import dsl.types.{HandSize, PlayerCount, Suits}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
-
+import dsl.syntax.SyntacticSugarBuilder.highest
+import scala.language.implicitConversions
 import scala.language.postfixOps
 
 class GameDSLTest
@@ -158,7 +160,7 @@ class GameDSLTest
       case _ => fail(wrongClassText)
 
   it should "allow to set a hand rule using advanced syntax" in :
-    import dsl.types.HandRule._
+    import dsl.types.HandRule.*
     val marafoneHandRule: (List[CardModel], DeckModel, CardModel) => Boolean =
       (cardsOnTable, playerHand, playedCard) =>
         given List[CardModel] = cardsOnTable
@@ -193,25 +195,36 @@ class GameDSLTest
       ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
 
 
-  def cardsOnTable(using List[(PlayerModel, CardModel)]): List[(PlayerModel, CardModel)] => Option[PlayerModel] = ???
   it should "allow to create a play rule using advanced syntax" in:
+    val briscola = "Cups"
 
-//    given List[(PlayerModel, CardModel)] = ???
-//    val highestBriscolaTakes = from cardsOnTable takes highest suit "Cups"
-//
-//    given List[(PlayerModel, CardModel)] = ???
-//    val highestCardTakes = from cardsOnTable takes highest rank of first suit played
+    val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(suit) that takes is briscola
+
+    val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(rank) that takes follows first card suit
 
     game play rules are:
-      ((cards: List[(PlayerModel, CardModel)]) =>
-        given List[(PlayerModel, CardModel)] = cards
-        given String = "Cups"
-        highestBriscolaTakes
-      ).prevailsOn(
-        (cards: List[(PlayerModel, CardModel)]) =>
-          given List[(PlayerModel, CardModel)] = cards
-          highestCardTakes
-      )
+      highestBriscolaTakesRule prevailsOn highestCardTakesRule
 
 
+  it should "allow to create a play rule using card position and rank as a parameter" in:
+    val firstCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(rank) that takes follows first card suit
 
+    val lastCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+
+      highest(rank) that takes follows last card suit
+
+    val aliceP = PlayerModel(alice)
+    val bobP = PlayerModel(bob)
+    val card1 = CardModel("Nine", 9, "Cups")
+    val card2 = CardModel("10", 10, "Batons")
+    val mockTable = List((aliceP, card1), (bobP, card2))
+
+    firstCardSuit(mockTable) should be(Some(aliceP))
+    lastCardSuit(mockTable) should be(Some(bobP))

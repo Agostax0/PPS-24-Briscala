@@ -26,6 +26,7 @@ trait CardViewManager:
   ): State[Frame, Unit] =
     cards = cards.updatedWith(playerName) { case Some(existingCards) =>
       Some(existingCards.filterNot(_ == card))
+      case None => throw new NoSuchElementException("Player Not Found")
     }
     import WindowStateImpl.*
     val componentName = playerName + "_" + card.toString

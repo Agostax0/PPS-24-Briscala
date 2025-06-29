@@ -9,6 +9,11 @@ object SyntacticSugar:
   implicit val starts: StartsSyntacticSugar = StartsSyntacticSugar
   implicit val points: PointsSyntacticSugar = PointsSyntacticSugar
   implicit val rules: RulesSyntacticSugar = RulesSyntacticSugar
+  implicit val takes: TakesSyntacticSugar = TakesSyntacticSugar
+  implicit val suit: SuitSyntacticSugar = SuitSyntacticSugar
+  implicit val rank: RankSyntacticSugar = RankSyntacticSugar
+  implicit val first: CardPositionSyntacticSugar = FirstCardSyntacticSugar
+  implicit val last: CardPositionSyntacticSugar = LastCardSyntacticSugar
 
   trait PlayerSyntacticSugar extends SyntacticSugar
   private object PlayerSyntacticSugar extends PlayerSyntacticSugar
@@ -27,3 +32,21 @@ object SyntacticSugar:
 
   trait RulesSyntacticSugar extends SyntacticSugar
   private object RulesSyntacticSugar extends RulesSyntacticSugar
+
+  trait TakesSyntacticSugar extends SyntacticSugar
+  private object TakesSyntacticSugar extends TakesSyntacticSugar
+
+  trait SuitSyntacticSugar extends SyntacticSugar
+  private object SuitSyntacticSugar extends SuitSyntacticSugar
+
+  trait RankSyntacticSugar extends SyntacticSugar
+  private object RankSyntacticSugar extends RankSyntacticSugar
+
+  sealed trait CardPositionSyntacticSugar extends SyntacticSugar
+  private object CardPositionSyntacticSugar extends CardPositionSyntacticSugar
+
+  trait FirstCardSyntacticSugar extends CardPositionSyntacticSugar
+  private object FirstCardSyntacticSugar extends FirstCardSyntacticSugar
+
+  trait LastCardSyntacticSugar extends CardPositionSyntacticSugar
+  private object LastCardSyntacticSugar extends LastCardSyntacticSugar

@@ -1,5 +1,6 @@
 package dsl.types
 
+import dsl.syntax.SyntacticSugar.{SuitSyntacticSugar, TakesSyntacticSugar}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 
 opaque type PlayerCount = Int
@@ -100,27 +101,6 @@ object PlayRule:
       rule: List[(PlayerModel, CardModel)] => Option[PlayerModel]
   ): PlayRule =
     rule
-
-  def highestBriscolaTakes(using
-      cardsOnTable: List[(PlayerModel, CardModel)]
-  )(using
-      briscola: String
-  ): Option[PlayerModel] =
-    cardsOnTable
-      .filter(_._2.suit equals briscola)
-      .sortBy(_._2.rank)
-      .map(_._1)
-      .headOption
-
-  def highestCardTakes(using
-      cardsOnTable: List[(PlayerModel, CardModel)]
-  ): Option[PlayerModel] =
-    val suit = cardsOnTable.firstCardPlayed.get._2.suit
-    cardsOnTable
-      .filter(_._2.suit == suit)
-      .sortBy(_._2.rank)
-      .map(_._1)
-      .headOption
   extension (rule: PlayRule)
     def apply(
         cardsOnTable: List[(PlayerModel, CardModel)]
@@ -132,9 +112,3 @@ object PlayRule:
     ): List[(PlayerModel, CardModel)] => Option[PlayerModel] =
       (cardsOnTable: List[(PlayerModel, CardModel)]) =>
         rule(cardsOnTable) orElse other(cardsOnTable)
-
-  extension (cardsOnTable: List[(PlayerModel, CardModel)])
-    def firstCardPlayed: Option[(PlayerModel, CardModel)] =
-      cardsOnTable.headOption
-    def lastCardPlayed: Option[(PlayerModel, CardModel)] =
-      cardsOnTable.lastOption

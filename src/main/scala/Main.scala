@@ -1,8 +1,9 @@
 import dsl.{GameBuilder, GameDSL}
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
+import dsl.syntax.SyntacticSugarBuilder.highest
 import dsl.types.HandRule.*
-import dsl.types.PlayRule.{highestCardTakes, highestBriscolaTakes, prevailsOn}
+import dsl.types.PlayRule.prevailsOn
 import engine.controller.EngineController
 import engine.model.{CardModel, DeckModel, PlayerModel}
 
@@ -36,18 +37,17 @@ def briscola(): GameBuilder =
         case "Knave" => 2
         case _ => 0
 
-  val rule1 = (cardsOnTable: List[(PlayerModel, CardModel)]) =>
-    given List[(PlayerModel, CardModel)] = cardsOnTable
-    given String = "Cups"
-    highestBriscolaTakes
-
-  val rule2 = (cards: List[(PlayerModel, CardModel)]) =>
+  val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
     given List[(PlayerModel, CardModel)] = cards
-    highestCardTakes
+    highest(suit) that takes is "Cups"
+
+  val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highest(rank) that takes follows first card suit
 
 
   game play rules are :
-     rule1 prevailsOn rule2
+     highestBriscolaTakesRule prevailsOn highestCardTakesRule
 
   game
 
@@ -84,18 +84,16 @@ def marafone(): GameBuilder =
       freeStart or followFirstSuit
       //marafoneRuleset
 
-  game play rules are :
-    ((cards: List[(PlayerModel, CardModel)]) =>
-      given List[(PlayerModel, CardModel)] = cards
-      given String = "Cups"
+  val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highest(suit) that takes is "Cups"
 
-      highestBriscolaTakes
-      ) prevailsOn (
-      (cards: List[(PlayerModel, CardModel)]) =>
-        given List[(PlayerModel, CardModel)] = cards
+  val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highest(rank) that takes follows first card suit
 
-        highestCardTakes
-    )
+  game play rules are:
+    highestBriscolaTakesRule prevailsOn highestCardTakesRule
 
   game
 

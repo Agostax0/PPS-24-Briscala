@@ -1,6 +1,6 @@
 package engine.model
 
-import dsl.types.PlayRule.prevails
+import dsl.types.PlayRule.prevailsOn
 import dsl.types.{HandRule, PlayRule, PointsRule, Suits}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -221,7 +221,7 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     val lastPlayerAlwaysWinsRule = ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
 
 
-    val playRule = lastPlayerAlwaysWinsRule prevails firstPlayerAlwaysWinsRule
+    val playRule = lastPlayerAlwaysWinsRule prevailsOn firstPlayerAlwaysWinsRule
 
     engine.setPlayRules(List(PlayRule(playRule)))
 

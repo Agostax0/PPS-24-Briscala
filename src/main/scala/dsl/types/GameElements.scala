@@ -127,7 +127,7 @@ object PlayRule:
     ): Option[PlayerModel] =
       rule(cardsOnTable)
   extension (rule: List[(PlayerModel, CardModel)] => Option[PlayerModel])
-    infix def prevails(
+    infix def prevailsOn(
         other: List[(PlayerModel, CardModel)] => Option[PlayerModel]
     ): List[(PlayerModel, CardModel)] => Option[PlayerModel] =
       (cardsOnTable: List[(PlayerModel, CardModel)]) =>

@@ -2,7 +2,7 @@ package dsl
 
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.PlayRule.{highestCardTakes, highestBriscolaTakes, prevails}
+import dsl.types.PlayRule.{highestBriscolaTakes, highestCardTakes, prevailsOn}
 import dsl.types.{HandSize, PlayerCount, Suits}
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
@@ -189,18 +189,25 @@ class GameDSLTest
 
 
     game play rules are:
-      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1)) prevails
+      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1)) prevailsOn
       ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
 
+
+  def cardsOnTable(using List[(PlayerModel, CardModel)]): List[(PlayerModel, CardModel)] => Option[PlayerModel] = ???
   it should "allow to create a play rule using advanced syntax" in:
 
+//    given List[(PlayerModel, CardModel)] = ???
+//    val highestBriscolaTakes = from cardsOnTable takes highest suit "Cups"
+//
+//    given List[(PlayerModel, CardModel)] = ???
+//    val highestCardTakes = from cardsOnTable takes highest rank of first suit played
 
     game play rules are:
       ((cards: List[(PlayerModel, CardModel)]) =>
         given List[(PlayerModel, CardModel)] = cards
         given String = "Cups"
         highestBriscolaTakes
-      ).prevails(
+      ).prevailsOn(
         (cards: List[(PlayerModel, CardModel)]) =>
           given List[(PlayerModel, CardModel)] = cards
           highestCardTakes

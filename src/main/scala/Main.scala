@@ -2,7 +2,7 @@ import dsl.{GameBuilder, GameDSL}
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
 import dsl.types.HandRule.*
-import dsl.types.PlayRule.{highestCardTakes, highestBriscolaTakes, prevails}
+import dsl.types.PlayRule.{highestCardTakes, highestBriscolaTakes, prevailsOn}
 import engine.controller.EngineController
 import engine.model.{CardModel, DeckModel, PlayerModel}
 
@@ -36,16 +36,18 @@ def briscola(): GameBuilder =
         case "Knave" => 2
         case _ => 0
 
+  val rule1 = (cardsOnTable: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cardsOnTable
+    given String = "Cups"
+    highestBriscolaTakes
+
+  val rule2 = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highestCardTakes
+
+
   game play rules are :
-    ((cards: List[(PlayerModel, CardModel)]) =>
-      given List[(PlayerModel, CardModel)] = cards
-      given String = "Cups"
-      highestBriscolaTakes
-      ).prevails(
-      (cards: List[(PlayerModel, CardModel)]) =>
-        given List[(PlayerModel, CardModel)] = cards
-        highestCardTakes
-    )
+     rule1 prevailsOn rule2
 
   game
 
@@ -88,7 +90,7 @@ def marafone(): GameBuilder =
       given String = "Cups"
 
       highestBriscolaTakes
-      ) prevails (
+      ) prevailsOn (
       (cards: List[(PlayerModel, CardModel)]) =>
         given List[(PlayerModel, CardModel)] = cards
 

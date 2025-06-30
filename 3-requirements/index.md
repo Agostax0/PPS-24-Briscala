@@ -24,6 +24,7 @@
     * View the current state of the game
     * Play a card from their hand
     * See the outcome of the turn
+    * See the outcome of the game
 
 ### System Functional Requirements
 * The system should be able to:

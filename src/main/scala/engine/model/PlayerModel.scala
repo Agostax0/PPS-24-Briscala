@@ -24,6 +24,7 @@ object PlayerModel:
     override def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit =
       val cards = deckModel.drawCards(numCards)
       cards.foreach(card => hand.addCard(card))
+      hand.orderHand()
 
 object BotPlayerModel:
   def apply(name: String): BotPlayerModel = BotPlayerModelImpl(name)

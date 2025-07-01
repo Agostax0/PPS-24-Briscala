@@ -2,8 +2,6 @@ package dsl.syntax
 
 import dsl.GameBuilder
 import dsl.syntax.SyntacticSugar.*
-import dsl.syntax.SyntacticSugarBuilder.HighestSuitBuilder.HighestSuitBuilderImpl
-import dsl.syntax.SyntacticSugarBuilder.HighestSuitBuilderWith.HighestSuitBuilderWithImpl
 import dsl.types.{HandRule, PlayRule, PointsRule}
 import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
 import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
@@ -143,32 +141,43 @@ object SyntacticSugarBuilder:
         extends WinRulesBuilder:
       override infix def is(
           winRules: (List[Team], List[PlayerModel]) => List[Team]
-      ): GameBuilder = {
+      ): GameBuilder =
         builder.setWinRule(WinRule(winRules))
         builder
-      }
 
-  trait HighestSuitBuilder:
-    infix def that(takes: TakesSyntacticSugar): HighestSuitBuilderWith
+  trait HighestBuilder:
+    infix def that(takes: TakesSyntacticSugar): HighestCardBuilder
 
-  object HighestSuitBuilder:
-    def apply: HighestSuitBuilder =
-      new HighestSuitBuilderImpl
-    private class HighestSuitBuilderImpl extends HighestSuitBuilder:
-      override infix def that(
-          takes: TakesSyntacticSugar
-      ): HighestSuitBuilderWith =
-        HighestSuitBuilderWith.apply
+  private object HighestBuilder:
+    def apply(filterSyntacticSugar: CardFilterSyntacticSugar): HighestBuilder =
+      new HighestBuilderImpl(filterSyntacticSugar)
+    private class HighestBuilderImpl(
+        val highestTakingCardProperty: CardFilterSyntacticSugar
+    ) extends HighestBuilder:
+      override infix def that(takes: TakesSyntacticSugar): HighestCardBuilder =
+        HighestCardBuilder.apply(highestTakingCardProperty)
 
-  trait HighestSuitBuilderWith:
+  trait HighestCardBuilder:
     infix def is(suit: String)(using
-        cardsOnTable: List[(PlayerModel, CardModel)]
+        List[(PlayerModel, CardModel)]
     ): Option[PlayerModel]
+    infix def follows(
+        cardPosition: CardPositionSyntacticSugar
+    ): HighestCardOfCardPlayedBuilder
+  private object HighestCardBuilder:
+    def apply(
+        highestTakingCardProperty: CardFilterSyntacticSugar
+    ): HighestCardBuilder = new HighestCardBuilderImpl(
+      highestTakingCardProperty
+    )
+    private class HighestCardBuilderImpl(
+        val filterSyntacticSugar: CardFilterSyntacticSugar
+    ) extends HighestCardBuilder:
+      override infix def follows(
+          cardPosition: CardPositionSyntacticSugar
+      ): HighestCardOfCardPlayedBuilder =
+        HighestCardOfCardPlayedBuilder(filterSyntacticSugar, cardPosition)
 
-  object HighestSuitBuilderWith:
-    def apply: HighestSuitBuilderWith =
-      new HighestSuitBuilderWithImpl
-    private class HighestSuitBuilderWithImpl extends HighestSuitBuilderWith:
       override infix def is(briscola: String)(using
           cardsOnTable: List[(PlayerModel, CardModel)]
       ): Option[PlayerModel] =
@@ -178,56 +187,65 @@ object SyntacticSugarBuilder:
           .map(_._1)
           .headOption
         winner
-
-  trait HighestRankBuilder:
-    infix def that(takes: TakesSyntacticSugar): HighestCardBuilder
-
-  private object HighestRankBuilder:
-    def apply: HighestRankBuilder = new HighestRankBuilderImpl
-    private class HighestRankBuilderImpl extends HighestRankBuilder:
-      override infix def that(takes: TakesSyntacticSugar): HighestCardBuilder =
-        HighestCardBuilder.apply
-
-  trait HighestCardBuilder:
-    infix def follows(
-        cardPosition: CardPositionSyntacticSugar
-    ): HighestRankedCardOfCardPlayedBuilder
-  private object HighestCardBuilder:
-    def apply: HighestCardBuilder = new HighestCardBuilderImpl
-    private class HighestCardBuilderImpl extends HighestCardBuilder:
-      override infix def follows(
-          cardPosition: CardPositionSyntacticSugar
-      ): HighestRankedCardOfCardPlayedBuilder =
-        HighestRankedCardOfCardPlayedBuilder(cardPosition)
-
-  trait HighestRankedCardOfCardPlayedBuilder:
-    infix def card(suit: SuitSyntacticSugar)(using
+  trait HighestCardOfCardPlayedBuilder:
+    infix def card(suit: CardFilterSyntacticSugar)(using
         List[(PlayerModel, CardModel)]
     ): Option[PlayerModel]
 
-  private object HighestRankedCardOfCardPlayedBuilder:
+  private object HighestCardOfCardPlayedBuilder:
     def apply(
+        highestTakingCardProperty: CardFilterSyntacticSugar,
         cardPosition: CardPositionSyntacticSugar
-    ): HighestRankedCardOfCardPlayedBuilder =
-      new HighestRankedCardOfCardPlayedBuilderImpl(cardPosition)
-    private class HighestRankedCardOfCardPlayedBuilderImpl(
+    ): HighestCardOfCardPlayedBuilder =
+      new HighestCardOfCardPlayedBuilderImpl(
+        highestTakingCardProperty,
+        cardPosition
+      )
+    private class HighestCardOfCardPlayedBuilderImpl(
+        val highestTakingCardProperty: CardFilterSyntacticSugar,
         val cardPosition: CardPositionSyntacticSugar
-    ) extends HighestRankedCardOfCardPlayedBuilder:
-      override infix def card(suit: SuitSyntacticSugar)(using
-          cardsOnTable: List[(PlayerModel, CardModel)]
+    ) extends HighestCardOfCardPlayedBuilder:
+      override infix def card(cardPositionProperty: CardFilterSyntacticSugar)(
+          using cardsOnTable: List[(PlayerModel, CardModel)]
       ): Option[PlayerModel] =
-        val card = cardPosition match
-          case _: FirstCardSyntacticSugar => cardsOnTable.head._2
-          case _: LastCardSyntacticSugar  => cardsOnTable.last._2
-          case _ => throw new IllegalArgumentException("Illegal card position")
-        val suit = card.suit
+        val card = getCardByPosition(using cardsOnTable)
         val winner = cardsOnTable
-          .filter(_._2.suit == suit)
-          .sortBy(_._2.rank)(using Ordering.Int.reverse)
+          .filterByProperty(card, cardPositionProperty)
+          .sortByHighestProperty
           .map(_._1)
           .headOption
         winner
-  implicit def highest(suit: SuitSyntacticSugar): HighestSuitBuilder =
-    HighestSuitBuilder.apply
-  implicit def highest(rank: RankSyntacticSugar): HighestRankBuilder =
-    HighestRankBuilder.apply
+
+      private def getCardByPosition(using
+          cardsOnTable: List[(PlayerModel, CardModel)]
+      ): CardModel = cardPosition match
+        case _: FirstCardSyntacticSugar => cardsOnTable.head._2
+        case _: LastCardSyntacticSugar  => cardsOnTable.last._2
+        case _ => throw new IllegalArgumentException("Illegal card position")
+
+      extension (cardsOnTable: List[(PlayerModel, CardModel)])
+        private def filterByProperty(
+            card: CardModel,
+            cardPositionProperty: CardFilterSyntacticSugar
+        ): List[(PlayerModel, CardModel)] =
+          cardPositionProperty match
+            case _: SuitSyntacticSugar =>
+              cardsOnTable.filter(_._2.suit equals card.suit)
+            case _: RankSyntacticSugar =>
+              cardsOnTable.filter(_._2.rank equals card.rank)
+            case _ =>
+              throw new IllegalArgumentException("Illegal card property")
+        private def sortByHighestProperty: List[(PlayerModel, CardModel)] =
+          highestTakingCardProperty match
+            case _: SuitSyntacticSugar =>
+              throw new IllegalArgumentException(
+                "There is no explicit suit ordering"
+              )
+            case _: RankSyntacticSugar =>
+              cardsOnTable.sortBy(_._2.rank)(using Ordering.Int.reverse)
+            case _ =>
+              throw new IllegalArgumentException("Illegal card property")
+  implicit def highest(
+      highestTakingCardProperty: CardFilterSyntacticSugar
+  ): HighestBuilder =
+    HighestBuilder.apply(highestTakingCardProperty)

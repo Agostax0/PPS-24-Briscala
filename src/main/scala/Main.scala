@@ -1,5 +1,5 @@
 import dsl.{GameBuilder, GameDSL}
-import dsl.GameDSL.*
+import dsl.GameDSL.{is, *}
 import dsl.syntax.SyntacticSugar.*
 import dsl.syntax.SyntacticSugarBuilder.highest
 import dsl.types.HandRule.*
@@ -41,7 +41,7 @@ def briscola(): GameBuilder =
 
   val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
     given List[(PlayerModel, CardModel)] = cards
-    highest(suit) that takes is "Cups"
+    highest(suit) that takes is briscolaSuit
 
   val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
     given List[(PlayerModel, CardModel)] = cards
@@ -123,7 +123,7 @@ def main(): Unit =
   val briscolaGame: String = "briscola"
   val marafoneGame: String = "marafone"
 
-  val selectedGame = briscolaGame
+  val selectedGame = marafoneGame
 
   val gameConfig = selectedGame match {
     case game if game == briscolaGame => briscola()

@@ -6,22 +6,20 @@ trait EngineModel:
   var players: List[PlayerModel] = List.empty
   var teams: List[Team] = List.empty
   var activePlayer: PlayerModel = _
-  var winRule: WinRule = _
   def addPlayers(players: List[PlayerModel]): Unit
   def addTeams(teams: List[Team]): Unit
   def computeTurn(): Unit
   def setStartingPlayer(index: Int): Unit
   def playCard(player: PlayerModel, card: CardModel): Boolean
   def winningGamePlayers(): Team
-  def setWinRule(rule: WinRule): Unit
 
 class GameContext:
   private var handRuleStrategy: HandRuleStrategy = DefaultHandRuleStrategy()
   private var playRuleStrategy: PlayRuleStrategy = DefaultPlayRuleStrategy()
   private var pointsStrategy: PointsStrategy = DefaultPointsStrategy()
+  private var winRuleStrategy: WinRuleStrategy = DefaultWinRuleStrategy()
 
   var cardsOnTable: List[(PlayerModel, CardModel)] = List.empty
-  var deck: DeckModel = DeckModel()
   var briscolaSuit: String = ""
 
   def setHandRule(rule: HandRule): Unit =
@@ -32,6 +30,9 @@ class GameContext:
 
   def setPointRules(rules: List[PointsRule]): Unit =
     pointsStrategy = CustomPointsStrategy(rules)
+
+  def setWinRule(rule: WinRule): Unit =
+    winRuleStrategy = CustomWinRuleStrategy(rule)
 
   def setBriscolaSuit(suit: String): Unit =
     this.briscolaSuit = suit
@@ -45,11 +46,14 @@ class GameContext:
   def canPlayCard(playerHand: DeckModel, playedCard: CardModel): Boolean =
     handRuleStrategy.canPlayCard(cardsOnTable.map(_._2), playerHand, playedCard)
 
-  def calculateWinningPlayer(): Option[PlayerModel] =
+  def calculateTurn(): Option[PlayerModel] =
     playRuleStrategy.calculateWinningPlayer(cardsOnTable)
 
   def calculatePoints(): Int =
     pointsStrategy.calculatePoints(cardsOnTable.map((player, card) => card))
+
+  def calculateWinner(teams: List[Team], players: List[PlayerModel]): Team =
+    winRuleStrategy.winningGameTeam(teams, players)
 
 class FullEngineModel(
     val gameName: String,
@@ -65,14 +69,11 @@ class FullEngineModel(
       true
     else false
 
-  override def setWinRule(rule: WinRule): Unit =
-    winRule = rule
-
   override def winningGamePlayers(): Team =
-    winRule(this.teams, this.players).head
+    context.calculateWinner(this.teams, this.players)
 
   override def computeTurn(): Unit =
-    context.calculateWinningPlayer() match
+    context.calculateTurn() match
       case Some(winningPlayer) =>
         addScoreToWinningPlayer(winningPlayer)
         setStartingPlayer(players.indexOf(winningPlayer))
@@ -122,6 +123,7 @@ class FullEngineModel(
   def setPlayRules(rules: List[PlayRule]): Unit = context.setPlayRules(rules)
   def setPointRules(rules: List[PointsRule]): Unit =
     context.setPointRules(rules)
+  def setWinRule(rule: WinRule): Unit = context.setWinRule(rule)
   def setBriscolaSuit(suit: String): Unit = context.setBriscolaSuit(suit)
   def giveCardsToPlayers(handSize: Int): Unit =
     players.foreach(player => giveCardsToPlayer(player, handSize))

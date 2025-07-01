@@ -1,6 +1,6 @@
 package engine.model
 
-import dsl.types.{HandRule, PlayRule, PointsRule, Suits}
+import dsl.types.{HandRule, PlayRule, PointsRule, Suits, Team, WinRule}
 
 /** Strategy for hand rules (which cards can be played from hand)
   */
@@ -121,6 +121,45 @@ class CustomPointsStrategy(pointRules: List[PointsRule]) extends PointsStrategy:
       card <- cards
       rule <- pointRules
     yield rule(card.name, card.suit)).sum
+
+/** Strategy for determining the winning team based on the game rules.
+  */
+trait WinRuleStrategy:
+  /** Determines the winning team based on the game rules.
+    * @param teams
+    *   the teams in the game
+    * @param listOfPlayers
+    *   the list of players in the game
+    * @return
+    *   the winning team
+    */
+  def winningGameTeam(
+      teams: List[Team],
+      listOfPlayers: List[PlayerModel]
+  ): Team
+
+/** Default implementation of WinRuleStrategy that uses the highest scoring team
+  * as the winner.
+  */
+class DefaultWinRuleStrategy extends WinRuleStrategy:
+  def winningGameTeam(
+      teams: List[Team],
+      listOfPlayers: List[PlayerModel]
+  ): Team =
+    val rule = WinRule.highest(using teams, listOfPlayers)
+    rule.head
+
+/** Custom implementation of WinRuleStrategy that uses a provided win rule
+  * function.
+  * @param winRule
+  *   the win rule function that determines the winning team
+  */
+class CustomWinRuleStrategy(winRule: WinRule) extends WinRuleStrategy:
+  def winningGameTeam(
+      teams: List[Team],
+      listOfPlayers: List[PlayerModel]
+  ): Team =
+    winRule(teams, listOfPlayers).head
 
 /** Trait for managing the deck of cards in the game.
   */

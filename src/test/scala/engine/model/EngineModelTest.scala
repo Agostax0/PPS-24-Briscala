@@ -1,6 +1,7 @@
 package engine.model
 
 import dsl.types.*
+import dsl.types.PlayRule.prevailsOn
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -159,16 +160,14 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     player2.hand should have size 5
     engine.deck should have size 30
 
-  /*it should "allow players to play a card" in:
+  it should "allow players to play a card" in:
     engine.createDeck(suits, ranks)
     engine.addPlayers(List(player1, player2))
     engine.giveCardsToPlayers(5)
 
     val card = player1.hand.view.head
-    engine.playCard(player1, card)
-
+    engine.playCard(player1, card) should be (true)
     player1.hand should have size 4
-    engine.cardsOnTable should contain (player1 -> card)
 
   it should "allow shuffling the deck" in:
     engine.createDeck(suits, ranks)
@@ -180,19 +179,6 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
 
     initialDeck should not be engine.deck.view
     initialDeck should contain theSameElementsAs engine.deck.view
-
-  it should "allow to add points to cards" in:
-    engine.createDeck(suits, ranks)
-    engine.addPlayers(List(player1, player2))
-    engine.giveCardsToPlayers(5)
-
-    val pointRule: PointsRule = PointsRule((name: String, suit: String) => if (name == "Ace") 11 else 0)
-
-    engine.setPointRules(
-      List(
-        pointRule
-      )
-    )
 
   it should "allow computing the turn" in:
     engine.createDeck(suits, List("Ace"))
@@ -210,21 +196,6 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.computeTurn()
     player1.score + player2.score should be > 0
 
-  it should "clear the table after a turn" in :
-    engine.createDeck(suits, List("Ace"))
-    engine.addPlayers(List(player1, player2))
-    engine.giveCardsToPlayers(1)
-
-    val card1 = player1.hand.view.head
-    engine.playCard(player1, card1)
-    val card2 = player2.hand.view.head
-    engine.playCard(player2, card2)
-
-    engine.setPlayRules(List(firstPlayerAlwaysWinsRule))
-    engine.setPointRules(List(pointsRule))
-
-    engine.computeTurn()
-    engine.cardsOnTable shouldBe empty
 
   it should "allow to correctly assign winning hand points" in:
     engine.createDeck(suits, List("Ace"))
@@ -245,16 +216,12 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.computeTurn()
     player1.score shouldBe pointsRule.apply("Ace", "Cups") * 2
 
-  it should "allow to set the briscola suit" in:
-    engine.setBriscolaSuit("Cups")
-    engine.briscolaSuit shouldBe "Cups"
-
   it should "allow to set hand rules" in:
     val playOnlySameSuitRule: HandRule = HandRule((cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel) =>
       cardsOnTable.isEmpty ||
         cardsOnTable.head.suit == playedCard.suit
     )
-    engine.setHandRules(playOnlySameSuitRule)
+    engine.setHandRule(playOnlySameSuitRule)
     engine.createDeck(suits, List("Ace"))
 
     engine.addPlayers(List(player1, player2))
@@ -266,9 +233,6 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.playCard(player1, card1)
     val card2 = player2.hand.view.head
     engine.playCard(player2, card2) shouldBe false
-
-  it should "allow to set play rules" in:
-    engine.setPlayRules(List(firstPlayerAlwaysWinsRule))
 
   it should "correctly apply the play rule" in:
     //forced the last player to win this turn
@@ -319,7 +283,7 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
 
     val firstPlayerAlwaysWinsRule = ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1))
     val lastPlayerAlwaysWinsRule = ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
-    val playRule = lastPlayerAlwaysWinsRule prevailsOn firstPlayerAlwaysWinsRule
+    val playRule = lastPlayerAlwaysWinsRule  prevailsOn firstPlayerAlwaysWinsRule
 
     engine.setPlayRules(List(PlayRule(playRule)))
 
@@ -352,4 +316,4 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.setWinRule(winRule)
 
     engine.computeTurn()
-    engine.winningGamePlayers()(0) shouldBe player2.name*/
+    engine.winningGamePlayers()(0) shouldBe player2.name

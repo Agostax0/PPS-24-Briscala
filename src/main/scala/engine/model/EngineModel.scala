@@ -2,16 +2,7 @@ package engine.model
 
 import dsl.types.*
 
-trait EngineModel:
-  var players: List[PlayerModel] = List.empty
-  var teams: List[Team] = List.empty
-  var activePlayer: PlayerModel = _
-  def addPlayers(players: List[PlayerModel]): Unit
-  def addTeams(teams: List[Team]): Unit
-  def computeTurn(): Unit
-  def setStartingPlayer(index: Int): Unit
-  def playCard(player: PlayerModel, card: CardModel): Boolean
-  def winningGamePlayers(): Team
+import scala.collection.immutable.List
 
 class GameContext:
   private var handRuleStrategy: HandRuleStrategy = DefaultHandRuleStrategy()
@@ -55,35 +46,28 @@ class GameContext:
   def calculateWinner(teams: List[Team], players: List[PlayerModel]): Team =
     winRuleStrategy.winningGameTeam(teams, players)
 
+trait EngineModel:
+  var players: List[PlayerModel] = List.empty
+  var teams: List[Team] = List.empty
+  var activePlayer: PlayerModel = _
+
+  def addPlayers(players: List[PlayerModel]): Unit
+
+  def addTeams(teams: List[Team]): Unit
+
+  def computeTurn(): Unit
+
+  def setStartingPlayer(index: Int): Unit
+
+  def playCard(player: PlayerModel, card: CardModel): Boolean
+
+  def winningGamePlayers(): Team
+
 class FullEngineModel(
     val gameName: String,
     private val context: GameContext = GameContext()
 ) extends EngineModel
     with DeckManagement:
-
-  override def playCard(player: PlayerModel, card: CardModel): Boolean =
-    if player.eq(activePlayer) && context.canPlayCard(player.hand, card) then
-      player.playCard(card)
-      context.addCardToTable(player, card)
-      nextPlayerTurn()
-      true
-    else false
-
-  override def winningGamePlayers(): Team =
-    context.calculateWinner(this.teams, this.players)
-
-  override def computeTurn(): Unit =
-    context.calculateTurn() match
-      case Some(winningPlayer) =>
-        addScoreToWinningPlayer(winningPlayer)
-        setStartingPlayer(players.indexOf(winningPlayer))
-      case None =>
-        throw new IllegalStateException("No winning player found")
-
-  private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
-    val points = context.calculatePoints()
-    winningPlayer.increaseScore(points)
-    context.clearTable()
 
   override def addPlayers(players: List[PlayerModel]): Unit =
     this.players = players
@@ -114,6 +98,30 @@ class FullEngineModel(
 
   override def setStartingPlayer(index: Int): Unit =
     activePlayer = players(index)
+
+  override def playCard(player: PlayerModel, card: CardModel): Boolean =
+    if player.eq(activePlayer) && context.canPlayCard(player.hand, card) then
+      player.playCard(card)
+      context.addCardToTable(player, card)
+      nextPlayerTurn()
+      true
+    else false
+
+  override def computeTurn(): Unit =
+    context.calculateTurn() match
+      case Some(winningPlayer) =>
+        addScoreToWinningPlayer(winningPlayer)
+        setStartingPlayer(players.indexOf(winningPlayer))
+        context.clearTable()
+      case None =>
+        throw new IllegalStateException("No winning player found for the turn")
+
+  override def winningGamePlayers(): Team =
+    context.calculateWinner(this.teams, this.players)
+
+  private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
+    val points = context.calculatePoints()
+    winningPlayer.increaseScore(points)
 
   private def nextPlayerTurn(): Unit =
     val playerIndex = (players.indexOf(activePlayer) + 1) % players.size

@@ -1,27 +1,14 @@
 package dsl
 
-import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, PointsSyntacticSugar, RulesSyntacticSugar, StartsSyntacticSugar}
+import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, PointsSyntacticSugar, RulesSyntacticSugar, StartsSyntacticSugar, TeamSyntacticSugar}
 import dsl.syntax.SyntacticSugarBuilder.*
-import dsl.syntax.SyntacticSugar.{
-  PlayerSyntacticSugar,
-  PointsSyntacticSugar,
-  StartsSyntacticSugar,
-  TeamSyntacticSugar
-}
-import dsl.syntax.SyntacticSugarBuilder.{
-  HandBuilder,
-  PlayerBuilder,
-  PlayerCountBuilder,
-  PointsBuilder,
-  StartingTurnBuilder,
-  TeamBuilder
-}
 
 object GameDSL:
   private var builder: GameBuilder = _
 
   def apply(gameBuilder: GameBuilder): Unit = builder = gameBuilder
   implicit def game: GameBuilder = builder
+  implicit def briscolaSuit: String = builder.briscola
 
   extension (gameBuilder: GameBuilder)
 
@@ -86,7 +73,7 @@ object GameDSL:
       *   The builder for the game
       */
     infix def suitsAre(suits: String*): GameBuilder =
-      gameBuilder.addSuits(suits.toList)
+      gameBuilder.setSuits(suits.toList)
 
     /** Adds the cards to build the deck, creating a card for every suit.
      *
@@ -101,7 +88,7 @@ object GameDSL:
      * The builder for the game
      */
     infix def ranksAre(ranks: String*): GameBuilder =
-      gameBuilder.addRanks(ranks.toList)
+      gameBuilder.setRanks(ranks.toList)
 
 
     /** Sets the number of cards to be given to each player at the start of each turns
@@ -166,7 +153,7 @@ object GameDSL:
      * The builder for the game
      */
     infix def briscolaIs(suit: String): GameBuilder =
-      gameBuilder.addBriscolaSuit(suit)
+      gameBuilder.setBriscolaSuit(suit)
 
     /** Sets the rules for the hand of cards (which cards can be played and which not)
      *

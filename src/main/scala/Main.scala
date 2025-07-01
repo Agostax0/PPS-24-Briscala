@@ -99,7 +99,7 @@ def marafone(): GameBuilder =
 
   val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
     given List[(PlayerModel, CardModel)] = cards
-    highest(suit) that takes is "Cups"
+    highest(suit) that takes is briscolaSuit
 
   val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
     given List[(PlayerModel, CardModel)] = cards
@@ -123,7 +123,7 @@ def main(): Unit =
   val briscolaGame: String = "briscola"
   val marafoneGame: String = "marafone"
 
-  val selectedGame = briscolaGame // oppure "marafone"
+  val selectedGame = briscolaGame
 
   val gameConfig = selectedGame match {
     case game if game == briscolaGame => briscola()

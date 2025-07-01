@@ -1,22 +1,32 @@
 package dsl
 
-import dsl.types.{HandRule, HandSize, PlayRule, PlayerCount, PointsRule, Suits, Team, WinRule}
+import dsl.types.{
+  HandRule,
+  HandSize,
+  PlayRule,
+  PlayerCount,
+  PointsRule,
+  Suits,
+  Team,
+  WinRule
+}
 import engine.model.{FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
   val gameName: String
   def addPlayer(name: String): GameBuilder
   def setPlayers(n: Int): GameBuilder
-  def addSuits(suits: List[String]): GameBuilder
-  def addRanks(ranks: List[String]): GameBuilder
+  def setSuits(suits: List[String]): GameBuilder
+  def setRanks(ranks: List[String]): GameBuilder
   def setPlayersHands(handSize: Int): GameBuilder
   def setStartingPlayer(name: String): GameBuilder
-  def addPointRule(rule: PointsRule): GameBuilder
-  def addPlayRule(rule: PlayRule): GameBuilder
-  def addHandRule(rule: HandRule): GameBuilder
-  def addWinRule(rule: WinRule): GameBuilder
-  def addBriscolaSuit(suit: String): GameBuilder
+  def setPointRule(rule: PointsRule): GameBuilder
+  def setPlayRule(rule: PlayRule): GameBuilder
+  def setHandRule(rule: HandRule): GameBuilder
+  def setWinRule(rule: WinRule): GameBuilder
   def addTeam(names: List[String]): GameBuilder
+  def setBriscolaSuit(suit: String): GameBuilder
+  def briscola: String = ""
   def build(): FullEngineModel
 
 object GameBuilder:
@@ -32,9 +42,11 @@ object GameBuilder:
     private var pointRules: List[PointsRule] = List.empty
     private var playRules: List[PlayRule] = List.empty
     private var winRule: WinRule = _
-    private var briscolaSuit: String = ""
     private var teams: List[Team] = List.empty
     private var handRule: Option[HandRule] = None
+    private var briscolaSuit: String = ""
+
+    override def briscola: String = this.briscolaSuit
 
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
@@ -58,11 +70,11 @@ object GameBuilder:
       playerCount = PlayerCount(n)
       this
 
-    override def addSuits(suits: List[String]): GameBuilder =
+    override def setSuits(suits: List[String]): GameBuilder =
       this.suits = Suits(suits)
       this
 
-    override def addRanks(ranks: List[String]): GameBuilder =
+    override def setRanks(ranks: List[String]): GameBuilder =
       this.ranks = ranks
       this
 
@@ -80,25 +92,28 @@ object GameBuilder:
         case _ => Some(players.map(_.name).indexOf(name))
       this
 
-    override def addPointRule(rule: PointsRule): GameBuilder =
+    override def setPointRule(rule: PointsRule): GameBuilder =
       this.pointRules = this.pointRules :+ rule
       this
 
-    override def addPlayRule(rule: PlayRule): GameBuilder =
+    override def setPlayRule(rule: PlayRule): GameBuilder =
       this.playRules = this.playRules :+ rule
       this
 
-    override def addWinRule(rule: WinRule): GameBuilder =
+    override def setWinRule(rule: WinRule): GameBuilder =
       this.winRule = rule
       this
 
-    override def addBriscolaSuit(suit: String): GameBuilder =
-      if !this.suits.contains(suit) then
+    private def briscola_=(newBriscolaSuit: String): Unit =
+      if !this.suits.contains(newBriscolaSuit) then
         throw new IllegalArgumentException("Briscola suit is not defined")
-      else this.briscolaSuit = suit
+      else this.briscolaSuit = newBriscolaSuit
+
+    override def setBriscolaSuit(suit: String): GameBuilder =
+      briscola = suit
       this
 
-    override def addHandRule(rule: HandRule): GameBuilder =
+    override def setHandRule(rule: HandRule): GameBuilder =
       this.handRule = Some(rule)
       this
 
@@ -117,7 +132,7 @@ object GameBuilder:
       game.setWinRule(winRule)
       game.setBriscolaSuit(briscolaSuit)
       handRule match
-        case Some(rule) => game.setHandRules(rule)
+        case Some(rule) => game.setHandRule(rule)
         case None       =>
       game
 
@@ -159,11 +174,11 @@ class SimpleGameBuilder extends GameBuilder:
     playerCount = PlayerCount(n)
     this
 
-  override def addSuits(suits: List[String]): GameBuilder =
+  override def setSuits(suits: List[String]): GameBuilder =
     this.suits = Suits(suits)
     this
 
-  override def addRanks(ranks: List[String]): GameBuilder =
+  override def setRanks(ranks: List[String]): GameBuilder =
     this.ranks = ranks
     this
 
@@ -181,23 +196,23 @@ class SimpleGameBuilder extends GameBuilder:
       case _ => Some(players.map(_.name).indexOf(name))
     this
 
-  override def addPointRule(rule: PointsRule): GameBuilder =
+  override def setPointRule(rule: PointsRule): GameBuilder =
     this.pointRules = this.pointRules :+ rule
     this
 
-  override def addPlayRule(rule: PlayRule): GameBuilder =
+  override def setPlayRule(rule: PlayRule): GameBuilder =
     this.playRules = this.playRules :+ rule
     this
 
-  override def addWinRule(rule: WinRule): GameBuilder =
+  override def setWinRule(rule: WinRule): GameBuilder =
     this.winRule = rule
     this
 
-  override def addBriscolaSuit(suit: String): GameBuilder =
+  override def setBriscolaSuit(suit: String): GameBuilder =
     this.briscolaSuit = suit
     this
 
-  override def addHandRule(rule: HandRule): GameBuilder =
+  override def setHandRule(rule: HandRule): GameBuilder =
     this.handRule = Some(rule)
     this
 

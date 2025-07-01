@@ -50,15 +50,15 @@ class GameBuilderTest
 
   it should "allow to add ranks" in:
     val ranks = List("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
-    builder.addRanks(ranks)
+    builder.setRanks(ranks)
 
   it should "allow to add suits" in:
     val suits = List("Cups", "Coins", "Swords", "Batons")
-    builder.addSuits(suits)
+    builder.setSuits(suits)
 
   it should "allow only 4 suits" in:
     val suits = List("Cups", "Coins", "Swords", "Batons", "Stars")
-    a [IllegalArgumentException] should be thrownBy builder.addSuits(suits)
+    a [IllegalArgumentException] should be thrownBy builder.setSuits(suits)
 
   it should "allow to set only valid players hands" in:
     val handSize = 2
@@ -87,30 +87,30 @@ class GameBuilderTest
 
   it should "allow to add a point rule" in:
     val pointRule: PointsRule = PointsRule((name: String, suit: String) => if (name == "Ace") 11 else 0)
-    builder.addPointRule(pointRule)
+    builder.setPointRule(pointRule)
 
   it should "allow to add a briscola suit" in:
     val suits = List("Cups", "Coins", "Swords", "Batons")
     val briscolaSuit = "Cups"
-    builder.addSuits(suits)
-    builder.addBriscolaSuit(briscolaSuit)
+    builder.setSuits(suits)
+    builder.setBriscolaSuit(briscolaSuit)
 
   it should "not allow to add a briscola suit that is not in the list of suits" in:
     val suits = List("Cups", "Coins", "Swords", "Batons")
     val briscolaSuit = "Stars"
-    builder.addSuits(suits)
-    a [IllegalArgumentException] should be thrownBy builder.addBriscolaSuit(briscolaSuit)
+    builder.setSuits(suits)
+    a [IllegalArgumentException] should be thrownBy builder.setBriscolaSuit(briscolaSuit)
 
   it should "allow to add a hand rule" in:
     val handRule: HandRule = HandRule((cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel) =>
       cardsOnTable.isEmpty ||
         cardsOnTable.head.suit == playedCard.suit
     )
-    builder.addHandRule(handRule)
+    builder.setHandRule(handRule)
 
   it should "allow to add a play rule" in:
     val rule: PlayRule = PlayRule((cards: List[(PlayerModel,CardModel)]) => Some(cards.head._1))
-    builder.addPlayRule(rule)
+    builder.setPlayRule(rule)
 
   it should "allow a team to be created" in :
     builder.addPlayer(alice)
@@ -134,4 +134,4 @@ class GameBuilderTest
     val winRule: WinRule = WinRule((teams: List[Team], players: List[PlayerModel]) =>
       teams
     )
-    builder.addWinRule(winRule)
+    builder.setWinRule(winRule)

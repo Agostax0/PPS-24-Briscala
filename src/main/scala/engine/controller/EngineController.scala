@@ -73,7 +73,7 @@ object EngineController:
               println(s"Error parsing event: $error")
               unitState()
             case Right(CardPlayedEvent(playerName, card)) =>
-              handleCardPlayed(playerName, card)
+              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)
             case _ =>
               println("Invalid event received")
               unitState()

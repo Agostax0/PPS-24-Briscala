@@ -76,7 +76,6 @@ class FullEngineModel(
   override def addTeams(teams: List[Team]): Unit =
     if teams.isEmpty then
       this.teams = players.map(player => List(player.name).asInstanceOf[Team])
-      println(this.teams)
     else
       val existingPlayers = teams.flatMap(Team.toList).toSet
       val missingPlayers =
@@ -84,7 +83,6 @@ class FullEngineModel(
       val missingTeams =
         missingPlayers.map(player => List(player).asInstanceOf[Team])
       this.teams = teams ++ missingTeams
-      println(this.teams)
 
     if this.players.size == 4 && this.teams.size == 2 && this.teams.head.size == 2 then
       val playersOrder = List(
@@ -94,7 +92,6 @@ class FullEngineModel(
         this.teams(1)(1)
       )
       this.players = players.sortBy(player => playersOrder.indexOf(player.name))
-      println(this.players)
 
   override def setStartingPlayer(index: Int): Unit =
     activePlayer = players(index)

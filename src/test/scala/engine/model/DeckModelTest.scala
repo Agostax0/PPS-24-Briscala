@@ -35,12 +35,12 @@ class DeckModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAfter
     deck.drawCards(1) should be(List(card))
     deck.isEmpty should be(true)
 
-  it should "throw an exception when drawing from an empty deck" in:
-    an[NoSuchElementException] should be thrownBy deck.drawCards(1)
+  it should "return an empty list when drawing from an empty deck" in:
+    deck.drawCards(1) shouldBe List.empty
 
-  it should "throw an exception when drawing more cards than available" in:
+  it should "return an empty list when drawing more cards than available" in:
     deck.addCard(card)
-    an[NoSuchElementException] should be thrownBy deck.drawCards(2)
+    deck.drawCards(2) shouldBe List.empty
 
   it should "allow removing a card" in:
     deck.addCard(card)

@@ -75,7 +75,7 @@ object SyntacticSugarBuilder:
       override infix def are(
           pointRules: ((String, String) => Int)*
       ): GameBuilder =
-        pointRules.foreach(rule => builder.addPointRule(PointsRule(rule)))
+        pointRules.foreach(rule => builder.setPointRule(PointsRule(rule)))
         builder
 
   trait TeamBuilder:
@@ -105,7 +105,7 @@ object SyntacticSugarBuilder:
       override infix def are(
           handRules: (List[CardModel], DeckModel, CardModel) => Boolean
       ): GameBuilder =
-        builder.addHandRule(HandRule(handRules))
+        builder.setHandRule(HandRule(handRules))
         builder
 
   trait PlayRulesBuilder:
@@ -122,7 +122,7 @@ object SyntacticSugarBuilder:
       override infix def are(
           playRules: (List[(PlayerModel, CardModel)] => Option[PlayerModel])*
       ): GameBuilder =
-        playRules.foreach(rule => builder.addPlayRule(PlayRule(rule)))
+        playRules.foreach(rule => builder.setPlayRule(PlayRule(rule)))
         builder
 
   trait WinRulesBuilder:
@@ -141,7 +141,7 @@ object SyntacticSugarBuilder:
       override infix def is(
           winRules: (List[Team], List[PlayerModel]) => List[Team]
       ): GameBuilder = {
-        builder.addWinRule(WinRule(winRules))
+        builder.setWinRule(WinRule(winRules))
         builder
       }
 

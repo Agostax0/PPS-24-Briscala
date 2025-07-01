@@ -123,7 +123,7 @@ def main(): Unit =
   val briscolaGame: String = "briscola"
   val marafoneGame: String = "marafone"
 
-  val selectedGame = briscolaGame
+  val selectedGame = marafoneGame
 
   val gameConfig = selectedGame match {
     case game if game == briscolaGame => briscola()

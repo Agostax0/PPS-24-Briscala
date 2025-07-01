@@ -3,15 +3,10 @@ package engine.controller
 import engine.controller.EventParser.parseEvent
 import engine.model.{BotPlayerModel, CardModel, FullEngineModel, PlayerModel}
 import engine.view.EngineView
-import engine.view.WindowStateImpl.{Window, initialWindow, removeComponentFromPanel}
+import engine.view.WindowStateImpl.{Window, initialWindow}
 import engine.view.monads.States.State
 import engine.view.ElementsPositionManager.*
 import engine.view.monads.Monads.Monad.seqN
-
-case class ControllerState(
-  currentRound: Int = 0,
-  playerTurn: Int = 0
-)
 
 sealed trait GameEvent
 case class CardPlayedEvent(playerName: String, card: CardModel) extends GameEvent
@@ -19,11 +14,11 @@ case object InvalidEvent extends GameEvent
 
 object EventParser:
   def parseEvent(event: String): Either[String, GameEvent] =
-    event.split("_").toList match
+    event.split("::").toList match
       case playerName :: cardInfo :: Nil =>
         parseCard(cardInfo).map(card => CardPlayedEvent(playerName, card))
       case _ =>
-        Left(s"Invalid event format: expected 'playerName_cardInfo', got '$event'")
+        Left(s"Invalid event format: expected 'playerName::cardInfo', got '$event'")
 
   private def parseCard(cardInfo: String): Either[String, CardModel] =
     cardInfo.split(" ").toList match
@@ -51,15 +46,6 @@ object EngineController:
     private var totalRounds: Int = 0
     private var playerTurn: Int = 0
 
-    private def updateControllerState[A]
-    (f: ControllerState => (ControllerState, A)): State[ControllerState, A] = State(f)
-
-    private def getControllerState: State[ControllerState, ControllerState] =
-      State(s => (s, s))
-
-    private def setControllerState(newState: ControllerState): State[ControllerState, Unit] =
-      State(_ => (newState, ()))
-
     override def start(): Unit =
       val initialState =
         for
@@ -70,16 +56,10 @@ object EngineController:
               for
                 _ <- view.addPlayer(player.name, model.players.size)
                 _ <- state
-                _ <- player.hand.view.foldLeft(unitState(): State[Window, Unit]):
-                  (nestedState, card) =>
-                    for
-                      _ <- nestedState
-                      _ <- view.addCardToPlayer(player.name, card)
-                    yield ()
+                _ <- renderHand(player)
               yield ()
           _ <- checkBot()
         yield ()
-
 
       val windowCreation = initialState.flatMap(_ => view.show)
 
@@ -103,21 +83,19 @@ object EngineController:
 
     private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] = 
       val card: CardModel = bot.generateCard()
-
       handleCardPlayed(bot.name, card)
-    
-    
-    private def checkBot():State[Window, Unit] =
+
+    private def checkBot(): State[Window, Unit] =
       model.activePlayer match 
         case bot: BotPlayerModel => playCardProgrammatically(bot)
         case _ => unitState()
       
-      
     private def handleCardPlayed(playerName: String, card: CardModel): State[Window, Unit] =
       model.players.find(playerName == _.name) match
-        case Some(player) =>
-          playCard(player, card)
-        case _ => throw new NoSuchElementException("Player Not Found")
+        case Some(player) => playCard(player, card)
+        case None =>
+          println(s"Player $playerName not found.")
+          unitState()
 
     private def resetTurn(): Unit =
       playerTurn = 0
@@ -131,12 +109,7 @@ object EngineController:
             for
               _ <- state
               _ <- view.removeCardsFromPlayer(player.name)
-              _ <- player.hand.view.foldLeft(unitState(): State[Window, Unit]):
-                (nestedState, card) =>
-                  for
-                    _ <- nestedState
-                    _ <- view.addCardToPlayer(player.name, card)
-                  yield ()
+              _ <- renderHand(player)
             yield()
       yield()
 
@@ -160,12 +133,10 @@ object EngineController:
     private def endGame(): State[Window, Unit] =
       if model.players.forall(_.hand.isEmpty) then
         val winningPlayers = model.winningGamePlayers().reduce((a:String, b:String)=>a + " " + b)
-        println("THE WINNER IS: "+winningPlayers)
-        view.declareWinner(winningPlayers)
-
+        println("THE WINNER IS: " + winningPlayers)
         model.players.foreach(player =>
           println(player.name + ": " + player.score + " points"))
-        view.declareWinner(model.activePlayer.name)
+        view.declareWinner(winningPlayers)
 
       unitState()
 
@@ -182,3 +153,11 @@ object EngineController:
         unitState()
 
     private def unitState(): State[Window, Unit] = State(s => (s, ()))
+
+    private def renderHand(player: PlayerModel): State[Window, Unit] =
+      player.hand.view.foldLeft(unitState(): State[Window, Unit]):
+        (nestedState, card) =>
+        for
+          _ <- nestedState
+          _ <- view.addCardToPlayer(player.name, card)
+        yield ()

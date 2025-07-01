@@ -29,7 +29,7 @@ trait CardViewManager:
       case None => throw new NoSuchElementException("Player Not Found")
     }
     import WindowStateImpl.*
-    val componentName = playerName + "_" + card.toString
+    val componentName = playerName + "::" + card.toString
     for _ <- removeComponentFromPanel(componentName, playerName)
     yield ()
 
@@ -37,7 +37,7 @@ trait CardViewManager:
     import WindowStateImpl.*
     State(frame =>
       cards(playerName).foreach(card =>
-        val componentName = playerName + "_" + card.toString
+        val componentName = playerName + "::" + card.toString
         removeComponentFromPanel(componentName, playerName)(frame)
       )
       (frame, ())
@@ -50,7 +50,7 @@ trait CardViewManager:
     import WindowStateImpl.*
     val cardInfo =
       "<html><body>" + card.name + "<br>" + card.suit + "</body></html>"
-    val componentName = playerName + "_" + card.toString
+    val componentName = playerName + "::" + card.toString
     for
       _ <- addButton(cardInfo, componentName)
       _ <- moveComponentIntoPanel(componentName, playerName)

@@ -8,6 +8,7 @@ trait DeckModel:
   def shuffle()(using random: scala.util.Random): Unit
   def drawCards(numCards: Int): List[CardModel]
   def isEmpty: Boolean
+  def orderHand(): Unit
 
 object DeckModel:
   def apply(): DeckModel = DeckModelImpl()
@@ -32,10 +33,13 @@ object DeckModel:
 
     override def drawCards(numCards: Int): List[CardModel] =
       if cards.isEmpty || cards.size < numCards then
-        throw new NoSuchElementException("Not enough cards left in the deck")
+        List.empty
       else
-        val card = cards.take(numCards)
+        val drawnCards = cards.take(numCards)
         cards = cards.drop(numCards)
-        card
+        drawnCards
 
     override def isEmpty: Boolean = cards.isEmpty
+
+    override def orderHand(): Unit =
+      cards = cards.sortBy(card => (card.suit, card.rank))

@@ -61,6 +61,7 @@ object EngineController:
           _ <- checkBot()
         yield ()
 
+
       val windowCreation = initialState.flatMap(_ => view.show)
 
       val windowEventsHandler: State[Window, Unit] = for
@@ -72,7 +73,7 @@ object EngineController:
               println(s"Error parsing event: $error")
               unitState()
             case Right(CardPlayedEvent(playerName, card)) =>
-              handleCardPlayed(playerName, card)
+              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)
             case _ =>
               println("Invalid event received")
               unitState()
@@ -81,16 +82,24 @@ object EngineController:
 
       windowEventsHandler.run(initialWindow)
 
-    private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] = 
-      val card: CardModel = bot.generateCard()
-      handleCardPlayed(bot.name, card)
+    private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] =
+      val card: CardModel = model.botPlayCard(bot)
+      println("CARD BY BOT: " + card.name + " " + card.suit)
+      for
+        _ <- handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
+      yield()
 
-    private def checkBot(): State[Window, Unit] =
-      model.activePlayer match 
-        case bot: BotPlayerModel => playCardProgrammatically(bot)
+    private def checkBot():State[Window, Unit] = {
+      println("CHECKBOT: "+model.activePlayer.name)
+
+      model.activePlayer match
+        case bot: BotPlayerModel if bot.hand.view.nonEmpty => playCardProgrammatically(bot)
         case _ => unitState()
-      
-    private def handleCardPlayed(playerName: String, card: CardModel): State[Window, Unit] =
+    }
+
+
+    private def handleCardPlayed(playerName: String, name: String , rank: String, suit: String): State[Window, Unit] =
+      val card = CardModel(name, rank.toInt, suit)
       model.players.find(playerName == _.name) match
         case Some(player) => playCard(player, card)
         case None =>
@@ -127,7 +136,6 @@ object EngineController:
         yield()
       else {
         checkBot()
-        unitState()
       }
 
     private def endGame(): State[Window, Unit] =

@@ -23,15 +23,18 @@ object SyntacticSugarBuilder:
       infix def players: GameBuilder =
         gameBuilder.setPlayers(playerCount)
 
-  trait PlayerBuilder:
+  trait EntityBuilder:
     infix def called(name: String): GameBuilder
-  object PlayerBuilder:
-    def apply(gameBuilder: GameBuilder): PlayerBuilder =
-      new PlayerBuilderImpl(gameBuilder)
-    private class PlayerBuilderImpl(gameBuilder: GameBuilder)
-        extends PlayerBuilder:
+  object EntityBuilder:
+    def apply(gameBuilder: GameBuilder, entity: EntitySyntacticSugar): EntityBuilder =
+      new EntityBuilderImpl(gameBuilder, entity)
+    private class EntityBuilderImpl(gameBuilder: GameBuilder, entity: EntitySyntacticSugar)
+        extends EntityBuilder:
       infix def called(name: String): GameBuilder =
-        gameBuilder.addPlayer(name)
+        entity match 
+          case _: PlayerSyntacticSugar => gameBuilder.addPlayer(name)
+          case _: BotSyntacticSugar => gameBuilder.addBotPlayer(name)
+        
 
   trait HandBuilder:
     infix def cards(to: ToSyntacticSugar): ToBuilder

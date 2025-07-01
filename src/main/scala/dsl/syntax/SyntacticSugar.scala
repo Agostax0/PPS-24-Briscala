@@ -11,8 +11,8 @@ object SyntacticSugar:
   implicit val team: TeamSyntacticSugar = TeamSyntacticSugar
   implicit val rules: RulesSyntacticSugar = RulesSyntacticSugar
   implicit val takes: TakesSyntacticSugar = TakesSyntacticSugar
-  implicit val suit: SuitSyntacticSugar = SuitSyntacticSugar
-  implicit val rank: RankSyntacticSugar = RankSyntacticSugar
+  implicit val suit: CardFilterSyntacticSugar = SuitSyntacticSugar
+  implicit val rank: CardFilterSyntacticSugar = RankSyntacticSugar
   implicit val first: CardPositionSyntacticSugar = FirstCardSyntacticSugar
   implicit val last: CardPositionSyntacticSugar = LastCardSyntacticSugar
 
@@ -40,10 +40,13 @@ object SyntacticSugar:
   trait TakesSyntacticSugar extends SyntacticSugar
   private object TakesSyntacticSugar extends TakesSyntacticSugar
 
-  trait SuitSyntacticSugar extends SyntacticSugar
+  trait CardFilterSyntacticSugar extends SyntacticSugar
+  private object CardFilterSyntacticSugar extends CardFilterSyntacticSugar
+
+  trait SuitSyntacticSugar extends CardFilterSyntacticSugar
   private object SuitSyntacticSugar extends SuitSyntacticSugar
 
-  trait RankSyntacticSugar extends SyntacticSugar
+  trait RankSyntacticSugar extends CardFilterSyntacticSugar
   private object RankSyntacticSugar extends RankSyntacticSugar
 
   sealed trait CardPositionSyntacticSugar extends SyntacticSugar

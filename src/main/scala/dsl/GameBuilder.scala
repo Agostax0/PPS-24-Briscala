@@ -117,7 +117,7 @@ object GameBuilder:
       game.setWinRule(winRule)
       game.setBriscolaSuit(briscolaSuit)
       handRule match
-        case Some(rule) => game.setHandRules(rule)
+        case Some(rule) => game.setHandRule(rule)
         case None       =>
       game
 

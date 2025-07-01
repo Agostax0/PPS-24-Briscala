@@ -135,3 +135,8 @@ class GameBuilderTest
       teams
     )
     builder.setWinRule(winRule)
+
+  it should "allow to add a bot player" in :
+    val playerName = bob
+    builder.addBotPlayer(playerName)
+    

@@ -17,9 +17,9 @@ def briscola(): GameBuilder =
   game has 4 players
 
   game has player called "Alice"
-  game has player called "Bob"
-  game has player called "Albert"
-  game has player called "Josh"
+  game has bot called "Bob"
+  game has bot called "Albert"
+  game has bot called "Josh"
 
   game suitsAre("Cups", "Coins", "Swords", "Batons")
   game ranksAre("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")

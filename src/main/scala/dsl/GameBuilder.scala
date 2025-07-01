@@ -1,20 +1,12 @@
 package dsl
 
-import dsl.types.{
-  HandRule,
-  HandSize,
-  PlayRule,
-  PlayerCount,
-  PointsRule,
-  Suits,
-  Team,
-  WinRule
-}
-import engine.model.{FullEngineModel, PlayerModel}
+import dsl.types.{HandRule, HandSize, PlayRule, PlayerCount, PointsRule, Suits, Team, WinRule}
+import engine.model.{BotPlayerModel, FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
   val gameName: String
   def addPlayer(name: String): GameBuilder
+  def addBotPlayer(name: String): GameBuilder
   def setPlayers(n: Int): GameBuilder
   def setSuits(suits: List[String]): GameBuilder
   def setRanks(ranks: List[String]): GameBuilder
@@ -51,6 +43,11 @@ object GameBuilder:
     override def addPlayer(name: String): GameBuilder =
       players = players :+ PlayerModel(name)
       this
+
+    override def addBotPlayer(name: String): GameBuilder = {
+      players = players :+ BotPlayerModel(name)
+      this
+    }
 
     override def addTeam(names: List[String]): GameBuilder =
       //check whether the player exist
@@ -154,6 +151,10 @@ class SimpleGameBuilder extends GameBuilder:
 
   override def addPlayer(name: String): GameBuilder =
     players = players :+ PlayerModel(name)
+    this
+
+  override def addBotPlayer(name: String): GameBuilder =
+    players = players :+ BotPlayerModel(name)
     this
 
   override def addTeam(names: List[String]): GameBuilder =

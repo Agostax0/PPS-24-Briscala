@@ -1,6 +1,6 @@
 package dsl
 
-import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, PointsSyntacticSugar, RulesSyntacticSugar, StartsSyntacticSugar, TeamSyntacticSugar}
+import dsl.syntax.SyntacticSugar.{EntitySyntacticSugar, PlayerSyntacticSugar, PointsSyntacticSugar, RulesSyntacticSugar, StartsSyntacticSugar, TeamSyntacticSugar}
 import dsl.syntax.SyntacticSugarBuilder.*
 
 object GameDSL:
@@ -54,8 +54,8 @@ object GameDSL:
       * @return
       *   The builder for the game
       */
-    infix def has(playerSyntax: PlayerSyntacticSugar): PlayerBuilder =
-      PlayerBuilder(gameBuilder)
+    infix def has(entitySyntax: EntitySyntacticSugar ): EntityBuilder =
+      EntityBuilder(gameBuilder, entitySyntax)
 
     infix def has(teamSyntax: TeamSyntacticSugar): TeamBuilder =
       TeamBuilder(gameBuilder)

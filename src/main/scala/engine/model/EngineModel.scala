@@ -60,6 +60,8 @@ trait EngineModel:
   def setStartingPlayer(index: Int): Unit
 
   def playCard(player: PlayerModel, card: CardModel): Boolean
+  
+  def botPlayCard(bot: BotPlayerModel): CardModel
 
   def winningGamePlayers(): Team
 
@@ -72,6 +74,8 @@ class FullEngineModel(
   override def addPlayers(players: List[PlayerModel]): Unit =
     this.players = players
     setStartingPlayer(0)
+    
+  
 
   override def addTeams(teams: List[Team]): Unit =
     if teams.isEmpty then
@@ -107,6 +111,9 @@ class FullEngineModel(
       true
     else false
 
+  override def botPlayCard(bot: BotPlayerModel): CardModel =
+    bot.generateCard(context)
+  
   override def computeTurn(): Unit =
     context.calculateTurn() match
       case Some(winningPlayer) =>

@@ -9,7 +9,8 @@ sealed trait PlayerModel:
   def increaseScore(score: Int): Unit = this.score += score
 
 sealed trait BotPlayerModel extends PlayerModel:
-  def generateCard(): CardModel
+  val strategy: BotDecisionStrategy
+  def generateCard(gameContext: GameContext): CardModel
 
 object PlayerModel:
   def apply(name: String): PlayerModel = PlayerModelImpl(name)
@@ -23,3 +24,20 @@ object PlayerModel:
     override def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit =
       val cards = deckModel.drawCards(numCards)
       cards.foreach(card => hand.addCard(card))
+
+object BotPlayerModel:
+  def apply(name: String): BotPlayerModel = BotPlayerModelImpl(name)
+
+  private class BotPlayerModelImpl(val name: String) extends BotPlayerModel:
+    val hand: DeckModel = DeckModel()
+    override val strategy: BotDecisionStrategy = RandomDecisionStrategy()
+
+    override def playCard(card: CardModel): Unit =
+      hand.removeCard(card)
+
+    override def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit =
+      val cards = deckModel.drawCards(numCards)
+      cards.foreach(card => hand.addCard(card))
+
+    override def generateCard(gameContext: GameContext): CardModel =
+      strategy.selectCard(hand, gameContext.cardsOnTable, gameContext)

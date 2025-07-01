@@ -59,18 +59,22 @@ object EngineController:
 
       windowEventsHandler.run(initialWindow)
 
-    private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] = 
-      val card: CardModel = bot.generateCard()
+    private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] =
+      val card: CardModel = model.botPlayCard(bot)
+      println("CARD BY BOT: " + card.name + " " + card.suit)
+      for
+        _ <- handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
+      yield()
 
-      handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
-    
-    
-    private def checkBot():State[Window, Unit] =
-      model.activePlayer match 
-        case bot: BotPlayerModel => playCardProgrammatically(bot)
+    private def checkBot():State[Window, Unit] = {
+      println("CHECKBOT: "+model.activePlayer.name)
+      
+      model.activePlayer match
+        case bot: BotPlayerModel if bot.hand.view.nonEmpty => playCardProgrammatically(bot)
         case _ => unitState()
-      
-      
+    }
+
+
     private def handleCardPlayed(playerName: String, name: String , rank: String, suit: String): State[Window, Unit] =
       val card = CardModel(name, rank.toInt, suit)
       model.players.find(playerName == _.name) match
@@ -111,12 +115,11 @@ object EngineController:
           _ <- view.clearTable()
           _ <- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)
           _ <- drawCards()
-          - <- endGame()
+          _ <- endGame()
+          _ <- checkBot()
         yield()
-        checkBot()
       else {
         checkBot()
-        unitState()
       }
 
     private def endGame(): State[Window, Unit] =
@@ -134,12 +137,15 @@ object EngineController:
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =
       if model.playCard(player, card) then
         playerTurn += 1
+        println("PLAYED BY: " + player.name + " " + card.name)
         for
           _ <- view.removeCardFromPlayer(player.name, card)
           _ <- view.addCardToTable(player.name, card)
           _ <- endTurn()
         yield()
-      else
+      else {
+        println("NOT PLAYED BY: " + player.name + " " + card.name)
         unitState()
+      }
 
     private def unitState(): State[Window, Unit] = State(s => (s, ()))

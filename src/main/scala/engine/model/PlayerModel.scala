@@ -8,6 +8,8 @@ sealed trait PlayerModel:
   def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit
   def increaseScore(score: Int): Unit = this.score += score
 
+sealed trait BotPlayerModel extends PlayerModel:
+  def generateCard(): CardModel
 
 object PlayerModel:
   def apply(name: String): PlayerModel = PlayerModelImpl(name)

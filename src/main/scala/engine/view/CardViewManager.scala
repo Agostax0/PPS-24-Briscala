@@ -55,4 +55,3 @@ trait CardViewManager:
       _ <- addButton(cardInfo, componentName)
       _ <- moveComponentIntoPanel(componentName, playerName)
     yield ()
-//  def cardPlayedFromPlayer(playerName: String,):

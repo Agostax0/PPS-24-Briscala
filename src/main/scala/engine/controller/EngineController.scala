@@ -1,6 +1,6 @@
 package engine.controller
 
-import engine.model.{CardModel, FullEngineModel, PlayerModel}
+import engine.model.{BotPlayerModel, CardModel, FullEngineModel, PlayerModel}
 import engine.view.EngineView
 import engine.view.WindowStateImpl.{Window, initialWindow, removeComponentFromPanel}
 import engine.view.monads.States.State
@@ -41,7 +41,9 @@ object EngineController:
                       _ <- view.addCardToPlayer(player.name, card)
                     yield ()
               yield ()
+          _ <- checkBot()
         yield ()
+
 
       val windowCreation = initialState.flatMap(_ => view.show)
 
@@ -57,9 +59,20 @@ object EngineController:
 
       windowEventsHandler.run(initialWindow)
 
+    private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] = 
+      val card: CardModel = bot.generateCard()
+
+      handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
+    
+    
+    private def checkBot():State[Window, Unit] =
+      model.activePlayer match 
+        case bot: BotPlayerModel => playCardProgrammatically(bot)
+        case _ => unitState()
+      
+      
     private def handleCardPlayed(playerName: String, name: String , rank: String, suit: String): State[Window, Unit] =
       val card = CardModel(name, rank.toInt, suit)
-      println("player "+ playerName +"played"+name)
       model.players.find(playerName == _.name) match
         case Some(player) =>
           playCard(player, card)
@@ -100,8 +113,11 @@ object EngineController:
           _ <- drawCards()
           - <- endGame()
         yield()
-      else
+        checkBot()
+      else {
+        checkBot()
         unitState()
+      }
 
     private def endGame(): State[Window, Unit] =
       if model.players.forall(_.hand.isEmpty) then

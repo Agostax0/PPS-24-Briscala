@@ -1,9 +1,10 @@
 import dsl.{GameBuilder, GameDSL}
 import dsl.GameDSL.*
 import dsl.syntax.SyntacticSugar.*
+import dsl.syntax.SyntacticSugarBuilder.highest
 import dsl.types.HandRule.*
-import dsl.types.WinRule.*
-import dsl.types.PlayRule.{highestBriscolaTakes, highestCardTakes, prevails}
+import dsl.types.PlayRule.prevailsOn
+import dsl.types.WinRule.highest as highestPointTeam
 import dsl.types.Team
 import engine.controller.EngineController
 import engine.model.{CardModel, DeckModel, PlayerModel}
@@ -17,8 +18,8 @@ def briscola(): GameBuilder =
 
   game has player called "Alice"
   game has player called "Bob"
-  game has player called "Bob1"
-  game has player called "Bob2"
+  game has player called "Albert"
+  game has player called "Josh"
 
   game suitsAre("Cups", "Coins", "Swords", "Batons")
   game ranksAre("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
@@ -38,16 +39,17 @@ def briscola(): GameBuilder =
         case "Knave" => 2
         case _ => 0
 
+  val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highest(suit) that takes is "Cups"
+
+  val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highest(rank) that takes follows first card suit
+
+
   game play rules are :
-    ((cards: List[(PlayerModel, CardModel)]) =>
-      given List[(PlayerModel, CardModel)] = cards
-      given String = "Cups"
-      highestBriscolaTakes
-      ).prevails(
-      (cards: List[(PlayerModel, CardModel)]) =>
-        given List[(PlayerModel, CardModel)] = cards
-        highestCardTakes
-    )
+     highestBriscolaTakesRule prevailsOn highestCardTakesRule
 
   game win rules is :
     (teams, listOfPlayers) =>
@@ -55,7 +57,7 @@ def briscola(): GameBuilder =
 
       given List[PlayerModel] = listOfPlayers
 
-      highest
+      highestPointTeam
 
   game
 
@@ -95,25 +97,23 @@ def marafone(): GameBuilder =
       freeStart or followFirstSuit
       //marafoneRuleset
 
-  game play rules are :
-    ((cards: List[(PlayerModel, CardModel)]) =>
-      given List[(PlayerModel, CardModel)] = cards
-      given String = "Cups"
+  val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highest(suit) that takes is "Cups"
 
-      highestBriscolaTakes
-      ) prevails (
-      (cards: List[(PlayerModel, CardModel)]) =>
-        given List[(PlayerModel, CardModel)] = cards
+  val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+    given List[(PlayerModel, CardModel)] = cards
+    highest(rank) that takes follows first card suit
 
-        highestCardTakes
-    )
+  game play rules are:
+    highestBriscolaTakesRule prevailsOn highestCardTakesRule
 
   game win rules is:
     (teams, listOfPlayers) =>
       given List[Team] = teams
       given List[PlayerModel] = listOfPlayers
 
-      highest
+      highestPointTeam
 
   game
 

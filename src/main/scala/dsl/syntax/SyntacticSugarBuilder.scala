@@ -1,9 +1,15 @@
 package dsl.syntax
 
 import dsl.GameBuilder
+import dsl.syntax.SyntacticSugar.*
+import dsl.syntax.SyntacticSugarBuilder.HighestSuitBuilder.HighestSuitBuilderImpl
+import dsl.syntax.SyntacticSugarBuilder.HighestSuitBuilderWith.HighestSuitBuilderWithImpl
+import dsl.types.{HandRule, PlayRule, PointsRule}
 import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
 import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
 import engine.model.{CardModel, DeckModel, PlayerModel}
+
+import scala.language.implicitConversions
 
 object SyntacticSugarBuilder:
 
@@ -138,3 +144,87 @@ object SyntacticSugarBuilder:
         builder.addWinRule(WinRule(winRules))
         builder
       }
+
+  trait HighestSuitBuilder:
+    infix def that(takes: TakesSyntacticSugar): HighestSuitBuilderWith
+
+  object HighestSuitBuilder:
+    def apply: HighestSuitBuilder =
+      new HighestSuitBuilderImpl
+    private class HighestSuitBuilderImpl extends HighestSuitBuilder:
+      override infix def that(
+          takes: TakesSyntacticSugar
+      ): HighestSuitBuilderWith =
+        HighestSuitBuilderWith.apply
+
+  trait HighestSuitBuilderWith:
+    infix def is(suit: String)(using
+        cardsOnTable: List[(PlayerModel, CardModel)]
+    ): Option[PlayerModel]
+
+  object HighestSuitBuilderWith:
+    def apply: HighestSuitBuilderWith =
+      new HighestSuitBuilderWithImpl
+    private class HighestSuitBuilderWithImpl extends HighestSuitBuilderWith:
+      override infix def is(briscola: String)(using
+          cardsOnTable: List[(PlayerModel, CardModel)]
+      ): Option[PlayerModel] =
+        val winner = cardsOnTable
+          .filter(_._2.suit equals briscola)
+          .sortBy(_._2.rank)(using Ordering.Int.reverse)
+          .map(_._1)
+          .headOption
+        winner
+
+  trait HighestRankBuilder:
+    infix def that(takes: TakesSyntacticSugar): HighestCardBuilder
+
+  private object HighestRankBuilder:
+    def apply: HighestRankBuilder = new HighestRankBuilderImpl
+    private class HighestRankBuilderImpl extends HighestRankBuilder:
+      override infix def that(takes: TakesSyntacticSugar): HighestCardBuilder =
+        HighestCardBuilder.apply
+
+  trait HighestCardBuilder:
+    infix def follows(
+        cardPosition: CardPositionSyntacticSugar
+    ): HighestRankedCardOfCardPlayedBuilder
+  private object HighestCardBuilder:
+    def apply: HighestCardBuilder = new HighestCardBuilderImpl
+    private class HighestCardBuilderImpl extends HighestCardBuilder:
+      override infix def follows(
+          cardPosition: CardPositionSyntacticSugar
+      ): HighestRankedCardOfCardPlayedBuilder =
+        HighestRankedCardOfCardPlayedBuilder(cardPosition)
+
+  trait HighestRankedCardOfCardPlayedBuilder:
+    infix def card(suit: SuitSyntacticSugar)(using
+        List[(PlayerModel, CardModel)]
+    ): Option[PlayerModel]
+
+  private object HighestRankedCardOfCardPlayedBuilder:
+    def apply(
+        cardPosition: CardPositionSyntacticSugar
+    ): HighestRankedCardOfCardPlayedBuilder =
+      new HighestRankedCardOfCardPlayedBuilderImpl(cardPosition)
+    private class HighestRankedCardOfCardPlayedBuilderImpl(
+        val cardPosition: CardPositionSyntacticSugar
+    ) extends HighestRankedCardOfCardPlayedBuilder:
+      override infix def card(suit: SuitSyntacticSugar)(using
+          cardsOnTable: List[(PlayerModel, CardModel)]
+      ): Option[PlayerModel] =
+        val card = cardPosition match
+          case _: FirstCardSyntacticSugar => cardsOnTable.head._2
+          case _: LastCardSyntacticSugar  => cardsOnTable.last._2
+          case _ => throw new IllegalArgumentException("Illegal card position")
+        val suit = card.suit
+        val winner = cardsOnTable
+          .filter(_._2.suit == suit)
+          .sortBy(_._2.rank)(using Ordering.Int.reverse)
+          .map(_._1)
+          .headOption
+        winner
+  implicit def highest(suit: SuitSyntacticSugar): HighestSuitBuilder =
+    HighestSuitBuilder.apply
+  implicit def highest(rank: RankSyntacticSugar): HighestRankBuilder =
+    HighestRankBuilder.apply

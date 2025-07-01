@@ -1,16 +1,18 @@
 package dsl
 
 import dsl.GameDSL.*
+import dsl.syntax.SyntacticSugar
 import dsl.syntax.SyntacticSugar.*
-import dsl.types.PlayRule.{highestBriscolaTakes, highestCardTakes, prevails}
-import dsl.types.WinRule.highest
-import dsl.types.{HandSize, PlayerCount, Suits, Team, WinRule}
+import dsl.syntax.SyntacticSugarBuilder.highest
+import dsl.types.PlayRule.prevailsOn
+import dsl.types.WinRule.highest as highestPointTeam
+import dsl.types.*
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
-import scala.language.postfixOps
+import scala.language.{implicitConversions, postfixOps}
 
 class GameDSLTest
     extends AnyFlatSpec
@@ -159,7 +161,7 @@ class GameDSLTest
       case _ => fail(wrongClassText)
 
   it should "allow to set a hand rule using advanced syntax" in :
-    import dsl.types.HandRule._
+    import dsl.types.HandRule.*
     val marafoneHandRule: (List[CardModel], DeckModel, CardModel) => Boolean =
       (cardsOnTable, playerHand, playedCard) =>
         given List[CardModel] = cardsOnTable
@@ -189,22 +191,44 @@ class GameDSLTest
 
 
     game play rules are:
-      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1)) prevails
+      ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1)) prevailsOn
       ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
 
-  it should "allow to create a play rule using advanced syntax" in:
 
+  it should "allow to create a play rule using advanced syntax" in:
+    val briscola = "Cups"
+
+    val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(suit) that takes is briscola
+
+    val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(rank) that takes follows first card suit
 
     game play rules are:
-      ((cards: List[(PlayerModel, CardModel)]) =>
-        given List[(PlayerModel, CardModel)] = cards
-        given String = "Cups"
-        highestBriscolaTakes
-      ).prevails(
-        (cards: List[(PlayerModel, CardModel)]) =>
-          given List[(PlayerModel, CardModel)] = cards
-          highestCardTakes
-      )
+      highestBriscolaTakesRule prevailsOn highestCardTakesRule
+
+
+  it should "allow to create a play rule using card position and rank as a parameter" in :
+    val firstCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+
+      highest(rank) that takes follows first card suit
+
+    val lastCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+
+      highest(rank) that takes follows last card suit
+
+    val aliceP = PlayerModel(alice)
+    val bobP = PlayerModel(bob)
+    val card1 = CardModel("Nine", 9, "Cups")
+    val card2 = CardModel("10", 10, "Batons")
+    val mockTable = List((aliceP, card1), (bobP, card2))
+
+    firstCardSuit(mockTable) should be(Some(aliceP))
+    lastCardSuit(mockTable) should be(Some(bobP))
 
   it should "allow to set teams for existing players" in :
     val g = game has 2 players
@@ -259,7 +283,7 @@ class GameDSLTest
       (teams, listOfPlayers) =>
         given List[Team] = teams
         given List[PlayerModel] = listOfPlayers
-        highest
+        highestPointTeam
 
     val g = game win rules is winRule
 
@@ -271,4 +295,8 @@ class GameDSLTest
 
 
 
-
+    val aliceP = PlayerModel(alice)
+    val bobP = PlayerModel(bob)
+    val card1 = CardModel("Nine", 9, "Cups")
+    val card2 = CardModel("10", 10, "Batons")
+    val mockTable = List((aliceP, card1), (bobP, card2))

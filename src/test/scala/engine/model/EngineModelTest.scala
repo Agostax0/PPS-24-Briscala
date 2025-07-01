@@ -1,6 +1,6 @@
 package engine.model
 
-import dsl.types.PlayRule.prevails
+import dsl.types.PlayRule.prevailsOn
 import dsl.types.{HandRule, PlayRule, PointsRule, Suits, Team, WinRule}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -47,7 +47,7 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   it should "allow adding teams" in :
     engine.addTeams(List(Team(List(player1.name, player2.name))))
     engine.teams should contain theSameElementsAs List(Team(List(player1.name, player2.name)))
-    
+
   it should "allow creating a deck" in:
     engine.createDeck(suits, ranks)
     engine.deck.size() should be(40)
@@ -220,12 +220,8 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.setPointRules(List(pointsRule))
 
     val firstPlayerAlwaysWinsRule = ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1))
-
-
     val lastPlayerAlwaysWinsRule = ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))
-
-
-    val playRule = lastPlayerAlwaysWinsRule prevails firstPlayerAlwaysWinsRule
+    val playRule = lastPlayerAlwaysWinsRule prevailsOn firstPlayerAlwaysWinsRule
 
     engine.setPlayRules(List(PlayRule(playRule)))
 

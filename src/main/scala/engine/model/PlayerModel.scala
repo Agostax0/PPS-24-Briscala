@@ -31,7 +31,7 @@ object BotPlayerModel:
 
   private class BotPlayerModelImpl(val name: String) extends BotPlayerModel:
     val hand: DeckModel = DeckModel()
-    override val strategy: BotDecisionStrategy = RandomDecisionStrategy()
+    override val strategy: BotDecisionStrategy = RuleAwareDecisionStrategy(this)
 
     override def playCard(card: CardModel): Unit =
       hand.removeCard(card)

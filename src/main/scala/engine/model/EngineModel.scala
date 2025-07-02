@@ -37,8 +37,10 @@ class GameContext:
   def canPlayCard(playerHand: DeckModel, playedCard: CardModel): Boolean =
     handRuleStrategy.canPlayCard(cardsOnTable.map(_._2), playerHand, playedCard)
 
-  def calculateTurn(): Option[PlayerModel] =
-    playRuleStrategy.calculateWinningPlayer(cardsOnTable)
+  def calculateTurn(
+      table: List[(PlayerModel, CardModel)] = cardsOnTable
+  ): Option[PlayerModel] =
+    playRuleStrategy.calculateWinningPlayer(table)
 
   def calculatePoints(): Int =
     pointsStrategy.calculatePoints(cardsOnTable.map((player, card) => card))
@@ -60,7 +62,7 @@ trait EngineModel:
   def setStartingPlayer(index: Int): Unit
 
   def playCard(player: PlayerModel, card: CardModel): Boolean
-  
+
   def botPlayCard(bot: BotPlayerModel): CardModel
 
   def winningGamePlayers(): Team
@@ -74,8 +76,6 @@ class FullEngineModel(
   override def addPlayers(players: List[PlayerModel]): Unit =
     this.players = players
     setStartingPlayer(0)
-    
-  
 
   override def addTeams(teams: List[Team]): Unit =
     if teams.isEmpty then
@@ -110,7 +110,7 @@ class FullEngineModel(
 
   override def botPlayCard(bot: BotPlayerModel): CardModel =
     bot.generateCard(context)
-  
+
   override def computeTurn(): Unit =
     context.calculateTurn() match
       case Some(winningPlayer) =>

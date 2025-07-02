@@ -142,5 +142,7 @@ class FullEngineModel(
     context.setPointRules(rules)
   def setWinRule(rule: WinRule): Unit = context.setWinRule(rule)
   def setBriscolaSuit(suit: String): Unit = context.setBriscolaSuit(suit)
-  def giveCardsToPlayers(handSize: Int): Unit =
-    players.foreach(player => giveCardsToPlayer(player, handSize))
+  def giveCardsToPlayers(handSize: Int): Unit = {
+    if deck.view.size > handSize * players.size then 
+      players.foreach(player => giveCardsToPlayer(player, handSize))
+  }

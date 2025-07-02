@@ -4,6 +4,7 @@ import dsl.GameBuilder
 import dsl.syntax.SyntacticSugar.*
 import dsl.types.{HandRule, PlayRule, PointsRule}
 import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
+import dsl.types.Team.Team
 import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
 import engine.model.{BotType, CardModel, DeckModel, PlayerModel}
 

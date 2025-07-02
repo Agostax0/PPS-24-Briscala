@@ -1,5 +1,11 @@
 package engine.model
 
+import dsl.types.HandRule.HandRule
+import dsl.types.PlayRule.PlayRule
+import dsl.types.PointsRule.PointsRule
+import dsl.types.Suits.Suits
+import dsl.types.Team.Team
+import dsl.types.WinRule.WinRule
 import dsl.types.{HandRule, PlayRule, PointsRule, Suits, Team, WinRule}
 
 /** Strategy for hand rules (which cards can be played from hand)

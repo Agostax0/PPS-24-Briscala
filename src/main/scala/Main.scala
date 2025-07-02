@@ -6,6 +6,7 @@ import dsl.types.HandRule.*
 import dsl.types.PlayRule.prevailsOn
 import dsl.types.WinRule.highest as highestPointTeam
 import dsl.types.Team
+import dsl.types.Team.Team
 import engine.controller.EngineController
 import engine.model.{CardModel, DeckModel, PlayerModel}
 

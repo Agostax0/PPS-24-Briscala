@@ -1,5 +1,10 @@
 package dsl
 
+import dsl.types.HandRule.HandRule
+import dsl.types.PlayRule.PlayRule
+import dsl.types.PointsRule.PointsRule
+import dsl.types.Team.Team
+import dsl.types.WinRule.WinRule
 import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
 import engine.model.BotType.Smart
 import engine.model.{CardModel, DeckModel, PlayerModel}

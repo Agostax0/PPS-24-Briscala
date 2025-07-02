@@ -11,6 +11,12 @@ import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
+import dsl.types.HandRule.HandRule
+import dsl.types.PlayRule.PlayRule
+import dsl.types.PointsRule.PointsRule
+import dsl.types.Suits.Suits
+import dsl.types.Team.Team
+import dsl.types.WinRule.WinRule
 
 import scala.language.{implicitConversions, postfixOps}
 

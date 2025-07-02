@@ -1,6 +1,11 @@
 package engine.model
 
 import dsl.types.*
+import dsl.types.HandRule.HandRule
+import dsl.types.PlayRule.PlayRule
+import dsl.types.PointsRule.PointsRule
+import dsl.types.Team.Team
+import dsl.types.WinRule.WinRule
 
 import scala.collection.immutable.List
 

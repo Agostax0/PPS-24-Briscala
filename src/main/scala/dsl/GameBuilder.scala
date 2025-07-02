@@ -1,15 +1,15 @@
 package dsl
 
-import dsl.types.{
-  HandRule,
-  HandSize,
-  PlayRule,
-  PlayerCount,
-  PointsRule,
-  Suits,
-  Team,
-  WinRule
-}
+import dsl.types.*
+import dsl.types.HandRule.HandRule
+import dsl.types.HandSize.HandSize
+import dsl.types.PlayRule.PlayRule
+import dsl.types.PlayerCount.PlayerCount
+import dsl.types.PointsRule.PointsRule
+import dsl.types.Suits.Suits
+import dsl.types.Team.Team
+import dsl.types.WinRule.WinRule
+import dsl.types.{HandRule, HandSize, PlayRule, PlayerCount, PointsRule, Suits, Team, WinRule}
 import engine.model.{BotPlayerModel, BotType, FullEngineModel, PlayerModel}
 
 sealed trait GameBuilder:
@@ -54,7 +54,7 @@ object GameBuilder:
       this
 
     override def addBotPlayer(name: String, botType: BotType): GameBuilder =
-      players = players :+ BotPlayerModel(name,botType)
+      players = players :+ BotPlayerModel(name, botType)
       this
 
     override def addTeam(names: List[String]): GameBuilder =

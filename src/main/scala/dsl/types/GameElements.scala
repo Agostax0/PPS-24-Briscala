@@ -1,37 +1,39 @@
 package dsl.types
 
 import dsl.syntax.SyntacticSugar.{SuitSyntacticSugar, TakesSyntacticSugar}
+import dsl.types.Team.Team
 import engine.model.{CardModel, DeckModel, PlayerModel}
 
-opaque type PlayerCount = Int
 object PlayerCount:
+  opaque type PlayerCount = Int
   def apply(count: Int): PlayerCount =
     require(count >= 2 && count <= 4, "player count should be between 2 and 4")
     count
 
-opaque type Team = List[String]
 object Team:
+  opaque type Team = List[String]
   def apply(team: List[String]): Team =
     require(team.size <= 4)
     team
   extension (team: Team)
+    def map[B](f: String => B): List[B] = for t <- team yield f(t)
     def size: Int = team.size
     def toSet: Set[String] = team.toSet
     def zipWithIndex: List[(String, Int)] = team.zipWithIndex
     def toList: List[String] = team.toList
     def apply(n: Int): String = team.apply(n)
-    def reduce(f:(String, String)=>String): String = team.reduce(f)
+    def reduce(f: (String, String) => String): String = team.reduce(f)
 
-opaque type HandSize = Int
 object HandSize:
+  opaque type HandSize = Int
   def apply(size: Int): HandSize =
     require(size >= 3 && size <= 10, "hand size should be between 3 and 10")
     size
 
   extension (handSize: HandSize) def value: Int = handSize
 
-opaque type Suits = List[String]
 object Suits:
+  opaque type Suits = List[String]
   def apply(suits: List[String]): Suits =
     require(suits.size == 4, "only 4 suits are allowed")
     require(suits.distinct.size == 4, "suits must be distinct")
@@ -45,16 +47,16 @@ object Suits:
     def foreach(f: String => Unit): Unit = suits.foreach(f)
     def contains(suit: String): Boolean = suits.contains(suit)
 
-opaque type PointsRule = (String, String) => Int
 object PointsRule:
+  opaque type PointsRule = (String, String) => Int
   def apply(rule: (String, String) => Int): PointsRule = rule
   extension (rule: PointsRule)
     def apply(name: String, suit: String): Int = rule(name, suit)
 
 /** (CardsOnTable, PlayerCards, CardPlayed) => CardPlayed can be played
   */
-opaque type HandRule = (List[CardModel], DeckModel, CardModel) => Boolean
 object HandRule:
+  opaque type HandRule = (List[CardModel], DeckModel, CardModel) => Boolean
   def freeStart(using cardsOnTable: List[CardModel]): Boolean =
     cardsOnTable.isEmpty
   def startWithHigherCard(using
@@ -107,9 +109,8 @@ object HandRule:
     def and(other: Boolean): Boolean =
       rule && other
 
-opaque type PlayRule = List[(PlayerModel, CardModel)] => Option[PlayerModel]
 object PlayRule:
-
+  opaque type PlayRule = List[(PlayerModel, CardModel)] => Option[PlayerModel]
   def apply(
       rule: List[(PlayerModel, CardModel)] => Option[PlayerModel]
   ): PlayRule =
@@ -126,9 +127,8 @@ object PlayRule:
       (cardsOnTable: List[(PlayerModel, CardModel)]) =>
         rule(cardsOnTable) orElse other(cardsOnTable)
 
-opaque type WinRule = (List[Team], List[PlayerModel]) => List[Team]
 object WinRule:
-
+  opaque type WinRule = (List[Team], List[PlayerModel]) => List[Team]
   def highest(using
       teams: List[Team],
       players: List[PlayerModel]
@@ -136,8 +136,9 @@ object WinRule:
     val playerScores = players.map(player => player.name -> player.score).toMap
 
     // Calculate the total score for each team
-    val teamsWithScores = teams.map ( team =>
-      val totalScore = team.map(playerName => playerScores.getOrElse(playerName, 0)).sum
+    val teamsWithScores = teams.map(team =>
+      val totalScore =
+        team.map(playerName => playerScores.getOrElse(playerName, 0)).sum
       (team, totalScore)
     )
 
@@ -150,8 +151,9 @@ object WinRule:
   ): List[Team] =
     val playerScores = players.map(player => player.name -> player.score).toMap
 
-    val teamsWithScores = teams.map ( team =>
-      val totalScore = team.map(playerName => playerScores.getOrElse(playerName, 0)).sum
+    val teamsWithScores = teams.map(team =>
+      val totalScore =
+        team.map(playerName => playerScores.getOrElse(playerName, 0)).sum
       (team, totalScore)
     )
 

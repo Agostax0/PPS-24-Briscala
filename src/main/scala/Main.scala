@@ -17,15 +17,15 @@ def briscola(): GameBuilder =
   game has 4 players
 
   game has player called "Alice"
-  game has bot called "Bob"
-  game has bot called "Albert"
-  game has bot called "Josh"
+  game has player called "Bob"
+  game has smartBot called "Albert"
+  game has randomBot called "Josh"
 
   game suitsAre("Cups", "Coins", "Swords", "Batons")
   game ranksAre("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
   game gives 3 cards to every player
 
-  game firstTurn starts from "Bob"
+  game firstTurn starts from "Alice"
 
   game briscolaIs "Cups"
 
@@ -77,7 +77,7 @@ def marafone(): GameBuilder =
   game ranksAre("4", "5", "6", "7", "Knave", "Knight", "King", "Ace", "2", "3")
   game gives 10 cards to every player
 
-  game firstTurn starts from "Bob"
+  game firstTurn starts from "Alice"
 
   game briscolaIs "Cups"
 
@@ -123,7 +123,7 @@ def main(): Unit =
   val briscolaGame: String = "briscola"
   val marafoneGame: String = "marafone"
 
-  val selectedGame = marafoneGame
+  val selectedGame = briscolaGame
 
   val gameConfig = selectedGame match {
     case game if game == briscolaGame => briscola()

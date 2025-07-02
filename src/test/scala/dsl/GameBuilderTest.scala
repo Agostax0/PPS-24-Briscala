@@ -1,6 +1,7 @@
 package dsl
 
-import dsl.types.{PlayRule, HandRule, PointsRule, Team, WinRule}
+import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
+import engine.model.BotType.Smart
 import engine.model.{CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
@@ -136,7 +137,7 @@ class GameBuilderTest
     )
     builder.setWinRule(winRule)
 
-  it should "allow to add a bot player" in :
+  it should "allow to add a type of bot player" in :
     val playerName = bob
-    builder.addBotPlayer(playerName)
+    builder.addBotPlayer(playerName, Smart)
     

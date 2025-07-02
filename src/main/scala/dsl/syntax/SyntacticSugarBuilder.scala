@@ -5,7 +5,7 @@ import dsl.syntax.SyntacticSugar.*
 import dsl.types.{HandRule, PlayRule, PointsRule}
 import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
 import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
-import engine.model.{CardModel, DeckModel, PlayerModel}
+import engine.model.{BotType, CardModel, DeckModel, PlayerModel}
 
 import scala.language.implicitConversions
 
@@ -26,15 +26,22 @@ object SyntacticSugarBuilder:
   trait EntityBuilder:
     infix def called(name: String): GameBuilder
   object EntityBuilder:
-    def apply(gameBuilder: GameBuilder, entity: EntitySyntacticSugar): EntityBuilder =
+    def apply(
+        gameBuilder: GameBuilder,
+        entity: EntitySyntacticSugar
+    ): EntityBuilder =
       new EntityBuilderImpl(gameBuilder, entity)
-    private class EntityBuilderImpl(gameBuilder: GameBuilder, entity: EntitySyntacticSugar)
-        extends EntityBuilder:
+    private class EntityBuilderImpl(
+        gameBuilder: GameBuilder,
+        entity: EntitySyntacticSugar
+    ) extends EntityBuilder:
       infix def called(name: String): GameBuilder =
-        entity match 
+        entity match
           case _: PlayerSyntacticSugar => gameBuilder.addPlayer(name)
-          case _: BotSyntacticSugar => gameBuilder.addBotPlayer(name)
-        
+          case _: RandomBotSyntacticSugar =>
+            gameBuilder.addBotPlayer(name, BotType.Random)
+          case _: SmartBotSyntacticSugar =>
+            gameBuilder.addBotPlayer(name, BotType.Smart)
 
   trait HandBuilder:
     infix def cards(to: ToSyntacticSugar): ToBuilder

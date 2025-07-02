@@ -1,6 +1,10 @@
 package engine.model
 import engine.model.BotDecisionStrategy.getValidCards
 
+enum BotType:
+  case Random
+  case Smart
+
 trait BotDecisionStrategy:
 
   def selectCard(

@@ -4,7 +4,8 @@ trait SyntacticSugar
 
 object SyntacticSugar:
   implicit val player: PlayerSyntacticSugar = PlayerSyntacticSugar
-  implicit val bot: EntitySyntacticSugar = BotSyntacticSugar
+  implicit val randomBot: EntitySyntacticSugar = RandomBotSyntacticSugar
+  implicit val smartBot: EntitySyntacticSugar = SmartBotSyntacticSugar
   implicit val to: ToSyntacticSugar = ToSyntacticSugar
   implicit val from: FromSyntacticSugar = FromSyntacticSugar
   implicit val starts: StartsSyntacticSugar = StartsSyntacticSugar
@@ -16,12 +17,15 @@ object SyntacticSugar:
   implicit val rank: CardFilterSyntacticSugar = RankSyntacticSugar
   implicit val first: CardPositionSyntacticSugar = FirstCardSyntacticSugar
   implicit val last: CardPositionSyntacticSugar = LastCardSyntacticSugar
-  
+
   trait EntitySyntacticSugar extends SyntacticSugar
-  
-  trait BotSyntacticSugar extends EntitySyntacticSugar
-  private object BotSyntacticSugar extends BotSyntacticSugar
-  
+
+  trait RandomBotSyntacticSugar extends EntitySyntacticSugar
+  private object RandomBotSyntacticSugar extends RandomBotSyntacticSugar
+
+  trait SmartBotSyntacticSugar extends EntitySyntacticSugar
+  private object SmartBotSyntacticSugar extends SmartBotSyntacticSugar
+
   trait PlayerSyntacticSugar extends EntitySyntacticSugar
   private object PlayerSyntacticSugar extends PlayerSyntacticSugar
 

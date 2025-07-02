@@ -1,5 +1,7 @@
 package engine.model
 
+import engine.model.BotType.{Random, Smart}
+
 sealed trait PlayerModel:
   val name: String
   val hand: DeckModel
@@ -27,11 +29,15 @@ object PlayerModel:
       hand.orderHand()
 
 object BotPlayerModel:
-  def apply(name: String): BotPlayerModel = BotPlayerModelImpl(name)
+  def apply(name: String, botType: BotType): BotPlayerModel =
+    BotPlayerModelImpl(name, botType)
 
-  private class BotPlayerModelImpl(val name: String) extends BotPlayerModel:
+  private class BotPlayerModelImpl(val name: String, val botType: BotType)
+      extends BotPlayerModel:
     val hand: DeckModel = DeckModel()
-    override val strategy: BotDecisionStrategy = RuleAwareDecisionStrategy(this)
+    override val strategy: BotDecisionStrategy = botType match
+      case Random => RandomDecisionStrategy()
+      case Smart  => RuleAwareDecisionStrategy(this)
 
     override def playCard(card: CardModel): Unit =
       hand.removeCard(card)

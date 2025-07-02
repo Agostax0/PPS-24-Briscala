@@ -30,21 +30,16 @@ object PlayerModel:
 
 object BotPlayerModel:
   def apply(name: String, botType: BotType): BotPlayerModel =
-    BotPlayerModelImpl(name, botType)
+    BotPlayerModelImpl(PlayerModel(name), botType)
 
-  private class BotPlayerModelImpl(val name: String, val botType: BotType)
-      extends BotPlayerModel:
-    val hand: DeckModel = DeckModel()
+  private class BotPlayerModelImpl(
+      val player: PlayerModel,
+      val botType: BotType
+  ) extends BotPlayerModel:
+    export player.*
     override val strategy: BotDecisionStrategy = botType match
       case Random => RandomDecisionStrategy()
       case Smart  => RuleAwareDecisionStrategy(this)
-
-    override def playCard(card: CardModel): Unit =
-      hand.removeCard(card)
-
-    override def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit =
-      val cards = deckModel.drawCards(numCards)
-      cards.foreach(card => hand.addCard(card))
 
     override def generateCard(gameContext: GameContext): CardModel =
       strategy.selectCard(hand, gameContext.cardsOnTable, gameContext)

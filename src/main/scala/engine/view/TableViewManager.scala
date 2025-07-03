@@ -7,8 +7,9 @@ import ElementsPositionManager.*
 import engine.view.GridLayoutOrientation.{Horizontal, Vertical}
 
 trait TableViewManager:
-  private var cardsPlayed: Map[String, CardModel] = _
+  var cardsPlayed: Map[String, CardModel] = _
   private var panelName = "Table"
+
   def addTable(): State[Frame, Unit] =
     cardsPlayed = Map.empty
     import WindowStateImpl.*
@@ -22,7 +23,7 @@ trait TableViewManager:
     import WindowStateImpl.*
     for
       _ <- addLabel(
-        playerName+ ": " + card.name + " of " + card.suit,
+        playerName + ": " + card.name + " of " + card.suit,
         labelName
       )
       - <- moveComponentIntoPanel("Table " + playerName, panelName)
@@ -32,7 +33,6 @@ trait TableViewManager:
     import WindowStateImpl.*
     State(frame =>
       val listPlayers = cardsPlayed.keys.toList
-      cardsPlayed = Map.empty
       listPlayers.foreach(playerName =>
         val labelName = panelName + " " + playerName
         removeComponentFromPanel(labelName, panelName)(frame)

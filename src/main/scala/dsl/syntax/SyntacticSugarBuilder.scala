@@ -229,7 +229,7 @@ object SyntacticSugarBuilder:
       ): CardModel = cardPosition match
         case _: FirstCardSyntacticSugar => cardsOnTable.head._2
         case _: LastCardSyntacticSugar  => cardsOnTable.last._2
-        case _ => throw new IllegalArgumentException("Illegal card position")
+        case _: CardPositionSyntacticSugar => ???
 
       extension (cardsOnTable: List[(PlayerModel, CardModel)])
         private def filterByProperty(
@@ -241,8 +241,6 @@ object SyntacticSugarBuilder:
               cardsOnTable.filter(_._2.suit equals card.suit)
             case _: RankSyntacticSugar =>
               cardsOnTable.filter(_._2.rank equals card.rank)
-            case _ =>
-              throw new IllegalArgumentException("Illegal card property")
         private def sortByHighestProperty: List[(PlayerModel, CardModel)] =
           highestTakingCardProperty match
             case _: SuitSyntacticSugar =>
@@ -251,8 +249,6 @@ object SyntacticSugarBuilder:
               )
             case _: RankSyntacticSugar =>
               cardsOnTable.sortBy(_._2.rank)(using Ordering.Int.reverse)
-            case _ =>
-              throw new IllegalArgumentException("Illegal card property")
   implicit def highest(
       highestTakingCardProperty: CardFilterSyntacticSugar
   ): HighestBuilder =

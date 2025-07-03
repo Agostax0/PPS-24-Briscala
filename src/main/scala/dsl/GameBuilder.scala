@@ -138,7 +138,7 @@ object GameBuilder:
       game.setBriscolaSuit(briscolaSuit)
       handRule match
         case Some(rule) => game.setHandRule(rule)
-        case None       =>
+        case None       => ()
       game
 
 class SimpleGameBuilder extends GameBuilder:

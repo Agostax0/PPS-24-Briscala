@@ -6,8 +6,8 @@ import dsl.types.PointsRule.PointsRule
 import dsl.types.Team.Team
 import dsl.types.WinRule.WinRule
 import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
-import engine.model.BotType.Smart
-import engine.model.{CardModel, DeckModel, PlayerModel}
+import engine.model.BotType.{Random, Smart}
+import engine.model.{CardModel, DeckModel, FullEngineModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.be
@@ -41,6 +41,17 @@ class GameBuilderTest
     val playerName = bob
     builder.addPlayer(playerName)
 
+  it should "allow to add a bot" in:
+    val playerName = bob
+    builder.addBotPlayer(playerName, Smart)
+
+  it should "allow to add different types of bots" in:
+    val bot1Name = bob
+    val bot2Name = alice
+
+    builder.addBotPlayer(bot1Name, Smart)
+    builder.addBotPlayer(bot2Name, Random)
+
   it should "not allow a player count not in between 2 or 4" in:
     a [IllegalArgumentException] should be thrownBy builder.setPlayers(7)
 
@@ -65,6 +76,13 @@ class GameBuilderTest
   it should "allow only 4 suits" in:
     val suits = List("Cups", "Coins", "Swords", "Batons", "Stars")
     a [IllegalArgumentException] should be thrownBy builder.setSuits(suits)
+
+  it should "start with a black briscola suit" in:
+    builder.briscola should be("")
+
+  it should "not allow to set a briscola suit without first setting the game's suits" in:
+    val briscolaSuit = "Cups"
+    a [Exception] should be thrownBy builder.setBriscolaSuit(briscolaSuit)
 
   it should "allow to set only valid players hands" in:
     val handSize = 2
@@ -145,4 +163,34 @@ class GameBuilderTest
   it should "allow to add a type of bot player" in :
     val playerName = bob
     builder.addBotPlayer(playerName, Smart)
+    
+  it should "allow to build a game when provided all the needed informations" in :
+    val ranks = List("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
+    val suits = List("Cups", "Coins", "Swords", "Batons")
+    val pointRule: PointsRule = PointsRule((name: String, suit: String) => if (name == "Ace") 11 else 0)
+    val playRule: PlayRule = PlayRule((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1))
+    val handRule: HandRule = HandRule((cardsOnTable: List[CardModel], playerHand: DeckModel, playedCard: CardModel) =>
+      cardsOnTable.isEmpty || cardsOnTable.head.suit == playedCard.suit)
+    val winRule: WinRule = WinRule((teams: List[Team], players: List[PlayerModel]) => teams)
+
+    builder.setPlayers(2)
+    builder.addPlayer(alice)
+    builder.addPlayer(bob)
+    builder.setRanks(ranks)
+    builder.setSuits(suits)
+    builder.setBriscolaSuit("Cups")
+    builder.setPlayersHands(3)
+    builder.setStartingPlayer(alice)
+    builder.setPointRule(pointRule)
+    builder.setPlayRule(playRule)
+    builder.setHandRule(handRule)
+    builder.setWinRule(winRule)
+    builder.addTeam(List(alice))
+    builder.addTeam(List(bob))
+
+    noException should be thrownBy builder.build()
+    
+    val game = builder.build()
+    game shouldBe a[FullEngineModel]
+    
     

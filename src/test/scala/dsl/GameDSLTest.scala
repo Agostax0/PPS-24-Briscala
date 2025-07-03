@@ -7,7 +7,7 @@ import dsl.syntax.SyntacticSugarBuilder.highest
 import dsl.types.PlayRule.prevailsOn
 import dsl.types.WinRule.highest as highestPointTeam
 import dsl.types.*
-import engine.model.{CardModel, DeckModel, PlayerModel}
+import engine.model.{BotPlayerModel, CardModel, DeckModel, PlayerModel}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -18,6 +18,7 @@ import dsl.types.Suits.Suits
 import dsl.types.Team.Team
 import dsl.types.WinRule.WinRule
 
+import scala.List
 import scala.language.{implicitConversions, postfixOps}
 
 class GameDSLTest
@@ -202,19 +203,21 @@ class GameDSLTest
 
 
   it should "allow to create a play rule using advanced syntax" in:
-    val briscola = "Cups"
 
     val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
       given List[(PlayerModel, CardModel)] = cards
-      highest(suit) that takes is briscola
+      highest(suit) that takes is briscolaSuit
 
     val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
       given List[(PlayerModel, CardModel)] = cards
       highest(rank) that takes follows first card suit
 
-    game play rules are:
-      highestBriscolaTakesRule prevailsOn highestCardTakesRule
-
+    val g = game play rules are:
+               highestBriscolaTakesRule prevailsOn highestCardTakesRule
+    g match
+        case g: SimpleGameBuilder =>
+          g.playRules should have size 1
+        case _ => fail(wrongClassText)
 
   it should "allow to create a play rule using card position and rank as a parameter" in :
     val firstCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
@@ -235,6 +238,35 @@ class GameDSLTest
 
     firstCardSuit(mockTable) should be(Some(aliceP))
     lastCardSuit(mockTable) should be(Some(bobP))
+
+  it should "allow to create vary play rules with a given rank and suit as parameters" in:
+    val highestRankOfFirstCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(rank) that takes follows first card suit
+
+    val highestRankOfFirstCardRank = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(rank) that takes follows first card rank
+
+    val highestRankOfLastCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(rank) that takes follows last card suit
+
+    val highestRankOfLastCardRank = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+      highest(rank) that takes follows last card rank
+
+    val aliceP = PlayerModel(alice)
+    val bobP = PlayerModel(bob)
+    val card1 = CardModel("Nine", 9, "Cups")
+    val card2 = CardModel("10", 10, "Batons")
+    val mockTable = List((aliceP, card1), (bobP, card2))
+
+    a [IllegalArgumentException] should be thrownBy (
+      (cards: List[(PlayerModel, CardModel)]) =>
+        given List[(PlayerModel, CardModel)] = cards
+        highest(suit) that takes follows last card rank
+      )(mockTable)
 
   it should "allow to set teams for existing players" in :
     val g = game has 2 players
@@ -298,11 +330,23 @@ class GameDSLTest
         g.winRule should be(WinRule(winRule))
       case _ => fail(wrongClassText)
 
+  it should "allow to add bot players" in:
+    val g = game has 2 players
 
+    game has smartBot called alice
+    game has randomBot called bob
 
+    g match
+      case g: SimpleGameBuilder =>
+        g.players should have size 2
+        g.players shouldBe a [List[BotPlayerModel]]
+      case _ => fail(wrongClassText)
 
-    val aliceP = PlayerModel(alice)
-    val bobP = PlayerModel(bob)
-    val card1 = CardModel("Nine", 9, "Cups")
-    val card2 = CardModel("10", 10, "Batons")
-    val mockTable = List((aliceP, card1), (bobP, card2))
+  it should "not allow to build a game without enough parameters" in:
+    //since it is a SimpleGameBuilder
+    noException should be thrownBy game.build()
+
+    GameDSL(null)
+    game is "Briscola"
+
+    a [Exception] should be thrownBy game.build()

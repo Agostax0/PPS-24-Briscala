@@ -40,9 +40,9 @@ object GameBuilder:
     private var ranks: List[String] = List.empty
     private var handSize: HandSize = _
     private var startingPlayerIndex: Option[Int] = None
-    private var pointRules: List[PointsRule] = List.empty
-    private var playRules: List[PlayRule] = List.empty
-    private var winRule: WinRule = _
+    private var pointRules: Option[List[PointsRule]] = None
+    private var playRules: Option[List[PlayRule]] = None
+    private var winRule: Option[WinRule] = None
     private var teams: List[Team] = List.empty
     private var handRule: Option[HandRule] = None
     private var briscolaSuit: String = ""
@@ -98,15 +98,21 @@ object GameBuilder:
       this
 
     override def setPointRule(rule: PointsRule): GameBuilder =
-      this.pointRules = this.pointRules :+ rule
+      val newRules = this.pointRules match
+        case Some(rules) => rules :+ rule
+        case None => List(rule)
+      this.pointRules = Some(newRules)
       this
 
     override def setPlayRule(rule: PlayRule): GameBuilder =
-      this.playRules = this.playRules :+ rule
+      val newRules = this.playRules match
+        case Some(rules) => rules :+ rule
+        case None        => List(rule)
+      this.playRules = Some(newRules)
       this
 
     override def setWinRule(rule: WinRule): GameBuilder =
-      this.winRule = rule
+      this.winRule = Some(rule)
       this
 
     private def briscola_=(newBriscolaSuit: String): Unit =
@@ -132,13 +138,19 @@ object GameBuilder:
       game.createDeck(suits, ranks)
       game.giveCardsToPlayers(handSize.value)
       game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
-      game.setPointRules(pointRules)
-      game.setPlayRules(playRules)
-      game.setWinRule(winRule)
       game.setBriscolaSuit(briscolaSuit)
       handRule match
         case Some(rule) => game.setHandRule(rule)
         case None       => ()
+      pointRules match
+        case Some(rules) => game.setPointRules(rules)
+        case None => ()
+      playRules match
+        case Some(rules) => game.setPlayRules(rules)
+        case None => ()
+      winRule match
+        case Some(rule) => game.setWinRule(rule)
+        case None => ()
       game
 
 class SimpleGameBuilder extends GameBuilder:
@@ -148,12 +160,14 @@ class SimpleGameBuilder extends GameBuilder:
   var ranks: List[String] = List.empty
   var handSize: HandSize = _
   var startingPlayerIndex: Option[Int] = None
-  var pointRules: List[PointsRule] = List.empty
-  var playRules: List[PlayRule] = List.empty
-  var winRule: WinRule = _
-  var briscolaSuit: String = ""
+  var pointRules: Option[List[PointsRule]] = None
+  var playRules: Option[List[PlayRule]] = None
+  var winRule: Option[WinRule] = None
+  private var briscolaSuit: String = ""
   var teams: List[List[String]] = List.empty
   var handRule: Option[HandRule] = None
+
+  override def briscola: String = this.briscolaSuit
 
   override val gameName: String = "Simple Game"
 
@@ -206,15 +220,21 @@ class SimpleGameBuilder extends GameBuilder:
     this
 
   override def setPointRule(rule: PointsRule): GameBuilder =
-    this.pointRules = this.pointRules :+ rule
+    val newRules = this.pointRules match
+      case Some(rules) => rules :+ rule
+      case None => List(rule)
+    this.pointRules = Some(newRules)
     this
 
   override def setPlayRule(rule: PlayRule): GameBuilder =
-    this.playRules = this.playRules :+ rule
+    val newRules = this.playRules match
+      case Some(rules) => rules :+ rule
+      case None => List(rule)
+    this.playRules = Some(newRules)
     this
 
   override def setWinRule(rule: WinRule): GameBuilder =
-    this.winRule = rule
+    this.winRule = Some(rule)
     this
 
   override def setBriscolaSuit(suit: String): GameBuilder =

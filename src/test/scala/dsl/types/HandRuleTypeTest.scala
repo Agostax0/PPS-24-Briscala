@@ -84,3 +84,141 @@ class HandRuleTypeTest
     given CardModel = playerHand.view.head
 
     followFirstSuit shouldBe false
+
+  it should "correctly follow suit when following the suit with multiple cards on table" in:
+    val cardsOnTable = List(
+      CardModel("", 7, "Cups"),
+      CardModel("", 8, "Batons"),
+      CardModel("", 9, "Swords")
+    )
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Cups"))
+    playerHand.addCard(CardModel("", 4, "Swords"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 3, "Cups")
+
+    HandRule.followFirstSuit shouldBe true
+
+
+  it should "correctly follow suit when playing different suit with no matching cards" in:
+    val cardsOnTable = List(
+      CardModel("", 7, "Cups"),
+      CardModel("", 8, "Batons")
+    )
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Swords"))
+    playerHand.addCard(CardModel("", 4, "Batons"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 3, "Swords")
+
+    HandRule.followFirstSuit shouldBe true
+
+
+  it should "correctly follow suit when not following suit with matching cards available" in :
+    val cardsOnTable = List(
+      CardModel("", 7, "Cups"),
+      CardModel("", 8, "Batons")
+    )
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Cups"))
+    playerHand.addCard(CardModel("", 4, "Batons"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 4, "Batons")
+
+    HandRule.followFirstSuit shouldBe false
+
+
+  it should "correctly follow suit when matching last card's suit" in :
+    val cardsOnTable = List(
+      CardModel("", 7, "Cups"),
+      CardModel("", 8, "Batons"),
+      CardModel("", 9, "Swords")
+    )
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Swords"))
+    playerHand.addCard(CardModel("", 4, "Cups"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 3, "Swords")
+
+    HandRule.followPreviousSuit shouldBe true
+
+
+  it should "correctly follow suit when playing different suit with no matching cards to last suit" in :
+    val cardsOnTable = List(
+      CardModel("", 7, "Cups"),
+      CardModel("", 8, "Swords")
+    )
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Cups"))
+    playerHand.addCard(CardModel("", 4, "Batons"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 3, "Cups")
+
+    HandRule.followPreviousSuit shouldBe false
+
+
+  it should "correctly handle single card on table correctly" in :
+    val cardsOnTable = List(CardModel("", 7, "Cups"))
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Cups"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 3, "Cups")
+
+    HandRule.followPreviousSuit shouldBe true
+
+
+  it should "correctly fail when table is empty" in :
+    val cardsOnTable = List.empty[CardModel]
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Cups"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 3, "Cups")
+
+    an[NoSuchElementException] should be thrownBy HandRule.followPreviousSuit
+
+
+  it should "correctly follow suit when not following last suit with matching cards available" in:
+    val cardsOnTable = List(
+      CardModel("", 7, "Cups"),
+      CardModel("", 8, "Swords")
+    )
+    val playerHand = DeckModel()
+    playerHand.addCard(CardModel("", 3, "Swords"))
+    playerHand.addCard(CardModel("", 4, "Cups"))
+
+    given List[CardModel] = cardsOnTable
+
+    given DeckModel = playerHand
+
+    given CardModel = CardModel("", 4, "Cups")
+
+    HandRule.followPreviousSuit shouldBe false
+

@@ -54,6 +54,7 @@ class PlayerModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
 
   "A bot" should "be correctly instantiated" in:
     val bot = BotPlayerModel(playerName, Random)
+    bot.name shouldBe playerName
 
   it should "play a card from their hand" in:
     val card = CardModel("Ace", 11, "Spades")

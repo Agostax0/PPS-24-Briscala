@@ -219,6 +219,38 @@ class GameDSLTest
           g.playRules should have size 1
         case _ => fail(wrongClassText)
 
+  it should "have the correct effect when creating a briscola rule" in:
+    game suitsAre("Cups", "Coins", "Swords", "Batons")
+    game ranksAre("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
+    game briscolaIs("Cups")
+
+    val aliceP = PlayerModel(alice)
+    val bobP = PlayerModel(bob)
+
+    val mockTable = List((aliceP, CardModel("Ace", 11, "Cups")), (bobP, CardModel("Ace", 11, "Batons")))
+
+    val highestFilter = highest(suit)
+    val highestFilterSugar = highestFilter that takes
+    given List[(PlayerModel, CardModel)] = mockTable
+    val winnerChooser = highestFilterSugar is "Cups"
+
+    winnerChooser shouldBe Some(aliceP)
+
+  it should "correctly give errors when a play rule is built incorrectly" in:
+    val correctFilterStart = highest(rank)
+    val incorrectFilterStart = highest(suit)
+
+    val correctFilter = correctFilterStart that takes
+    val incorrectFilter = incorrectFilterStart that takes
+
+    val aliceP = PlayerModel(alice)
+    val bobP = PlayerModel(bob)
+    val mockTable = List((aliceP, CardModel("Ace", 11, "Cups")), (bobP, CardModel("Ace", 11, "Batons")))
+
+    given List[(PlayerModel, CardModel)] = mockTable
+    a [Exception] should be thrownBy (incorrectFilter follows first card suit)
+    noException should be thrownBy (correctFilter follows first card suit)
+  
   it should "allow to create a play rule using card position and rank as a parameter" in :
     val firstCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
       given List[(PlayerModel, CardModel)] = cards

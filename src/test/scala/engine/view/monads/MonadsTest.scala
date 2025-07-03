@@ -16,7 +16,7 @@ object Optionals:
   object Optional:
     extension [A](m: Optional[A])
       def filter(p: A => Boolean): Optional[A] = m match
-        case Just(a) if (p(a)) => m
+        case Just(a) if p(a) => m
         case _                 => Empty()
 
 class MonadsTest

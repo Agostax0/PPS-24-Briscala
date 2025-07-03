@@ -1,6 +1,6 @@
 package engine.controller
 
-import engine.model.CardModel
+import engine.model.{CardModel, FullEngineModel, GameContext}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
@@ -27,5 +27,6 @@ class ParserTest extends AnyFlatSpec with should.Matchers:
     result shouldBe Left("Invalid rank: InvalidRank")
 
 class EngineControllerTest extends AnyFlatSpec with should.Matchers {
-
+  "Engine Controller" should "be correctly built" in:
+     EngineController(FullEngineModel("", GameContext())) shouldBe a [EngineController]
 }

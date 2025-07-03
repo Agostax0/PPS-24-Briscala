@@ -107,10 +107,13 @@ class PlayerModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   it should "choose the highest card among valid cards" in:
     val bot = BotPlayerModel(playerName, Smart)
     bot.hand.addCard(CardModel("Ace", 11, "Spades"))
+    bot.hand.addCard(CardModel("Ace", 3, "Spades"))
+    bot.hand.addCard(CardModel("Ace", 4, "Spades"))
+    bot.hand.addCard(CardModel("Ace", 11, "Cups"))
     bot.hand.addCard(CardModel("Ace", 11, "Cups"))
     bot.hand.addCard(CardModel("Ace", 11, "Batons"))
 
     val table: List[(PlayerModel, CardModel)] = List(PlayerModel("Alice") -> CardModel("Ace", 2, "Spades"))
     val context = GameContext()
     context.cardsOnTable = table
-    bot.generateCard(context) should be(CardModel("Ace", 11, "Spades"))
+    bot.generateCard(context) should be(CardModel("Ace", 3, "Spades"))

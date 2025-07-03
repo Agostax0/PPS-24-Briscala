@@ -141,7 +141,7 @@ class GameDSLTest
     import dsl.types.PointsRule
     g match 
       case g: SimpleGameBuilder =>
-        g.pointRules should contain (PointsRule(rule))
+        g.pointRules.get should contain (PointsRule(rule))
       case _ => fail(wrongClassText)
 
   it should "allow to set the briscola suit" in:
@@ -149,7 +149,7 @@ class GameDSLTest
       game briscolaIs "Cups"
 
     g match
-      case g: SimpleGameBuilder => g.briscolaSuit shouldBe "Cups"
+      case g: SimpleGameBuilder => g.briscola shouldBe "Cups"
       case _ => fail(wrongClassText)
 
   it should "allow to set a hand rule" in:
@@ -194,6 +194,30 @@ class GameDSLTest
         g.handRule shouldBe None
       case _ => fail(wrongClassText)
 
+  it should "allow to not set a play rule" in :
+    val g = game has 2 players
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.playRules shouldBe None
+      case _ => fail(wrongClassText)
+
+  it should "allow to not set a win rule" in :
+    val g = game has 2 players
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.winRule shouldBe None
+      case _ => fail(wrongClassText)
+
+  it should "allow to not set a point rule" in :
+    val g = game has 2 players
+
+    g match
+      case g: SimpleGameBuilder =>
+        g.pointRules shouldBe None
+      case _ => fail(wrongClassText)
+
   it should "allow to create a rule for choosing the player who wins a round" in:
 
 
@@ -216,7 +240,7 @@ class GameDSLTest
                highestBriscolaTakesRule prevailsOn highestCardTakesRule
     g match
         case g: SimpleGameBuilder =>
-          g.playRules should have size 1
+          g.playRules.get should have size 1
         case _ => fail(wrongClassText)
 
   it should "have the correct effect when creating a briscola rule" in:
@@ -345,7 +369,7 @@ class GameDSLTest
 
     g match
       case g: SimpleGameBuilder =>
-        g.winRule should be(WinRule(winRule))
+        g.winRule.get should be(WinRule(winRule))
       case _ => fail(wrongClassText)
 
   it should "allow to set a win rule using advanced syntax" in :
@@ -359,7 +383,7 @@ class GameDSLTest
 
     g match
       case g: SimpleGameBuilder =>
-        g.winRule should be(WinRule(winRule))
+        g.winRule.get should be(WinRule(winRule))
       case _ => fail(wrongClassText)
 
   it should "allow to add bot players" in:

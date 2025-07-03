@@ -32,7 +32,7 @@ class GameBuilderTest
   "A game" should "be correctly instantiated" in :
     builder.gameName should be(gameName)
 
-  it should " not have instantiated incorrectly" in :
+  it should "not have instantiated incorrectly" in :
     val incorrectName = "Marafone"
 
     builder.gameName should not be incorrectName
@@ -79,6 +79,7 @@ class GameBuilderTest
 
   it should "start with a black briscola suit" in:
     builder.briscola should be("")
+    GameBuilder("").briscola should be("")
 
   it should "not allow to set a briscola suit without first setting the game's suits" in:
     val briscolaSuit = "Cups"
@@ -118,6 +119,7 @@ class GameBuilderTest
     val briscolaSuit = "Cups"
     builder.setSuits(suits)
     builder.setBriscolaSuit(briscolaSuit)
+    builder.briscola should be(briscolaSuit)
 
   it should "not allow to add a briscola suit that is not in the list of suits" in:
     val suits = List("Cups", "Coins", "Swords", "Batons")

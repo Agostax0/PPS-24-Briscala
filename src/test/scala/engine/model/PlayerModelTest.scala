@@ -1,7 +1,7 @@
 package engine.model
 
 import engine.model.BotType.{Random, Smart}
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, color}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.oneOf
 import org.scalatest.matchers.should
@@ -96,9 +96,21 @@ class PlayerModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
 
   "SmartBot" should "choose a card among valid cards" in:
     val bot = BotPlayerModel(playerName, Smart)
+    bot.hand.addCard(CardModel("Ace", 1, "Spades"))
+    bot.hand.addCard(CardModel("Ace", 2, "Batons"))
+    bot.hand.addCard(CardModel("Ace", 3, "Cups"))
+
+
+    bot.generateCard(GameContext()) shouldBe CardModel("Ace", 1, "Spades")
+
+
+  it should "choose the highest card among valid cards" in:
+    val bot = BotPlayerModel(playerName, Smart)
     bot.hand.addCard(CardModel("Ace", 11, "Spades"))
-    bot.hand.addCard(CardModel("Ace", 11, "Batons"))
     bot.hand.addCard(CardModel("Ace", 11, "Cups"))
+    bot.hand.addCard(CardModel("Ace", 11, "Batons"))
 
-
-    List("Spades", "Cups", "Batons") should contain(bot.generateCard(GameContext()).suit)
+    val table: List[(PlayerModel, CardModel)] = List(PlayerModel("Alice") -> CardModel("Ace", 2, "Spades"))
+    val context = GameContext()
+    context.cardsOnTable = table
+    bot.generateCard(context) should be(CardModel("Ace", 11, "Spades"))

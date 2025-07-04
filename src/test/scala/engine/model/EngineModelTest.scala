@@ -22,6 +22,9 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   var bob: PlayerModel = PlayerModel("Alice")
   var player1: PlayerModel = PlayerModel("Alice")
   var player2: PlayerModel = PlayerModel("Bob")
+  val player3: PlayerModel = PlayerModel("Charlie")
+  val player4: PlayerModel = PlayerModel("David")
+
   val suits: Suits = Suits(List("Cups", "Coins", "Swords", "Batons"))
   val ranks: List[String] = List("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
   val pointsRule: PointsRule = PointsRule((name: String, suit: String) => name match {
@@ -54,6 +57,74 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
   it should "allow adding teams" in :
     engine.addTeams(List(Team(List(player1.name, player2.name))))
     engine.teams should contain theSameElementsAs List(Team(List(player1.name, player2.name)))
+
+  it should "allow adding teams from none" in:
+    engine.addPlayers(List(player1, player2))
+    engine.addTeams(List.empty)
+    engine.teams shouldBe List(List(player1.name), List(player2.name))
+
+  it should "allow solo play if not in a team" in:
+    engine.addPlayers(List(player1, player2))
+    engine.addTeams(List(Team(List(player1.name))))
+    engine.teams should have size 2
+
+  "Player ordering" should "correctly arrange players for 4-player 2-team game" in :
+    // Arrange
+    val players = List(player4, player2, player1, player3)
+    val team1 = Team(List("Alice", "Charlie"))
+    val team2 = Team(List("Bob", "David"))
+
+    // Act
+    engine.addPlayers(players)
+    engine.addTeams(List(team1, team2))
+
+    // Assert
+    engine.players should have size 4
+    engine.teams should have size 2
+
+    // Check the specific order: Alice -> Bob -> Charlie -> David
+    engine.players.map(_.name) shouldBe List("Alice", "Bob", "Charlie", "David")
+
+  it should "not reorder players when conditions are not met" in :
+    // Arrange
+    val players = List(player1, player2, player3)
+    val team1 = Team(List("Alice", "Bob"))
+
+    // Act
+    engine.addPlayers(players)
+    engine.addTeams(List(team1))
+
+    // Assert
+    engine.players should have size 3
+    engine.players.map(_.name) shouldBe List("Alice", "Bob", "Charlie")
+
+  it should "maintain original order when teams are not of size 2" in :
+    // Arrange
+    val players = List(player1, player2, player3, player4)
+    val team1 = Team(List("Alice", "Bob", "Charlie"))
+    val team2 = Team(List("David"))
+
+    // Act
+    engine.addPlayers(players)
+    engine.addTeams(List(team1, team2))
+
+    // Assert
+    engine.players should have size 4
+    engine.players.map(_.name) shouldBe List("Alice", "Bob", "Charlie", "David")
+
+  it should "handle empty teams list" in :
+    // Arrange
+    val players = List(player1, player2, player3, player4)
+
+    // Act
+    engine.addPlayers(players)
+    engine.addTeams(List.empty)
+
+    // Assert
+    engine.players should have size 4
+    engine.teams should have size 4
+    engine.teams.map(_.size) should contain only 1
+
 
   it should "allow creating a deck" in:
     engine.createDeck(suits, ranks)
@@ -163,6 +234,16 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
 
     engine.computeTurn()
     player2.score shouldBe pointsRule.apply("Ace", "Cups") * 2
+
+  it should "allow bot players to interact" in:
+    engine.createDeck(suits, List("Ace"))
+    val bot = BotPlayerModel("Bot", BotType.Random)
+    engine.addPlayers(List(player1, bot))
+    engine.setStartingPlayer(1)
+    engine.giveCardsToPlayers(1)
+    val card1 = bot.hand.view.head
+
+    engine.botPlayCard(bot) shouldBe card1
 
   it should "not allow conflicting play rules" in:
     engine.createDeck(suits, List("Ace"))

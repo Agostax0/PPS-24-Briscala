@@ -59,4 +59,9 @@ class RuleAwareDecisionStrategy(private val self: PlayerModel)
         playableCard <- validCards
         if expectedWinner(playableCard).get == self
       yield playableCard
-    ).minByOption(_.rank).getOrElse(validCards.minBy(_.rank))
+    ).minByOption(card => context.calculatePoints(cardsOnTable :+ (self, card)))
+      .getOrElse(
+        validCards.minBy(card =>
+          context.calculatePoints(cardsOnTable :+ (self, card))
+        )
+      )

@@ -1,9 +1,9 @@
 package engine.model
 
+import dsl.types.PointsRule
 import engine.model.BotType.{Random, Smart}
-import org.scalatest.{BeforeAndAfterEach, color}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.must.Matchers.oneOf
 import org.scalatest.matchers.should
 
 import scala.language.postfixOps
@@ -100,9 +100,7 @@ class PlayerModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     bot.hand.addCard(CardModel("Ace", 2, "Batons"))
     bot.hand.addCard(CardModel("Ace", 3, "Cups"))
 
-
     bot.generateCard(GameContext()) shouldBe CardModel("Ace", 1, "Spades")
-
 
   it should "choose the highest card among valid cards" in:
     val bot = BotPlayerModel(playerName, Smart)
@@ -119,3 +117,22 @@ class PlayerModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     bot.generateCard(context) should be(CardModel("Ace", 3, "Spades"))
 
     bot.generateCard(context) shouldBe bot.hand.view.minBy(_.rank)
+
+  it should "choose the lowest point card among losing cards with a non-empty table" in:
+    val bot = BotPlayerModel(playerName, Smart)
+    bot.hand.addCard(CardModel("King", 10, "Spades"))
+    bot.hand.addCard(CardModel("3", 3, "Spades"))
+
+    val table: List[(PlayerModel, CardModel)] = List(PlayerModel("Alice") -> CardModel("Ace", 11, "Spades"))
+
+    val context = GameContext()
+    context.cardsOnTable = table
+    context.setPointRules(List(PointsRule(
+      (name: String, suit: String) => name match
+        case "Ace" => 5
+        case "King" => 1
+        case "3" => 2
+        case _ => 0
+      ))
+    )
+    bot.generateCard(context) should be(CardModel("King", 10, "Spades"))

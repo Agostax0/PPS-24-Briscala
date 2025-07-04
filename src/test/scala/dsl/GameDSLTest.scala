@@ -20,6 +20,7 @@ import dsl.types.WinRule.WinRule
 
 import scala.List
 import scala.language.{implicitConversions, postfixOps}
+import scala.quoted.Expr
 
 class GameDSLTest
     extends AnyFlatSpec
@@ -274,7 +275,10 @@ class GameDSLTest
     given List[(PlayerModel, CardModel)] = mockTable
     a [Exception] should be thrownBy (incorrectFilter follows first card suit)
     noException should be thrownBy (correctFilter follows first card suit)
-  
+    a [Exception] should be thrownBy (incorrectFilter follows null card suit)
+    a [Exception] should be thrownBy (incorrectFilter follows first card null)
+    a [Exception] should be thrownBy (highest(null) that takes follows first card suit)
+
   it should "allow to create a play rule using card position and rank as a parameter" in :
     val firstCardSuit = (cards: List[(PlayerModel, CardModel)]) =>
       given List[(PlayerModel, CardModel)] = cards

@@ -117,3 +117,5 @@ class PlayerModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     val context = GameContext()
     context.cardsOnTable = table
     bot.generateCard(context) should be(CardModel("Ace", 3, "Spades"))
+
+    bot.generateCard(context) shouldBe bot.hand.view.minBy(_.rank)

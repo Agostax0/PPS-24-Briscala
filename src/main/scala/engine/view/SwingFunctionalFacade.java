@@ -64,15 +64,14 @@ class SwingFunctionalFacade {
             JPanel contentPanel = new JPanel();
             this.panels.put(panelName, contentPanel);
             contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-
-            contentPanel.add(new JLabel("PROVA"));
-
+            
+            JTextArea text =  new JTextArea(25,40);
             JScrollPane scrollPane = new JScrollPane(contentPanel);
-            scrollPane.setPreferredSize(new Dimension(width, height));
-            scrollPane.setBorder(BorderFactory.createTitledBorder(panelName));
+            scrollPane.setBounds(x, y, width, height);
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-            this.jframe.add(scrollPane);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            
+            this.jframe.getContentPane().add(scrollPane);
             return this;
         }
 

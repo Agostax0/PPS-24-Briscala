@@ -84,14 +84,11 @@ object EngineController:
 
     private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] =
       val card: CardModel = model.botPlayCard(bot)
-      println("CARD BY BOT: " + card.name + " " + card.suit)
       for
         _ <- handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
       yield()
 
     private def checkBot():State[Window, Unit] = {
-      println("CHECKBOT: "+model.activePlayer.name)
-
       model.activePlayer match
         case bot: BotPlayerModel if bot.hand.view.nonEmpty => playCardProgrammatically(bot)
         case _ => unitState()

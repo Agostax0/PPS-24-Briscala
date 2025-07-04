@@ -202,7 +202,7 @@ class HandRuleTypeTest
 
     given CardModel = CardModel("", 3, "Cups")
 
-    an[NoSuchElementException] should be thrownBy HandRule.followPreviousSuit
+    HandRule.followPreviousSuit shouldBe false
 
 
   it should "correctly follow suit when not following last suit with matching cards available" in:

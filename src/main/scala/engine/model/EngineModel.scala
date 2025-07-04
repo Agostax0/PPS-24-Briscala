@@ -47,8 +47,8 @@ class GameContext:
   ): Option[PlayerModel] =
     playRuleStrategy.calculateWinningPlayer(table)
 
-  def calculatePoints(): Int =
-    pointsStrategy.calculatePoints(cardsOnTable.map((player, card) => card))
+  def calculatePoints(table: List[(PlayerModel, CardModel)] = cardsOnTable): Int =
+    pointsStrategy.calculatePoints(table.map((player, card) => card))
 
   def calculateWinner(teams: List[Team], players: List[PlayerModel]): Team =
     winRuleStrategy.winningGameTeam(teams, players)

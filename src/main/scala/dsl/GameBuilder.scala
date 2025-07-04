@@ -9,8 +9,24 @@ import dsl.types.PointsRule.PointsRule
 import dsl.types.Suits.Suits
 import dsl.types.Team.Team
 import dsl.types.WinRule.WinRule
-import dsl.types.{HandRule, HandSize, PlayRule, PlayerCount, PointsRule, Suits, Team, WinRule}
-import engine.model.{BotPlayerModel, BotType, FullEngineModel, PlayerModel}
+import dsl.types.{
+  HandRule,
+  HandSize,
+  PlayRule,
+  PlayerCount,
+  PointsRule,
+  Suits,
+  Team,
+  WinRule
+}
+import engine.model.{
+  BotPlayerModel,
+  BotType,
+  CardModel,
+  DeckModel,
+  FullEngineModel,
+  PlayerModel
+}
 
 sealed trait GameBuilder:
   val gameName: String
@@ -100,7 +116,7 @@ object GameBuilder:
     override def setPointRule(rule: PointsRule): GameBuilder =
       val newRules = this.pointRules match
         case Some(rules) => rules :+ rule
-        case None => List(rule)
+        case None        => List(rule)
       this.pointRules = Some(newRules)
       this
 
@@ -144,16 +160,56 @@ object GameBuilder:
         case None       => ()
       pointRules match
         case Some(rules) => game.setPointRules(rules)
-        case None => ()
+        case None        => ()
       playRules match
         case Some(rules) => game.setPlayRules(rules)
-        case None => ()
+        case None        => ()
       winRule match
         case Some(rule) => game.setWinRule(rule)
-        case None => ()
+        case None       => ()
       game
 
-class SimpleGameBuilder extends GameBuilder:
+    override def equals(obj: Any): Boolean =
+      obj match
+        case that: SimpleGameBuilder =>
+          val player = players.head
+          val hand = DeckModel()
+          val card = CardModel("Ace", 11, briscola)
+          hand.addCard(card)
+
+          val checkValues = this.gameName == that.gameName &&
+            this.players.forall(p1 =>
+              that.players.map(p2 => p2.name).contains(p1.name)
+            ) &&
+            this.playerCount == that.playerCount &&
+            this.teams.forall(team => that.teams.contains(team)) &&
+            this.suits.equals(that.suits) &&
+            this.ranks.equals(that.ranks) &&
+            this.briscola == that.briscola &&
+            this.handSize == that.handSize &&
+            this.startingPlayerIndex == that.startingPlayerIndex
+          val checkPointRules =
+            (this.pointRules.isEmpty && that.pointRules.isEmpty) ||
+              this.pointRules.get.head("Ace", "Cups") ==
+              that.pointRules.get.head("Ace", "Cups")
+          val checkHandRule =
+            (this.handRule.isEmpty && that.handRule.isEmpty) ||
+              (this.handRule.get(List.empty, hand, card) ==
+                that.handRule.get(List.empty, hand, card))
+          val checkPlayRules =
+            (this.playRules.isEmpty && that.playRules.isEmpty) ||
+              (this.playRules.get.head(List((player, card))) ==
+                that.playRules.get.head(List((player, card))))
+          val checkWinRule = (this.winRule.isEmpty && that.winRule.isEmpty) ||
+            (this.winRule.get(teams, players) ==
+              that.winRule.get(teams, players))
+
+          checkValues && checkPointRules &&
+          checkHandRule && checkPlayRules && checkWinRule
+        case _ => false
+
+class SimpleGameBuilder(val _gameName: String = "Simple Game")
+    extends GameBuilder:
   var players: List[PlayerModel] = List.empty
   var playerCount: PlayerCount = _
   var suits: Suits = _
@@ -169,7 +225,7 @@ class SimpleGameBuilder extends GameBuilder:
 
   override def briscola: String = this.briscolaSuit
 
-  override val gameName: String = "Simple Game"
+  override val gameName: String = _gameName
 
   override def addPlayer(name: String): GameBuilder =
     players = players :+ PlayerModel(name)
@@ -222,14 +278,14 @@ class SimpleGameBuilder extends GameBuilder:
   override def setPointRule(rule: PointsRule): GameBuilder =
     val newRules = this.pointRules match
       case Some(rules) => rules :+ rule
-      case None => List(rule)
+      case None        => List(rule)
     this.pointRules = Some(newRules)
     this
 
   override def setPlayRule(rule: PlayRule): GameBuilder =
     val newRules = this.playRules match
       case Some(rules) => rules :+ rule
-      case None => List(rule)
+      case None        => List(rule)
     this.playRules = Some(newRules)
     this
 

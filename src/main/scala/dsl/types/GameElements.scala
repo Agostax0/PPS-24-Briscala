@@ -23,6 +23,9 @@ object Team:
     def toList: List[String] = team.toList
     def apply(n: Int): String = team.apply(n)
     def reduce(f: (String, String) => String): String = team.reduce(f)
+    def equals(other: Team): Boolean =
+      team.size == other.size && team.forall(player => other.contains(player))
+    def contains(player: String): Boolean = team.contains(player)
 
 object HandSize:
   opaque type HandSize = Int
@@ -79,9 +82,10 @@ object HandRule:
       playerHand: DeckModel,
       playedCard: CardModel
   ): Boolean =
-    val previousSuit = cardsOnTable.lastOption.map(_.suit).get
-    previousSuit == playedCard.suit ||
-    !playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+    val previousSuit = cardsOnTable.lastOption.map(_.suit)
+    cardsOnTable.nonEmpty &&
+    (previousSuit.get == playedCard.suit ||
+      !playerHand.view.exists(_.suit == cardsOnTable.head.suit))
 
   def marafoneRuleset(using
       cardsOnTable: List[CardModel],

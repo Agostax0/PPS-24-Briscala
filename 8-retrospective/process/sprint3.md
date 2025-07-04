@@ -4,7 +4,8 @@
 |    1     | Players can team up |      Setting a team<br/>Setting a team's win condition       |      Pesic<br/>Pesic      |        4<br/>4        |    0<br/>0    |    /<br/>/    | /<br/>/ | /<br/>/ | /<br/>/ | /<br/>/ | /<br/>/ |
 |    1     |  Code Refactoring   |  Engine Model Refactoring<br/>Engine Controller Refactoring  |       Alni<br/>Alni       |        5<br/>3        |    4<br/>3    |    0<br/>0    | /<br/>/ | /<br/>/ | /<br/>/ | /<br/>/ | /<br/>/ |
 |    2     |  Adding more tests  | Tests for Controller<br/>Tests for View<br/>Tests for Monads | Pesic<br/>Pesic<br/>Pesic |     2<br/>2<br/>2     | 2<br/>2<br/>2 | 2<br/>2<br/>2 |         |         |         |         |         |
-|    3     | Adding bot players  |                Random Bot<br/>Rule Aware bot                 |     Pesic<br/>Agosta      |        2<br/>2        |    2<br/>2    |    0<br/>2    | /<br/>0 | /<br/>/ | /<br/>/ | /<br/>/ | /<br/>/ |
+|    3     | Adding bot players  |                Random Bot<br/>Rule Aware bot                 |     Pesic<br/>Agosta      |        2<br/>2        |    2<br/>2    |    0<br/>2    | /<br/>0 | /<br/>/ | /<br/>/ | /<br/>/ |
+|    4     | DSL Method Ordering  |                            Enforncing method order during game creationg     |     Agosta      |        10        |    10    |    10    | 10 | 10 | 10 | /<br/>/ | /<br/>/ |
 
 # Sprint Goal
 This sprint's goal is to review the code written until now and work on delivering optional requirements. 

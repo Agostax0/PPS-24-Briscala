@@ -141,9 +141,11 @@ object EngineController:
         println("THE WINNER IS: " + winningPlayers)
         model.players.foreach(player =>
           println(player.name + ": " + player.score + " points"))
-        view.declareWinner(winningPlayers)
-
-      unitState()
+        for
+          _ <- view.declareWinner(winningPlayers)
+        yield()
+      else
+        unitState()
 
     private def playCard(player: PlayerModel, card: CardModel): State[Window, Unit] =
       if model.playCard(player, card) then

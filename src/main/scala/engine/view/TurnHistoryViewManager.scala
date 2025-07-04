@@ -8,7 +8,7 @@ trait TurnHistoryViewManager:
   val panelName = "History"
   def addTurnHistory(): State[Frame, Unit] =
     import WindowStateImpl.*
-    for _ <- addPanel(panelName)(historyCoords)(centerTableDims)
+    for _ <- addScrollablePanel(panelName)(historyCoords)(centerTableDims)
     yield ()
 
   def addTurnWinner(playerName: String, round: String): State[Frame, Unit] =

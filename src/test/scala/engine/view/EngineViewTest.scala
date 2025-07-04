@@ -24,6 +24,20 @@ class EngineViewTest extends AnyFlatSpec with should.Matchers with BeforeAndAfte
 
     engineView.cards(player1).head shouldBe card
 
+  it should "allow adding more than one card to player" in :
+    engineView.addCardToPlayer(player1, card)
+
+    engineView.addCardToPlayer(player1, card1)
+
+    engineView.cards(player1) shouldBe List(card,card1)
+
+  it should "not allow to add the same card" in:
+    engineView.addCardToPlayer(player1, card)
+
+    engineView.addCardToPlayer(player1, card)
+
+    engineView.cards(player1).head shouldBe card
+
   it should "allow remove card from player" in:
     engineView.addCardToPlayer(player1, card)
 
@@ -77,6 +91,10 @@ class EngineViewTest extends AnyFlatSpec with should.Matchers with BeforeAndAfte
     engineView.addCardToPlayer(player1, card3)
 
     engineView.cards(player1) should contain inOrderOnly(card1, card2, card3)
+
+  it should "not allow to remove a card from a non existing player" in:
+
+    a[NoSuchElementException] should be thrownBy engineView.removeCardFromPlayer(player1, card)
 
   it should "allow to add a player" in:
     engineView.addPlayer(player1, 3)

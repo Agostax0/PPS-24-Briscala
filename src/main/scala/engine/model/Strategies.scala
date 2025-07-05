@@ -170,11 +170,28 @@ class CustomWinRuleStrategy(winRule: WinRule) extends WinRuleStrategy:
 /** Trait for managing the deck of cards in the game.
   */
 trait DeckManagement:
+  /** The deck of cards used in the game.
+    */
   var deck: DeckModel = DeckModel()
 
+  /** Gives a specified number of cards to a player from the deck.
+    *
+    * @param player
+    *   the player to whom cards are given
+    * @param handSize
+    *   the number of cards to give to the player
+    */
   def giveCardsToPlayer(player: PlayerModel, handSize: Int): Unit =
     player.drawFromDeck(deck, handSize)
 
+  /** Creates a deck of cards with the specified suits and ranks. It adds a card
+    * for each combination of suit and rank to the deck,
+    *
+    * @param suits
+    *   the suits to include in the deck
+    * @param ranks
+    *   the ranks to include in the deck
+    */
   def createDeck(suits: Suits, ranks: List[String]): Unit =
     import DeckModel.given
     for

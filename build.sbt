@@ -2,6 +2,7 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "3.3.6"
 coverageEnabled := true
+Test / parallelExecution := false
 lazy val root = (project in file("."))
   .settings(
     name := "BriScala",

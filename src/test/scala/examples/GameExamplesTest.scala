@@ -15,7 +15,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
-/*class GameExamplesTest
+class GameExamplesTest
   extends AnyFlatSpec
     with should.Matchers
     with BeforeAndAfterEach:
@@ -194,5 +194,3 @@ import org.scalatest.matchers.should
     customGame match
       case g: GameBuilder => g.simpleEquals(customBuilder) shouldBe true
       case _                    => fail(wrongClassText)
-
-*/

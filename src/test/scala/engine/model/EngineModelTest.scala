@@ -305,4 +305,4 @@ class EngineModelTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     engine.setWinRule(winRule)
 
     engine.computeTurn()
-    engine.winningGamePlayers()(0) shouldBe player2.name
+    engine.winningGamePlayers().head._1(0) shouldBe player2.name

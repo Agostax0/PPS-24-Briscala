@@ -220,8 +220,6 @@ class GameDSLTest
       case _ => fail(wrongClassText)
 
   it should "allow to create a rule for choosing the player who wins a round" in:
-
-
     game play rules are:
       ((cards: List[(PlayerModel, CardModel)]) => Some(cards.head._1)) prevailsOn
       ((cards: List[(PlayerModel, CardModel)]) => Some(cards.last._1))

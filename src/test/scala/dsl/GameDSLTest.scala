@@ -27,7 +27,7 @@ class GameDSLTest
     with should.Matchers
     with BeforeAndAfterEach:
 
-  override def beforeEach(): Unit = 
+  override def beforeEach(): Unit =
     GameDSL(new SimpleGameBuilder())
 
   val gameName = "Briscola"
@@ -244,7 +244,7 @@ class GameDSLTest
   it should "have the correct effect when creating a briscola rule" in:
     game suitsAre("Cups", "Coins", "Swords", "Batons")
     game ranksAre("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
-    game briscolaIs("Cups")
+    game briscolaIs "Cups"
 
     val aliceP = PlayerModel(alice)
     val bobP = PlayerModel(bob)

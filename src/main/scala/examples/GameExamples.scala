@@ -13,6 +13,13 @@ import engine.model.{CardModel, DeckModel, PlayerModel}
 
 import scala.language.{implicitConversions, postfixOps}
 object GameExamples:
+
+  /** Creates a game builder for the game "Briscola".
+   * The game is set up with 2 players, Alice and Bob, and includes two bots: Albert (smart) and Josh (random).
+   * The game uses the standard deck and rules of "Briscola". The set briscola suit is "Cups".
+   *
+   * @return the GameBuilder for the game
+   */
   def briscola(): GameBuilder =
     game is "Briscola"
     game has 4 players
@@ -62,7 +69,16 @@ object GameExamples:
         highestPointTeam
   
     game
-  
+
+  /** Creates a game builder for the game "Marafone".
+   * The game is set up with 4 players: Alice, Bob, Bob1, and Bob2.
+   * It includes two teams: Alice and Bob on one team, and Bob1 and Bob2 on the other.
+   * The set briscola suit is "Cups".
+   * The game is a variation of "Briscola" with specific rules and card points, most
+   * notably the rule that a player must follow the first suit played if possible.
+   *
+   * @return
+   */
   def marafone(): GameBuilder =
     game is "Marafone"
     game has 4 players
@@ -120,7 +136,21 @@ object GameExamples:
         highestPointTeam
   
     game
-  
+
+  /** Creates a custom game called "Briscala".
+   * This game is set up with 3 players: Alice, Bob, and Josh and a smart bot named SmartBot.
+   * It uses the same deck of briscola and the set briscola suit is "Cups".
+   * The specific rules are:
+   *  - The starting player must play its highest rank card
+   *  - Players must follow the previous suit if possible
+   *  - The ace is the most valuable card with 5 points, followed by King, Knight, and Knave with 2 points each.
+   *  - Cards of suit "Coins" are worth 1 extra point.
+   *  - The card ranks follow the numerical order from Ace to 7, followed by Knave, Knight, and King.
+   *  - The winning turn is determined by the highest card of the last suit played, unless a briscola is played.
+   *  - The player with the highest points at the end of the game wins.
+   *
+   * @return
+   */
   def custom(): GameBuilder =
     game is "Briscala"
     game has 4 players

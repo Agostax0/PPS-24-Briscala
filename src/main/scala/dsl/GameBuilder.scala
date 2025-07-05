@@ -35,6 +35,7 @@ sealed trait GameBuilder:
     */
   val gameName: String
 
+  def simpleEquals(obj: Any): Boolean
   /** Adds a player to the game.
     * @param name
     *   the name of the player
@@ -269,7 +270,7 @@ object GameBuilder:
         case None       => ()
       game
 
-    override def equals(obj: Any): Boolean =
+    override def simpleEquals(obj: Any): Boolean =
       obj match
         case that: SimpleGameBuilder =>
           val player = players.head
@@ -327,6 +328,7 @@ class SimpleGameBuilder(val _gameName: String = "Simple Game")
 
   override val gameName: String = _gameName
 
+  override def simpleEquals(obj: Any): Boolean = true
   override def addPlayer(name: String): GameBuilder =
     players = players :+ PlayerModel(name)
     this
@@ -340,7 +342,7 @@ class SimpleGameBuilder(val _gameName: String = "Simple Game")
     names.foreach(newPlayerName =>
       val playerExists = players.exists(p => p.name == newPlayerName)
       if !playerExists then
-        throw IllegalArgumentException("Player/s doesn't exists")
+        throw IllegalArgumentException("Player " + newPlayerName + " doesn't exists in " + players.map(_.name))
     )
     //check whether a player is already inside another team
     if names.intersect(teams.flatMap(t => t.toList)).nonEmpty then
@@ -367,7 +369,7 @@ class SimpleGameBuilder(val _gameName: String = "Simple Game")
 
   override def setStartingPlayer(name: String): GameBuilder =
     if players.isEmpty || !players.map(_.name).contains(name) then
-      throw new IllegalArgumentException("Player not found")
+      throw new IllegalArgumentException("Player " + name + " not found in " + players.map(_.name))
 
     this.startingPlayerIndex = this.startingPlayerIndex match
       case Some(index) =>

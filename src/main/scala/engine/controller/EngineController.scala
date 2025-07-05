@@ -152,12 +152,13 @@ object EngineController:
 
     private def endGame(): State[Window, Unit] =
       if model.players.forall(_.hand.isEmpty) then
-        val winningPlayers = model.winningGamePlayers().reduce((a:String, b:String)=>a + " " + b)
+        val winningPlayers = model.winningGamePlayers().head._1.reduce((a:String, b:String)=>a + " " + b)
         println("THE WINNER IS: " + winningPlayers)
         model.players.foreach(player =>
           println(player.name + ": " + player.score + " points"))
         for
           _ <- view.declareWinner(winningPlayers)
+          _ <- view.printPointsTeam(model.winningGamePlayers())
         yield()
       else
         unitState()

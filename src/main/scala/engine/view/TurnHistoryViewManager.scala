@@ -1,5 +1,6 @@
 package engine.view
 
+import dsl.types.Team.Team
 import engine.view.ElementsPositionManager.{centerTableDims, historyCoords}
 import engine.view.SwingFunctionalFacade.Frame
 import engine.view.monads.States.State
@@ -36,3 +37,15 @@ trait TurnHistoryViewManager:
         panelName
       )
     yield ()
+
+  def printPointsTeam(teams:List[(Team,Int)]): State[Frame, Unit] =
+    import WindowStateImpl.*
+    teams.foldLeft(State(s => (s, ())): State[Frame, Unit]) { (acc, teamWithScore) =>
+      val t = teamWithScore._1.reduce((a:String, b:String)=>a + " " + b)  // or team.mkString(" ")
+      acc.flatMap { _ =>
+        for {
+          _ <- addLabel(s"$t score: ${teamWithScore._2}", t)
+          _ <- moveComponentIntoPanel(t, panelName)
+        } yield ()
+      }
+    }

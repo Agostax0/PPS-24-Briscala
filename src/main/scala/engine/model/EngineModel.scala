@@ -128,8 +128,8 @@ class GameContext:
     * @return
     *   the winning team
     */
-  def calculateWinner(teams: List[Team], players: List[PlayerModel]): Team =
-    winRuleStrategy.winningGameTeam(teams, players)
+  def calculateWinner(teams: List[Team], players: List[PlayerModel]): List[Team] =
+    winRuleStrategy.orderedTeam(teams, players)
 
 /** * The EngineModel trait defines the core functionalities of the game engine,
   * including player management, team management, and game mechanics.
@@ -200,7 +200,7 @@ trait EngineModel:
     * @return
     *   the winning team
     */
-  def winningGamePlayers(): Team
+  def winningGamePlayers(): List[(Team,Int)]
 
 /** Implements the EngineModel trait and provides a complete game engine for
   * managing players, teams, deck and game mechanics.
@@ -262,8 +262,15 @@ class FullEngineModel(
       case None =>
         throw new IllegalStateException("No winning player found for the turn")
 
-  override def winningGamePlayers(): Team =
-    context.calculateWinner(this.teams, this.players)
+  override def winningGamePlayers(): List[(Team, Int)] = 
+    val teams = context.calculateWinner(this.teams, this.players)
+    val scoreMap: Map[String, Int] = players.map(p => p.name -> p.score).toMap
+
+    teams.map ( team =>
+      val totalScore = team.map(name => scoreMap.getOrElse(name, 0)).sum
+      (team, totalScore)
+    )
+  
 
   private def addScoreToWinningPlayer(winningPlayer: PlayerModel): Unit =
     val points = context.calculatePoints()

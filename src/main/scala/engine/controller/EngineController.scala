@@ -9,10 +9,22 @@ import engine.view.ElementsPositionManager.*
 import engine.view.monads.Monads.Monad.seqN
 
 sealed trait GameEvent
+/** Represents a game event where a player plays a card.
+ *
+ * @param playerName The name of the player who played the card.
+ * @param card The card that was played.
+ */
 case class CardPlayedEvent(playerName: String, card: CardModel) extends GameEvent
 case object InvalidEvent extends GameEvent
 
 object EventParser:
+  /**
+   * Parses a game event string into a GameEvent.
+   *
+   * @param event The event string in the format "playerName::cardInfo", with 'cardInfo' being
+   *  'name rank suit'.
+   * @return Either an error message or a CardPlayedEvent.
+   */
   def parseEvent(event: String): Either[String, GameEvent] =
     event.split("::").toList match
       case playerName :: cardInfo :: Nil =>
@@ -30,6 +42,9 @@ object EventParser:
         Left(s"Invalid card format: expected 'name rank suit', got '$cardInfo'")
 
 sealed trait EngineController:
+  /**
+   * Starts the engine controller, initializing the game view and handling events.
+   */
   def start(): Unit
 
 object EngineController:

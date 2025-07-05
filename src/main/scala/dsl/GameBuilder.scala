@@ -28,22 +28,122 @@ import engine.model.{
   PlayerModel
 }
 
+/** GameBuilder is a trait that defines the methods to build a game.
+  */
 sealed trait GameBuilder:
+  /** The name of the game.
+    */
   val gameName: String
+
+  /** Adds a player to the game.
+    * @param name
+    *   the name of the player
+    * @return
+    *   the GameBuilder instance with the added player
+    */
   def addPlayer(name: String): GameBuilder
+  /** Adds a bot player to the game.
+    * @param name
+    *   the name of the bot player
+    * @param botType
+    *   the type of the bot
+    * @return
+    *   the GameBuilder instance with the added bot player
+    */
   def addBotPlayer(name: String, botType: BotType): GameBuilder
+  /** Sets the number of players in the game.
+    * @param n
+    *   the number of players
+    * @return
+    *   the GameBuilder instance with the set number of players
+    */
   def setPlayers(n: Int): GameBuilder
+  /** Sets the suits of the cards in the game.
+    * @param suits
+    *   the list of suits
+    * @return
+    *   the GameBuilder instance with the set suits
+    */
   def setSuits(suits: List[String]): GameBuilder
+  /** Sets the ranks of the cards in the game.
+    * @param ranks
+    *   the list of ranks
+    * @return
+    *   the GameBuilder instance with the set ranks
+    */
   def setRanks(ranks: List[String]): GameBuilder
+  /** Sets the size of the hands for each player.
+    * @param handSize
+    *   the size of the hands
+    * @return
+    *   the GameBuilder instance with the set hand size
+    */
   def setPlayersHands(handSize: Int): GameBuilder
+  /** Sets the starting player of the game.
+    * @param name
+    *   the name of the starting player
+    * @return
+    *   the GameBuilder instance with the set starting player
+    */
   def setStartingPlayer(name: String): GameBuilder
+  /** Sets the point rules for the game.
+    * @param rule
+    *   the points rule to be set
+    * @return
+    *   the GameBuilder instance with the set point rules
+    */
   def setPointRule(rule: PointsRule): GameBuilder
+  /** Sets the play rules for the game.
+    * @param rule
+    *   the play rule to be set
+    * @return
+    *   the GameBuilder instance with the set play rules
+    */
   def setPlayRule(rule: PlayRule): GameBuilder
+  /** Sets the hand rule for the game.
+    * @param rule
+    *   the hand rule to be set
+    * @return
+    *   the GameBuilder instance with the set hand rule
+    */
   def setHandRule(rule: HandRule): GameBuilder
+  /** Sets the win rule for the game.
+    * @param rule
+    *   the win rule to be set
+    * @return
+    *   the GameBuilder instance with the set win rule
+    */
   def setWinRule(rule: WinRule): GameBuilder
+  /** Adds a team to the game.
+    * @param names
+    *   the list of player names in the team
+    * @return
+    *   the GameBuilder instance with the added team
+    * @throws IllegalArgumentException
+    *   if any player in the team does not exist or is already in another team
+    */
   def addTeam(names: List[String]): GameBuilder
+  /** Sets the suit of the briscola card.
+      * @param suit
+      *   the suit of the briscola card
+      * @return
+      *   the GameBuilder instance with the set briscola suit
+      * @throws IllegalArgumentException
+      *   if the suit is not defined in the game
+      */
   def setBriscolaSuit(suit: String): GameBuilder
+  /** Returns the suit of the briscola card.
+    * @return
+    *   the suit of the briscola card
+    */
   def briscola: String = ""
+  /** Builds the game model.
+    * @return
+    *   the FullEngineModel representing the game
+    * @throws IllegalArgumentException
+    *   if the number of players does not match the set player count or if any
+    *   other required field is not set correctly
+    */
   def build(): FullEngineModel
 
 object GameBuilder:

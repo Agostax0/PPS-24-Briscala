@@ -137,23 +137,23 @@ trait WinRuleStrategy:
     * @param listOfPlayers
     *   the list of players in the game
     * @return
-    *   the winning team
+    *   the winning List[team]
     */
-  def winningGameTeam(
+  def orderedTeam(
       teams: List[Team],
       listOfPlayers: List[PlayerModel]
-  ): Team
+  ): List[Team]
 
 /** Default implementation of WinRuleStrategy that uses the highest scoring team
   * as the winner.
   */
 class DefaultWinRuleStrategy extends WinRuleStrategy:
-  def winningGameTeam(
+  def orderedTeam(
       teams: List[Team],
       listOfPlayers: List[PlayerModel]
-  ): Team =
+  ): List[Team] =
     val rule = WinRule.highest(using teams, listOfPlayers)
-    rule.head
+    rule
 
 /** Custom implementation of WinRuleStrategy that uses a provided win rule
   * function.
@@ -161,11 +161,11 @@ class DefaultWinRuleStrategy extends WinRuleStrategy:
   *   the win rule function that determines the winning team
   */
 class CustomWinRuleStrategy(winRule: WinRule) extends WinRuleStrategy:
-  def winningGameTeam(
+  def orderedTeam(
       teams: List[Team],
       listOfPlayers: List[PlayerModel]
-  ): Team =
-    winRule(teams, listOfPlayers).head
+  ): List[Team] =
+    winRule(teams, listOfPlayers)
 
 /** Trait for managing the deck of cards in the game.
   */

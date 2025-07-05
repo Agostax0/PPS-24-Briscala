@@ -92,7 +92,7 @@ class GameContextTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     player2.score = 5
 
     val winningTeam = gameContext.calculateWinner(teams, List(player1, player2))
-    winningTeam should be (Team(List(player1.name)))
+    winningTeam.head should be (Team(List(player1.name)))
 
   it should "follow a custom win rule" in:
     player1.score = 10
@@ -107,4 +107,4 @@ class GameContextTest extends AnyFlatSpec with should.Matchers with BeforeAndAft
     gameContext.setWinRule(winRule)
 
     val winningTeam = gameContext.calculateWinner(teams, List(player1, player2))
-    winningTeam should be(Team(List(player2.name)))
+    winningTeam.head should be(Team(List(player2.name)))

@@ -27,7 +27,8 @@ class GameDSLTest
     with should.Matchers
     with BeforeAndAfterEach:
 
-  override def beforeEach(): Unit = GameDSL(new SimpleGameBuilder())
+  override def beforeEach(): Unit = 
+    GameDSL(new SimpleGameBuilder())
 
   val gameName = "Briscola"
   private val alice = "Alice"
@@ -90,8 +91,6 @@ class GameDSLTest
 
     g match
       case g: SimpleGameBuilder =>
-        println(g.players.map(_.name))
-        println(g.startingPlayerIndex)
         g.startingPlayerIndex shouldBe Some(g.players.map(_.name).indexOf(alice))
       case _ => fail(wrongClassText)
 

@@ -5,7 +5,7 @@
 |    1     |                   Code Refactoring                   |               Engine Model Refactoring<br/>Engine Controller Refactoring                |               Alni<br/>Alni                |        5<br/>3        |       4<br/>3       |       0<br/>0        |       /<br/>/       |       /<br/>/       |       /<br/>/       |       /<br/>/       |       /<br/>/       |
 |    2     |                  Adding more tests                   | Tests for Controller<br/>Tests for View<br/>Tests for Monads<br/>Tests for GameElements | Alni<br/>Pesic, Agosta<br/>Alni<br/>Agosta |  2<br/>3<br/>3<br/>4  | 2<br/>3<br/>3<br/>4 | 2<br/>3<br/>3<br/>4  | 0<br/>1<br/>3<br/>4 | /<br/>0<br/>0<br/>2 | /<br/>/<br/>/<br/>0 | /<br/>/<br/>/<br/>/ | /<br/>/<br/>/<br/>/ |
 |    3     |                  Adding bot players                  |                              Random Bot<br/>Rule Aware bot                              |              Pesic<br/>Agosta              |        2<br/>2        |       2<br/>2       |       0<br/>2        |       /<br/>0       |       /<br/>/       |       /<br/>/       |       /<br/>/       |       /<br/>/       |
-|    4     |                 DSL Method Ordering                  |                      Enforncing method order during game creationg                      |                   Agosta                   |          10           |         10          |          10          |         10          |         10          |         10          |          8          |          /          |
+|    4     |                 DSL Method Ordering                  |                     Enforcing method ordering during game creation                      |                   Agosta                   |          10           |         10          |          10          |         10          |         10          |         10          |          8          |          8          |
 |    5     | The user can choose between some prefabricated games |        Making GameBuilder more easily testable<br/>Adding testable game examples        |               Alni<br/>Alni                |        3<br/>2        |       3<br/>2       |       3<br/>2        |       3<br/>2       |       2<br/>2       |       0<br/>0       |       /<br/>/       |       /<br/>/       |
 
 # Sprint Goal
@@ -15,5 +15,8 @@ This sprint's goal is to review the code written until now and work on deliverin
 This sprint's deadline is set for 7/07/2025.
 
 # Sprint Review
+We managed to complete almost every task we set out to do, expect the DSL method ordering which is planned for the next, and conclusive, sprint.
+We had some setbacks with automated testing which involved some unexpected concurrency problems due to the underlying build tool used.
 
 # Sprint Retrospective
+This sprint has been easy to manage and resolve, since our experience has grown and we have become more accustomed to this scrum-like development process.

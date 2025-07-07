@@ -9,9 +9,9 @@ Below are the individual contributions of each member.
 - [Pesic Marco](./pesic.md)
 
 ## Tri-Programming
-- GameBuilder
-- Bot
-- PointRule 
+### GameBuilder
+### Bot
+### PointRule 
     
 
 | [Previous Chapter](../5-detailed_design/index.md) | [Index](../index.md) | [Next Chapter](../7-testing/index.md) |

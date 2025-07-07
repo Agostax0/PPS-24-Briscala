@@ -48,6 +48,7 @@
 * The following requirements are not mandatory to for project completion, but their implementation would improve the quality of the result:
   * Team-based play
   * Single play against bots
+  * The application should enforce the correct usage of the DSL to the user, preventing the creation of invalid game configurations
   * Extension of the engine to support more complex games in which the table is not cleared at the end of each turn
 
 | [Previous Chapter](../2-development_process/index.md) | [Index](../index.md) | [Next Chapter](../4-architectural_design/index.md) |

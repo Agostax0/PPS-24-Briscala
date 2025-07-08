@@ -1,0 +1,3300 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          dsl\syntax\SyntacticSugarBuilder.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package dsl.syntax
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.GameBuilder
+</span>4 <span style=''>import dsl.syntax.SyntacticSugar.*
+</span>5 <span style=''>import dsl.types.{HandRule, PlayRule, PointsRule}
+</span>6 <span style=''>import dsl.syntax.SyntacticSugar.{PlayerSyntacticSugar, ToSyntacticSugar}
+</span>7 <span style=''>import dsl.types.Team.Team
+</span>8 <span style=''>import dsl.types.{HandRule, PlayRule, PointsRule, Team, WinRule}
+</span>9 <span style=''>import engine.model.{BotType, CardModel, DeckModel, PlayerModel}
+</span>10 <span style=''>
+</span>11 <span style=''>import scala.language.implicitConversions
+</span>12 <span style=''>
+</span>13 <span style=''>object SyntacticSugarBuilder:
+</span>14 <span style=''>
+</span>15 <span style=''>  /**
+</span>16 <span style=''>   * Builder for creating a GameBuilder with a specific number of players.
+</span>17 <span style=''>   */
+</span>18 <span style=''>  trait PlayerCountBuilder:
+</span>19 <span style=''>    infix def players: GameBuilder
+</span>20 <span style=''>  object PlayerCountBuilder:
+</span>21 <span style=''>    /**
+</span>22 <span style=''>     * Sets the number of players for the GameBuilder.
+</span>23 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>24 <span style=''>     * @param playerCount the number of players expected to be added
+</span>25 <span style=''>     * @return a PlayerCountBuilder that can be used to set the number of players
+</span>26 <span style=''>     */
+</span>27 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder, playerCount: Int): PlayerCountBuilder =
+</span>28 <span style=''>      </span><span style='background: #AEF1AE'>new PlayerCountBuilderImpl(gameBuilder, playerCount)</span><span style=''>
+</span>29 <span style=''>    private class PlayerCountBuilderImpl(
+</span>30 <span style=''>        gameBuilder: GameBuilder,
+</span>31 <span style=''>        playerCount: Int
+</span>32 <span style=''>    ) extends PlayerCountBuilder:
+</span>33 <span style=''>      </span><span style='background: #AEF1AE'>infix def players</span><span style=''>: GameBuilder =
+</span>34 <span style=''>        </span><span style='background: #AEF1AE'>gameBuilder.setPlayers(playerCount)</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  /**
+</span>37 <span style=''>   * Builder for adding entities (players or bots) to the GameBuilder.
+</span>38 <span style=''>   */
+</span>39 <span style=''>  trait EntityBuilder:
+</span>40 <span style=''>    infix def called(name: String): GameBuilder
+</span>41 <span style=''>  object EntityBuilder:
+</span>42 <span style=''>    /**
+</span>43 <span style=''>     * Adds players or bots to the GameBuilder.
+</span>44 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>45 <span style=''>     * @param entity the entity to be added (Player, RandomBot, SmartBot)
+</span>46 <span style=''>     * @return an EntityBuilder that can be used to set the name of the entity
+</span>47 <span style=''>     */
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>49 <span style=''>        gameBuilder: GameBuilder,
+</span>50 <span style=''>        entity: EntitySyntacticSugar
+</span>51 <span style=''>    ): EntityBuilder =
+</span>52 <span style=''>      </span><span style='background: #AEF1AE'>new EntityBuilderImpl(gameBuilder, entity)</span><span style=''>
+</span>53 <span style=''>    private class EntityBuilderImpl(
+</span>54 <span style=''>        gameBuilder: GameBuilder,
+</span>55 <span style=''>        entity: EntitySyntacticSugar
+</span>56 <span style=''>    ) extends EntityBuilder:
+</span>57 <span style=''>      </span><span style='background: #AEF1AE'>infix def called</span><span style=''>(name: String): GameBuilder =
+</span>58 <span style=''>        entity match
+</span>59 <span style=''>          case _: PlayerSyntacticSugar </span><span style='background: #AEF1AE'>=&gt; gameBuilder.addPlayer(name)</span><span style=''>
+</span>60 <span style=''>          case _: RandomBotSyntacticSugar </span><span style='background: #AEF1AE'>=&gt;
+</span>61 <span style=''></span><span style='background: #AEF1AE'>            gameBuilder.addBotPlayer(name, BotType.Random)</span><span style=''>
+</span>62 <span style=''>          case _: SmartBotSyntacticSugar </span><span style='background: #AEF1AE'>=&gt;
+</span>63 <span style=''></span><span style='background: #AEF1AE'>            gameBuilder.addBotPlayer(name, BotType.Smart)</span><span style=''>
+</span>64 <span style=''>
+</span>65 <span style=''>  /**
+</span>66 <span style=''>   * Builder for setting the number of cards in each player's hand to the GameBuilder.
+</span>67 <span style=''>   */
+</span>68 <span style=''>  trait HandBuilder:
+</span>69 <span style=''>    infix def cards(to: ToSyntacticSugar): ToBuilder
+</span>70 <span style=''>  object HandBuilder:
+</span>71 <span style=''>    /**
+</span>72 <span style=''>     * Sets the number of cards in each player's hand for the GameBuilder.
+</span>73 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>74 <span style=''>     * @param handSize the number of cards in each player's hand
+</span>75 <span style=''>     * @return a HandBuilder that can be used to set the players' hands
+</span>76 <span style=''>     */
+</span>77 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder, handSize: Int): HandBuilder =
+</span>78 <span style=''>      </span><span style='background: #AEF1AE'>new HandBuilderImpl(gameBuilder, handSize)</span><span style=''>
+</span>79 <span style=''>    private class HandBuilderImpl(gameBuilder: GameBuilder, handSize: Int)
+</span>80 <span style=''>        extends HandBuilder:
+</span>81 <span style=''>      </span><span style='background: #AEF1AE'>infix def cards</span><span style=''>(to: ToSyntacticSugar): ToBuilder =
+</span>82 <span style=''>        </span><span style='background: #AEF1AE'>ToBuilder(gameBuilder, handSize)</span><span style=''>
+</span>83 <span style=''>
+</span>84 <span style=''>  trait ToBuilder:
+</span>85 <span style=''>    infix def every(player: PlayerSyntacticSugar): GameBuilder
+</span>86 <span style=''>  private object ToBuilder:
+</span>87 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder, handSize: Int): ToBuilder =
+</span>88 <span style=''>      </span><span style='background: #AEF1AE'>new ToBuilderImpl(gameBuilder, handSize)</span><span style=''>
+</span>89 <span style=''>    private class ToBuilderImpl(gameBuilder: GameBuilder, handSize: Int)
+</span>90 <span style=''>        extends ToBuilder:
+</span>91 <span style=''>      </span><span style='background: #AEF1AE'>infix def every</span><span style=''>(player: PlayerSyntacticSugar): GameBuilder =
+</span>92 <span style=''>        </span><span style='background: #AEF1AE'>gameBuilder.setPlayersHands(handSize)</span><span style=''>
+</span>93 <span style=''>
+</span>94 <span style=''>  /**
+</span>95 <span style=''>   * Builder for setting the starting player of the GameBuilder.
+</span>96 <span style=''>   */
+</span>97 <span style=''>  trait StartingTurnBuilder:
+</span>98 <span style=''>    infix def from(name: String): GameBuilder
+</span>99 <span style=''>  object StartingTurnBuilder:
+</span>100 <span style=''>    /**
+</span>101 <span style=''>     * Sets the index of the starting player in the GameBuilder.
+</span>102 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>103 <span style=''>     * @return a StartingTurnBuilder that can be used to set the starting player
+</span>104 <span style=''>     */
+</span>105 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder): StartingTurnBuilder =
+</span>106 <span style=''>      </span><span style='background: #AEF1AE'>new StartingTurnBuilderImpl(gameBuilder)</span><span style=''>
+</span>107 <span style=''>    private class StartingTurnBuilderImpl(builder: GameBuilder)
+</span>108 <span style=''>        extends StartingTurnBuilder:
+</span>109 <span style=''>      </span><span style='background: #AEF1AE'>override infix def from</span><span style=''>(name: String): GameBuilder =
+</span>110 <span style=''>        </span><span style='background: #AEF1AE'>builder.setStartingPlayer(name)</span><span style=''>
+</span>111 <span style=''>
+</span>112 <span style=''>  /**
+</span>113 <span style=''>   * Builder for setting the points rules of the GameBuilder.
+</span>114 <span style=''>   */
+</span>115 <span style=''>  trait PointsBuilder:
+</span>116 <span style=''>    infix def are(pointRules: ((String, String) =&gt; Int)*): GameBuilder
+</span>117 <span style=''>  object PointsBuilder:
+</span>118 <span style=''>    /**
+</span>119 <span style=''>     * Adds point rules to the GameBuilder.
+</span>120 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>121 <span style=''>     * @return a PointsBuilder that can be used to set the point rules
+</span>122 <span style=''>     */
+</span>123 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder): PointsBuilder = </span><span style='background: #AEF1AE'>new PointsBuilderImpl(
+</span>124 <span style=''></span><span style='background: #AEF1AE'>      gameBuilder
+</span>125 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>126 <span style=''>    private class PointsBuilderImpl(builder: GameBuilder) extends PointsBuilder:
+</span>127 <span style=''>      </span><span style='background: #AEF1AE'>override infix def are</span><span style=''>(
+</span>128 <span style=''>          pointRules: ((String, String) =&gt; Int)*
+</span>129 <span style=''>      ): GameBuilder =
+</span>130 <span style=''>        </span><span style='background: #AEF1AE'>pointRules.foreach(rule =&gt; builder.setPointRule(PointsRule(rule)))</span><span style=''>
+</span>131 <span style=''>        builder
+</span>132 <span style=''>
+</span>133 <span style=''>  /**
+</span>134 <span style=''>   * Builder for creating teams of players in the GameBuilder.
+</span>135 <span style=''>   */
+</span>136 <span style=''>  trait TeamBuilder:
+</span>137 <span style=''>    infix def composedOf(name: String*): GameBuilder
+</span>138 <span style=''>  object TeamBuilder:
+</span>139 <span style=''>    /**
+</span>140 <span style=''>     * Adds teams to the GameBuilder.
+</span>141 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>142 <span style=''>     * @return a TeamBuilder that can be used to set the team names
+</span>143 <span style=''>     */
+</span>144 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder): TeamBuilder = </span><span style='background: #AEF1AE'>new TeamBuilderImpl(
+</span>145 <span style=''></span><span style='background: #AEF1AE'>      gameBuilder
+</span>146 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>147 <span style=''>    private class TeamBuilderImpl(builder: GameBuilder) extends TeamBuilder:
+</span>148 <span style=''>      </span><span style='background: #AEF1AE'>override infix def composedOf</span><span style=''>(names: String*): GameBuilder =
+</span>149 <span style=''>        </span><span style='background: #AEF1AE'>builder.addTeam(names.toList)</span><span style=''>
+</span>150 <span style=''>        builder
+</span>151 <span style=''>
+</span>152 <span style=''>  /**
+</span>153 <span style=''>   * Builder for setting hand rules in the GameBuilder.
+</span>154 <span style=''>   */
+</span>155 <span style=''>  trait HandRuleBuilder:
+</span>156 <span style=''>    infix def are(
+</span>157 <span style=''>        handRules: (List[CardModel], DeckModel, CardModel) =&gt; Boolean
+</span>158 <span style=''>    ): GameBuilder
+</span>159 <span style=''>  object HandRuleBuilder:
+</span>160 <span style=''>    /**
+</span>161 <span style=''>     * Sets the hand rules for the GameBuilder.
+</span>162 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>163 <span style=''>     * @return a HandRuleBuilder that can be used to set the hand rules
+</span>164 <span style=''>     */
+</span>165 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder): HandRuleBuilder =
+</span>166 <span style=''>      </span><span style='background: #AEF1AE'>new HandRulesBuilderImpl(
+</span>167 <span style=''></span><span style='background: #AEF1AE'>        gameBuilder
+</span>168 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>169 <span style=''>    private class HandRulesBuilderImpl(builder: GameBuilder)
+</span>170 <span style=''>        extends HandRuleBuilder:
+</span>171 <span style=''>      </span><span style='background: #AEF1AE'>override infix def are</span><span style=''>(
+</span>172 <span style=''>          handRules: (List[CardModel], DeckModel, CardModel) =&gt; Boolean
+</span>173 <span style=''>      ): GameBuilder =
+</span>174 <span style=''>        </span><span style='background: #AEF1AE'>builder.setHandRule(HandRule(handRules))</span><span style=''>
+</span>175 <span style=''>        builder
+</span>176 <span style=''>
+</span>177 <span style=''>  /**
+</span>178 <span style=''>   * Builder for setting play rules in the GameBuilder.
+</span>179 <span style=''>   */
+</span>180 <span style=''>  trait PlayRulesBuilder:
+</span>181 <span style=''>    infix def are(
+</span>182 <span style=''>        playRules: (List[(PlayerModel, CardModel)] =&gt; Option[PlayerModel])*
+</span>183 <span style=''>    ): GameBuilder
+</span>184 <span style=''>  object PlayRulesBuilder:
+</span>185 <span style=''>    /**
+</span>186 <span style=''>     * Sets the play rules for the GameBuilder.
+</span>187 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>188 <span style=''>     * @return a PlayRulesBuilder that can be used to set the play rules
+</span>189 <span style=''>     */
+</span>190 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder): PlayRulesBuilder =
+</span>191 <span style=''>      </span><span style='background: #AEF1AE'>new PlayRulesBuilderImpl(
+</span>192 <span style=''></span><span style='background: #AEF1AE'>        gameBuilder
+</span>193 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>194 <span style=''>    private class PlayRulesBuilderImpl(builder: GameBuilder)
+</span>195 <span style=''>        extends PlayRulesBuilder:
+</span>196 <span style=''>      </span><span style='background: #AEF1AE'>override infix def are</span><span style=''>(
+</span>197 <span style=''>          playRules: (List[(PlayerModel, CardModel)] =&gt; Option[PlayerModel])*
+</span>198 <span style=''>      ): GameBuilder =
+</span>199 <span style=''>        </span><span style='background: #AEF1AE'>playRules.foreach(rule =&gt; builder.setPlayRule(PlayRule(rule)))</span><span style=''>
+</span>200 <span style=''>        builder
+</span>201 <span style=''>
+</span>202 <span style=''>  /**
+</span>203 <span style=''>   * Builder for setting win rules in the GameBuilder.
+</span>204 <span style=''>   */
+</span>205 <span style=''>  trait WinRulesBuilder:
+</span>206 <span style=''>    infix def is(
+</span>207 <span style=''>        winRules: (List[Team], List[PlayerModel]) =&gt; List[Team]
+</span>208 <span style=''>    ): GameBuilder
+</span>209 <span style=''>  object WinRulesBuilder:
+</span>210 <span style=''>    /**
+</span>211 <span style=''>     * Sets the win rules for the GameBuilder.
+</span>212 <span style=''>     * @param gameBuilder the GameBuilder to configure
+</span>213 <span style=''>     * @return a WinRulesBuilder that can be used to set the win rules
+</span>214 <span style=''>     */
+</span>215 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder): WinRulesBuilder =
+</span>216 <span style=''>      </span><span style='background: #AEF1AE'>new WinRulesBuilderImpl(
+</span>217 <span style=''></span><span style='background: #AEF1AE'>        gameBuilder
+</span>218 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>219 <span style=''>    private class WinRulesBuilderImpl(builder: GameBuilder)
+</span>220 <span style=''>        extends WinRulesBuilder:
+</span>221 <span style=''>      </span><span style='background: #AEF1AE'>override infix def is</span><span style=''>(
+</span>222 <span style=''>          winRules: (List[Team], List[PlayerModel]) =&gt; List[Team]
+</span>223 <span style=''>      ): GameBuilder =
+</span>224 <span style=''>        </span><span style='background: #AEF1AE'>builder.setWinRule(WinRule(winRules))</span><span style=''>
+</span>225 <span style=''>        builder
+</span>226 <span style=''>
+</span>227 <span style=''>  trait HighestBuilder:
+</span>228 <span style=''>    infix def that(takes: TakesSyntacticSugar): HighestCardBuilder
+</span>229 <span style=''>  private object HighestBuilder:
+</span>230 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(filterSyntacticSugar: CardFilterSyntacticSugar): HighestBuilder =
+</span>231 <span style=''>      </span><span style='background: #AEF1AE'>new HighestBuilderImpl(filterSyntacticSugar)</span><span style=''>
+</span>232 <span style=''>    private class HighestBuilderImpl(
+</span>233 <span style=''>        val highestTakingCardProperty: CardFilterSyntacticSugar
+</span>234 <span style=''>    ) extends HighestBuilder:
+</span>235 <span style=''>      </span><span style='background: #AEF1AE'>override infix def that</span><span style=''>(takes: TakesSyntacticSugar): HighestCardBuilder =
+</span>236 <span style=''>        </span><span style='background: #AEF1AE'>HighestCardBuilder.apply(highestTakingCardProperty)</span><span style=''>
+</span>237 <span style=''>
+</span>238 <span style=''>  trait HighestCardBuilder:
+</span>239 <span style=''>    infix def is(suit: String)(using
+</span>240 <span style=''>        List[(PlayerModel, CardModel)]
+</span>241 <span style=''>    ): Option[PlayerModel]
+</span>242 <span style=''>    infix def follows(
+</span>243 <span style=''>        cardPosition: CardPositionSyntacticSugar
+</span>244 <span style=''>    ): HighestCardOfCardPlayedBuilder
+</span>245 <span style=''>  private object HighestCardBuilder:
+</span>246 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>247 <span style=''>        highestTakingCardProperty: CardFilterSyntacticSugar
+</span>248 <span style=''>    ): HighestCardBuilder = </span><span style='background: #AEF1AE'>new HighestCardBuilderImpl(
+</span>249 <span style=''></span><span style='background: #AEF1AE'>      highestTakingCardProperty
+</span>250 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>251 <span style=''>    private class HighestCardBuilderImpl(
+</span>252 <span style=''>        val filterSyntacticSugar: CardFilterSyntacticSugar
+</span>253 <span style=''>    ) extends HighestCardBuilder:
+</span>254 <span style=''>      </span><span style='background: #AEF1AE'>override infix def follows</span><span style=''>(
+</span>255 <span style=''>          cardPosition: CardPositionSyntacticSugar
+</span>256 <span style=''>      ): HighestCardOfCardPlayedBuilder =
+</span>257 <span style=''>        </span><span style='background: #AEF1AE'>HighestCardOfCardPlayedBuilder(filterSyntacticSugar, cardPosition)</span><span style=''>
+</span>258 <span style=''>
+</span>259 <span style=''>      </span><span style='background: #AEF1AE'>override infix def is</span><span style=''>(briscola: String)(using
+</span>260 <span style=''>          cardsOnTable: List[(PlayerModel, CardModel)]
+</span>261 <span style=''>      ): Option[PlayerModel] =
+</span>262 <span style=''>        val winner = </span><span style='background: #AEF1AE'>cardsOnTable
+</span>263 <span style=''></span><span style='background: #AEF1AE'>          .filter(_._2.suit equals briscola)
+</span>264 <span style=''></span><span style='background: #AEF1AE'>          .sortBy(</span><span style='background: #F0ADAD'>_._2.rank</span><span style='background: #AEF1AE'>)(using Ordering.Int.reverse)
+</span>265 <span style=''></span><span style='background: #AEF1AE'>          .map(_._1)
+</span>266 <span style=''></span><span style='background: #AEF1AE'>          .headOption</span><span style=''>
+</span>267 <span style=''>        winner
+</span>268 <span style=''>  trait HighestCardOfCardPlayedBuilder:
+</span>269 <span style=''>    infix def card(suit: CardFilterSyntacticSugar)(using
+</span>270 <span style=''>        List[(PlayerModel, CardModel)]
+</span>271 <span style=''>    ): Option[PlayerModel]
+</span>272 <span style=''>
+</span>273 <span style=''>  private object HighestCardOfCardPlayedBuilder:
+</span>274 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>275 <span style=''>        highestTakingCardProperty: CardFilterSyntacticSugar,
+</span>276 <span style=''>        cardPosition: CardPositionSyntacticSugar
+</span>277 <span style=''>    ): HighestCardOfCardPlayedBuilder =
+</span>278 <span style=''>      </span><span style='background: #AEF1AE'>new HighestCardOfCardPlayedBuilderImpl(
+</span>279 <span style=''></span><span style='background: #AEF1AE'>        highestTakingCardProperty,
+</span>280 <span style=''></span><span style='background: #AEF1AE'>        cardPosition
+</span>281 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>282 <span style=''>    private class HighestCardOfCardPlayedBuilderImpl(
+</span>283 <span style=''>        val highestTakingCardProperty: CardFilterSyntacticSugar,
+</span>284 <span style=''>        val cardPosition: CardPositionSyntacticSugar
+</span>285 <span style=''>    ) extends HighestCardOfCardPlayedBuilder:
+</span>286 <span style=''>      </span><span style='background: #AEF1AE'>override infix def card</span><span style=''>(cardPositionProperty: CardFilterSyntacticSugar)(
+</span>287 <span style=''>          using cardsOnTable: List[(PlayerModel, CardModel)]
+</span>288 <span style=''>      ): Option[PlayerModel] =
+</span>289 <span style=''>        val card = </span><span style='background: #AEF1AE'>getCardByPosition(using cardsOnTable)</span><span style=''>
+</span>290 <span style=''>        val winner = </span><span style='background: #AEF1AE'>cardsOnTable
+</span>291 <span style=''></span><span style='background: #AEF1AE'>          .filterByProperty(card, cardPositionProperty)
+</span>292 <span style=''></span><span style='background: #AEF1AE'>          .sortByHighestProperty
+</span>293 <span style=''></span><span style='background: #AEF1AE'>          .map(_._1)
+</span>294 <span style=''></span><span style='background: #AEF1AE'>          .headOption</span><span style=''>
+</span>295 <span style=''>        winner
+</span>296 <span style=''>
+</span>297 <span style=''>      </span><span style='background: #AEF1AE'>private def getCardByPosition</span><span style=''>(using
+</span>298 <span style=''>          cardsOnTable: List[(PlayerModel, CardModel)]
+</span>299 <span style=''>      ): CardModel = cardPosition match
+</span>300 <span style=''>        case _: FirstCardSyntacticSugar </span><span style='background: #AEF1AE'>=&gt; cardsOnTable.head._2</span><span style=''>
+</span>301 <span style=''>        case _: LastCardSyntacticSugar  </span><span style='background: #AEF1AE'>=&gt; cardsOnTable.last._2</span><span style=''>
+</span>302 <span style=''>        case _ </span><span style='background: #AEF1AE'>=&gt; throw new IllegalArgumentException(&quot;Unknown card position&quot;)</span><span style=''>
+</span>303 <span style=''>
+</span>304 <span style=''>      extension (cardsOnTable: List[(PlayerModel, CardModel)])
+</span>305 <span style=''>        </span><span style='background: #AEF1AE'>private def filterByProperty</span><span style=''>(
+</span>306 <span style=''>            card: CardModel,
+</span>307 <span style=''>            cardPositionProperty: CardFilterSyntacticSugar
+</span>308 <span style=''>        ): List[(PlayerModel, CardModel)] =
+</span>309 <span style=''>          cardPositionProperty match
+</span>310 <span style=''>            case _: SuitSyntacticSugar </span><span style='background: #AEF1AE'>=&gt;
+</span>311 <span style=''></span><span style='background: #AEF1AE'>              cardsOnTable.filter(_._2.suit equals card.suit)</span><span style=''>
+</span>312 <span style=''>            case _: RankSyntacticSugar </span><span style='background: #AEF1AE'>=&gt;
+</span>313 <span style=''></span><span style='background: #AEF1AE'>              cardsOnTable.filter(_._2.rank equals card.rank)</span><span style=''>
+</span>314 <span style=''>            case _ </span><span style='background: #AEF1AE'>=&gt; throw new IllegalArgumentException(&quot;Unknown card property&quot;)</span><span style=''>
+</span>315 <span style=''>        </span><span style='background: #AEF1AE'>private def sortByHighestProperty</span><span style=''>: List[(PlayerModel, CardModel)] =
+</span>316 <span style=''>          highestTakingCardProperty match
+</span>317 <span style=''>            case _: SuitSyntacticSugar </span><span style='background: #AEF1AE'>=&gt;
+</span>318 <span style=''></span><span style='background: #AEF1AE'>              throw new IllegalArgumentException(
+</span>319 <span style=''></span><span style='background: #AEF1AE'>                &quot;There is no explicit suit ordering&quot;
+</span>320 <span style=''></span><span style='background: #AEF1AE'>              )</span><span style=''>
+</span>321 <span style=''>            case _: RankSyntacticSugar </span><span style='background: #AEF1AE'>=&gt;
+</span>322 <span style=''></span><span style='background: #AEF1AE'>              cardsOnTable.sortBy(</span><span style='background: #F0ADAD'>_._2.rank</span><span style='background: #AEF1AE'>)(using Ordering.Int.reverse)</span><span style=''>
+</span>323 <span style=''>            case _ </span><span style='background: #AEF1AE'>=&gt;
+</span>324 <span style=''></span><span style='background: #AEF1AE'>              throw new IllegalArgumentException(
+</span>325 <span style=''></span><span style='background: #AEF1AE'>                &quot;Unknown card property&quot;
+</span>326 <span style=''></span><span style='background: #AEF1AE'>              )</span><span style=''>
+</span>327 <span style=''>  </span><span style='background: #AEF1AE'>implicit def highest</span><span style=''>(
+</span>328 <span style=''>      highestTakingCardProperty: CardFilterSyntacticSugar
+</span>329 <span style=''>  ): HighestBuilder =
+</span>330 <span style=''>    </span><span style='background: #AEF1AE'>HighestBuilder.apply(highestTakingCardProperty)</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          361
+        </td>
+        <td>
+          920
+          -
+          929
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          360
+        </td>
+        <td>
+          1003
+          -
+          1055
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new PlayerCountBuilderImpl(gameBuilder, playerCount)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          363
+        </td>
+        <td>
+          1202
+          -
+          1219
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          players
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def players
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          362
+        </td>
+        <td>
+          1244
+          -
+          1279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.setPlayers(playerCount)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          365
+        </td>
+        <td>
+          1749
+          -
+          1758
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          364
+        </td>
+        <td>
+          1864
+          -
+          1906
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new EntityBuilderImpl(gameBuilder, entity)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          372
+        </td>
+        <td>
+          2055
+          -
+          2071
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def called
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          367
+        </td>
+        <td>
+          2163
+          -
+          2193
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; gameBuilder.addPlayer(name)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          366
+        </td>
+        <td>
+          2166
+          -
+          2193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.addPlayer(name)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          369
+        </td>
+        <td>
+          2237
+          -
+          2299
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n            gameBuilder.addBotPlayer(name, BotType.Random)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          368
+        </td>
+        <td>
+          2253
+          -
+          2299
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addBotPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.addBotPlayer(name, BotType.Random)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          371
+        </td>
+        <td>
+          2342
+          -
+          2403
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n            gameBuilder.addBotPlayer(name, BotType.Smart)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          370
+        </td>
+        <td>
+          2358
+          -
+          2403
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addBotPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.addBotPlayer(name, BotType.Smart)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          374
+        </td>
+        <td>
+          2901
+          -
+          2910
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          373
+        </td>
+        <td>
+          2974
+          -
+          3016
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new HandBuilderImpl(gameBuilder, handSize)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          376
+        </td>
+        <td>
+          3130
+          -
+          3145
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          cards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def cards
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          375
+        </td>
+        <td>
+          3190
+          -
+          3222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          ToBuilder(gameBuilder, handSize)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          378
+        </td>
+        <td>
+          3343
+          -
+          3352
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          377
+        </td>
+        <td>
+          3414
+          -
+          3454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new ToBuilderImpl(gameBuilder, handSize)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          380
+        </td>
+        <td>
+          3564
+          -
+          3579
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          every
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def every
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          379
+        </td>
+        <td>
+          3634
+          -
+          3671
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPlayersHands
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.setPlayersHands(handSize)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          382
+        </td>
+        <td>
+          4089
+          -
+          4098
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          381
+        </td>
+        <td>
+          4155
+          -
+          4195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new StartingTurnBuilderImpl(gameBuilder)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          384
+        </td>
+        <td>
+          4306
+          -
+          4329
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          from
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def from
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          383
+        </td>
+        <td>
+          4368
+          -
+          4399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setStartingPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setStartingPlayer(name)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          385
+        </td>
+        <td>
+          4849
+          -
+          4897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new PointsBuilderImpl(\r\n      gameBuilder\r\n    )
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          386
+        </td>
+        <td>
+          4796
+          -
+          4805
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          390
+        </td>
+        <td>
+          4987
+          -
+          5009
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def are
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          388
+        </td>
+        <td>
+          5121
+          -
+          5159
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPointRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setPointRule(PointsRule(rule))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          387
+        </td>
+        <td>
+          5094
+          -
+          5160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          pointRules.foreach(rule =&gt; builder.setPointRule(PointsRule(rule)))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          389
+        </td>
+        <td>
+          5142
+          -
+          5158
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PointsRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          391
+        </td>
+        <td>
+          5595
+          -
+          5641
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new TeamBuilderImpl(\r\n      gameBuilder\r\n    )
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          392
+        </td>
+        <td>
+          5544
+          -
+          5553
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          395
+        </td>
+        <td>
+          5727
+          -
+          5756
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          composedOf
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def composedOf
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          394
+        </td>
+        <td>
+          5813
+          -
+          5825
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          names.toList
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          393
+        </td>
+        <td>
+          5797
+          -
+          5826
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.addTeam(names.toList)
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          397
+        </td>
+        <td>
+          6282
+          -
+          6291
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          396
+        </td>
+        <td>
+          6344
+          -
+          6399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new HandRulesBuilderImpl(\r\n        gameBuilder\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          400
+        </td>
+        <td>
+          6503
+          -
+          6525
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def are
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          399
+        </td>
+        <td>
+          6653
+          -
+          6672
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HandRule(handRules)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          398
+        </td>
+        <td>
+          6633
+          -
+          6673
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setHandRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setHandRule(HandRule(handRules))
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          402
+        </td>
+        <td>
+          7138
+          -
+          7147
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          401
+        </td>
+        <td>
+          7201
+          -
+          7256
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new PlayRulesBuilderImpl(\r\n        gameBuilder\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          196
+        </td>
+        <td>
+          406
+        </td>
+        <td>
+          7361
+          -
+          7383
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def are
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          403
+        </td>
+        <td>
+          7497
+          -
+          7559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playRules.foreach(rule =&gt; builder.setPlayRule(PlayRule(rule)))
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          405
+        </td>
+        <td>
+          7543
+          -
+          7557
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          404
+        </td>
+        <td>
+          7523
+          -
+          7558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPlayRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setPlayRule(PlayRule(rule))
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          408
+        </td>
+        <td>
+          8005
+          -
+          8014
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          407
+        </td>
+        <td>
+          8067
+          -
+          8121
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new WinRulesBuilderImpl(\r\n        gameBuilder\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          411
+        </td>
+        <td>
+          8224
+          -
+          8245
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def is
+        </td>
+      </tr><tr>
+        <td>
+          224
+        </td>
+        <td>
+          409
+        </td>
+        <td>
+          8347
+          -
+          8384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setWinRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setWinRule(WinRule(winRules))
+        </td>
+      </tr><tr>
+        <td>
+          224
+        </td>
+        <td>
+          410
+        </td>
+        <td>
+          8366
+          -
+          8383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          WinRule(winRules)
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          413
+        </td>
+        <td>
+          8536
+          -
+          8545
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          412
+        </td>
+        <td>
+          8619
+          -
+          8663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new HighestBuilderImpl(filterSyntacticSugar)
+        </td>
+      </tr><tr>
+        <td>
+          235
+        </td>
+        <td>
+          415
+        </td>
+        <td>
+          8806
+          -
+          8829
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          that
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def that
+        </td>
+      </tr><tr>
+        <td>
+          236
+        </td>
+        <td>
+          414
+        </td>
+        <td>
+          8889
+          -
+          8940
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HighestCardBuilder.apply(highestTakingCardProperty)
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          417
+        </td>
+        <td>
+          9234
+          -
+          9243
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          248
+        </td>
+        <td>
+          416
+        </td>
+        <td>
+          9335
+          -
+          9402
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new HighestCardBuilderImpl(\r\n      highestTakingCardProperty\r\n    )
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          419
+        </td>
+        <td>
+          9548
+          -
+          9574
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          follows
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def follows
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          418
+        </td>
+        <td>
+          9680
+          -
+          9746
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HighestCardOfCardPlayedBuilder(filterSyntacticSugar, cardPosition)
+        </td>
+      </tr><tr>
+        <td>
+          259
+        </td>
+        <td>
+          432
+        </td>
+        <td>
+          9756
+          -
+          9777
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def is
+        </td>
+      </tr><tr>
+        <td>
+          263
+        </td>
+        <td>
+          424
+        </td>
+        <td>
+          9944
+          -
+          9948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          263
+        </td>
+        <td>
+          423
+        </td>
+        <td>
+          9944
+          -
+          9969
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          equals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2.suit equals briscola
+        </td>
+      </tr><tr>
+        <td>
+          263
+        </td>
+        <td>
+          422
+        </td>
+        <td>
+          9912
+          -
+          9970
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          filter
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filter(_._2.suit equals briscola)
+        </td>
+      </tr><tr>
+        <td>
+          263
+        </td>
+        <td>
+          425
+        </td>
+        <td>
+          9944
+          -
+          9953
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2.suit
+        </td>
+      </tr><tr>
+        <td>
+          264
+        </td>
+        <td>
+          427
+        </td>
+        <td>
+          9990
+          -
+          9999
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _._2.rank
+        </td>
+      </tr><tr>
+        <td>
+          264
+        </td>
+        <td>
+          421
+        </td>
+        <td>
+          9912
+          -
+          10028
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sortBy
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filter(_._2.suit equals briscola)\r\n          .sortBy(_._2.rank)(using Ordering.Int.reverse)
+        </td>
+      </tr><tr>
+        <td>
+          264
+        </td>
+        <td>
+          429
+        </td>
+        <td>
+          10007
+          -
+          10027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          reverse
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Ordering.Int.reverse
+        </td>
+      </tr><tr>
+        <td>
+          264
+        </td>
+        <td>
+          426
+        </td>
+        <td>
+          9990
+          -
+          9994
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          264
+        </td>
+        <td>
+          428
+        </td>
+        <td>
+          10007
+          -
+          10015
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Ordering
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Ordering
+        </td>
+      </tr><tr>
+        <td>
+          265
+        </td>
+        <td>
+          430
+        </td>
+        <td>
+          10045
+          -
+          10049
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._1
+        </td>
+      </tr><tr>
+        <td>
+          265
+        </td>
+        <td>
+          420
+        </td>
+        <td>
+          9912
+          -
+          10050
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filter(_._2.suit equals briscola)\r\n          .sortBy(_._2.rank)(using Ordering.Int.reverse)\r\n          .map(_._1)
+        </td>
+      </tr><tr>
+        <td>
+          266
+        </td>
+        <td>
+          431
+        </td>
+        <td>
+          9912
+          -
+          10073
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          headOption
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filter(_._2.suit equals briscola)\r\n          .sortBy(_._2.rank)(using Ordering.Int.reverse)\r\n          .map(_._1)\r\n          .headOption
+        </td>
+      </tr><tr>
+        <td>
+          274
+        </td>
+        <td>
+          434
+        </td>
+        <td>
+          10314
+          -
+          10323
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          278
+        </td>
+        <td>
+          433
+        </td>
+        <td>
+          10485
+          -
+          10591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new HighestCardOfCardPlayedBuilderImpl(\r\n        highestTakingCardProperty,\r\n        cardPosition\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          286
+        </td>
+        <td>
+          441
+        </td>
+        <td>
+          10821
+          -
+          10844
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override infix def card
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          435
+        </td>
+        <td>
+          11008
+          -
+          11045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getCardByPosition
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          getCardByPosition(using cardsOnTable)
+        </td>
+      </tr><tr>
+        <td>
+          291
+        </td>
+        <td>
+          438
+        </td>
+        <td>
+          11068
+          -
+          11137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          filterByProperty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filterByProperty(card, cardPositionProperty)
+        </td>
+      </tr><tr>
+        <td>
+          292
+        </td>
+        <td>
+          437
+        </td>
+        <td>
+          11068
+          -
+          11171
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sortByHighestProperty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filterByProperty(card, cardPositionProperty)\r\n          .sortByHighestProperty
+        </td>
+      </tr><tr>
+        <td>
+          293
+        </td>
+        <td>
+          436
+        </td>
+        <td>
+          11068
+          -
+          11193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filterByProperty(card, cardPositionProperty)\r\n          .sortByHighestProperty\r\n          .map(_._1)
+        </td>
+      </tr><tr>
+        <td>
+          293
+        </td>
+        <td>
+          439
+        </td>
+        <td>
+          11188
+          -
+          11192
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._1
+        </td>
+      </tr><tr>
+        <td>
+          294
+        </td>
+        <td>
+          440
+        </td>
+        <td>
+          11068
+          -
+          11216
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          headOption
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable\r\n          .filterByProperty(card, cardPositionProperty)\r\n          .sortByHighestProperty\r\n          .map(_._1)\r\n          .headOption
+        </td>
+      </tr><tr>
+        <td>
+          297
+        </td>
+        <td>
+          451
+        </td>
+        <td>
+          11242
+          -
+          11271
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          getCardByPosition
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def getCardByPosition
+        </td>
+      </tr><tr>
+        <td>
+          300
+        </td>
+        <td>
+          442
+        </td>
+        <td>
+          11419
+          -
+          11436
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head
+        </td>
+      </tr><tr>
+        <td>
+          300
+        </td>
+        <td>
+          444
+        </td>
+        <td>
+          11416
+          -
+          11439
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; cardsOnTable.head._2
+        </td>
+      </tr><tr>
+        <td>
+          300
+        </td>
+        <td>
+          443
+        </td>
+        <td>
+          11419
+          -
+          11439
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head._2
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          445
+        </td>
+        <td>
+          11484
+          -
+          11501
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          last
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.last
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          447
+        </td>
+        <td>
+          11481
+          -
+          11504
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; cardsOnTable.last._2
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          446
+        </td>
+        <td>
+          11484
+          -
+          11504
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.last._2
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          448
+        </td>
+        <td>
+          11524
+          -
+          11583
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Unknown card position&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          450
+        </td>
+        <td>
+          11521
+          -
+          11583
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; throw new IllegalArgumentException(&quot;Unknown card position&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          449
+        </td>
+        <td>
+          11530
+          -
+          11583
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Unknown card position&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          305
+        </td>
+        <td>
+          466
+        </td>
+        <td>
+          11659
+          -
+          11687
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          filterByProperty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def filterByProperty
+        </td>
+      </tr><tr>
+        <td>
+          310
+        </td>
+        <td>
+          457
+        </td>
+        <td>
+          11902
+          -
+          11967
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n              cardsOnTable.filter(_._2.suit equals card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          454
+        </td>
+        <td>
+          11940
+          -
+          11944
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          456
+        </td>
+        <td>
+          11957
+          -
+          11966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card.suit
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          453
+        </td>
+        <td>
+          11940
+          -
+          11966
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          equals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2.suit equals card.suit
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          452
+        </td>
+        <td>
+          11920
+          -
+          11967
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          filter
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.filter(_._2.suit equals card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          455
+        </td>
+        <td>
+          11940
+          -
+          11949
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2.suit
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          462
+        </td>
+        <td>
+          12008
+          -
+          12073
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n              cardsOnTable.filter(_._2.rank equals card.rank)
+        </td>
+      </tr><tr>
+        <td>
+          313
+        </td>
+        <td>
+          460
+        </td>
+        <td>
+          12046
+          -
+          12055
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2.rank
+        </td>
+      </tr><tr>
+        <td>
+          313
+        </td>
+        <td>
+          459
+        </td>
+        <td>
+          12046
+          -
+          12050
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          313
+        </td>
+        <td>
+          461
+        </td>
+        <td>
+          12063
+          -
+          12072
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card.rank
+        </td>
+      </tr><tr>
+        <td>
+          313
+        </td>
+        <td>
+          458
+        </td>
+        <td>
+          12026
+          -
+          12073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          filter
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.filter(_._2.rank equals card.rank)
+        </td>
+      </tr><tr>
+        <td>
+          314
+        </td>
+        <td>
+          463
+        </td>
+        <td>
+          12097
+          -
+          12156
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Unknown card property&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          314
+        </td>
+        <td>
+          465
+        </td>
+        <td>
+          12094
+          -
+          12156
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; throw new IllegalArgumentException(&quot;Unknown card property&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          314
+        </td>
+        <td>
+          464
+        </td>
+        <td>
+          12103
+          -
+          12156
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Unknown card property&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          315
+        </td>
+        <td>
+          479
+        </td>
+        <td>
+          12166
+          -
+          12199
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          sortByHighestProperty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def sortByHighestProperty
+        </td>
+      </tr><tr>
+        <td>
+          317
+        </td>
+        <td>
+          469
+        </td>
+        <td>
+          12317
+          -
+          12441
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n              throw new IllegalArgumentException(\r\n                &quot;There is no explicit suit ordering&quot;\r\n              )
+        </td>
+      </tr><tr>
+        <td>
+          318
+        </td>
+        <td>
+          468
+        </td>
+        <td>
+          12341
+          -
+          12441
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(\r\n                &quot;There is no explicit suit ordering&quot;\r\n              )
+        </td>
+      </tr><tr>
+        <td>
+          318
+        </td>
+        <td>
+          467
+        </td>
+        <td>
+          12335
+          -
+          12441
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(\r\n                &quot;There is no explicit suit ordering&quot;\r\n              )
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          475
+        </td>
+        <td>
+          12482
+          -
+          12558
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n              cardsOnTable.sortBy(_._2.rank)(using Ordering.Int.reverse)
+        </td>
+      </tr><tr>
+        <td>
+          322
+        </td>
+        <td>
+          472
+        </td>
+        <td>
+          12520
+          -
+          12529
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _._2.rank
+        </td>
+      </tr><tr>
+        <td>
+          322
+        </td>
+        <td>
+          474
+        </td>
+        <td>
+          12537
+          -
+          12557
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          reverse
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Ordering.Int.reverse
+        </td>
+      </tr><tr>
+        <td>
+          322
+        </td>
+        <td>
+          471
+        </td>
+        <td>
+          12520
+          -
+          12524
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          322
+        </td>
+        <td>
+          470
+        </td>
+        <td>
+          12500
+          -
+          12558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sortBy
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.sortBy(_._2.rank)(using Ordering.Int.reverse)
+        </td>
+      </tr><tr>
+        <td>
+          322
+        </td>
+        <td>
+          473
+        </td>
+        <td>
+          12537
+          -
+          12545
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Ordering
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Ordering
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          478
+        </td>
+        <td>
+          12579
+          -
+          12690
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n              throw new IllegalArgumentException(\r\n                &quot;Unknown card property&quot;\r\n              )
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          477
+        </td>
+        <td>
+          12603
+          -
+          12690
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(\r\n                &quot;Unknown card property&quot;\r\n              )
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          476
+        </td>
+        <td>
+          12597
+          -
+          12690
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(\r\n                &quot;Unknown card property&quot;\r\n              )
+        </td>
+      </tr><tr>
+        <td>
+          327
+        </td>
+        <td>
+          481
+        </td>
+        <td>
+          12694
+          -
+          12714
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          implicit def highest
+        </td>
+      </tr><tr>
+        <td>
+          330
+        </td>
+        <td>
+          480
+        </td>
+        <td>
+          12803
+          -
+          12850
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HighestBuilder.apply(highestTakingCardProperty)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

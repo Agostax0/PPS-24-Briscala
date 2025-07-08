@@ -1,0 +1,6089 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          dsl\GameBuilder.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package dsl
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.types.*
+</span>4 <span style=''>import dsl.types.HandRule.HandRule
+</span>5 <span style=''>import dsl.types.HandSize.HandSize
+</span>6 <span style=''>import dsl.types.PlayRule.PlayRule
+</span>7 <span style=''>import dsl.types.PlayerCount.PlayerCount
+</span>8 <span style=''>import dsl.types.PointsRule.PointsRule
+</span>9 <span style=''>import dsl.types.Suits.Suits
+</span>10 <span style=''>import dsl.types.Team.Team
+</span>11 <span style=''>import dsl.types.WinRule.WinRule
+</span>12 <span style=''>import dsl.types.{
+</span>13 <span style=''>  HandRule,
+</span>14 <span style=''>  HandSize,
+</span>15 <span style=''>  PlayRule,
+</span>16 <span style=''>  PlayerCount,
+</span>17 <span style=''>  PointsRule,
+</span>18 <span style=''>  Suits,
+</span>19 <span style=''>  Team,
+</span>20 <span style=''>  WinRule
+</span>21 <span style=''>}
+</span>22 <span style=''>import engine.model.{
+</span>23 <span style=''>  BotPlayerModel,
+</span>24 <span style=''>  BotType,
+</span>25 <span style=''>  CardModel,
+</span>26 <span style=''>  DeckModel,
+</span>27 <span style=''>  FullEngineModel,
+</span>28 <span style=''>  PlayerModel
+</span>29 <span style=''>}
+</span>30 <span style=''>
+</span>31 <span style=''>/** GameBuilder is a trait that defines the methods to build a game.
+</span>32 <span style=''>  */
+</span>33 <span style=''>trait GameBuilder:
+</span>34 <span style=''>  /** The name of the game.
+</span>35 <span style=''>    */
+</span>36 <span style=''>  val gameName: String
+</span>37 <span style=''>
+</span>38 <span style=''>  def simpleEquals(obj: Any): Boolean
+</span>39 <span style=''>  /** Adds a player to the game.
+</span>40 <span style=''>    * @param name
+</span>41 <span style=''>    *   the name of the player
+</span>42 <span style=''>    * @return
+</span>43 <span style=''>    *   the GameBuilder instance with the added player
+</span>44 <span style=''>    */
+</span>45 <span style=''>  def addPlayer(name: String): GameBuilder
+</span>46 <span style=''>  /** Adds a bot player to the game.
+</span>47 <span style=''>    * @param name
+</span>48 <span style=''>    *   the name of the bot player
+</span>49 <span style=''>    * @param botType
+</span>50 <span style=''>    *   the type of the bot
+</span>51 <span style=''>    * @return
+</span>52 <span style=''>    *   the GameBuilder instance with the added bot player
+</span>53 <span style=''>    */
+</span>54 <span style=''>  def addBotPlayer(name: String, botType: BotType): GameBuilder
+</span>55 <span style=''>  /** Sets the number of players in the game.
+</span>56 <span style=''>    * @param n
+</span>57 <span style=''>    *   the number of players
+</span>58 <span style=''>    * @return
+</span>59 <span style=''>    *   the GameBuilder instance with the set number of players
+</span>60 <span style=''>    */
+</span>61 <span style=''>  def setPlayers(n: Int): GameBuilder
+</span>62 <span style=''>  /** Sets the suits of the cards in the game.
+</span>63 <span style=''>    * @param suits
+</span>64 <span style=''>    *   the list of suits
+</span>65 <span style=''>    * @return
+</span>66 <span style=''>    *   the GameBuilder instance with the set suits
+</span>67 <span style=''>    */
+</span>68 <span style=''>  def setSuits(suits: List[String]): GameBuilder
+</span>69 <span style=''>  /** Sets the ranks of the cards in the game.
+</span>70 <span style=''>    * @param ranks
+</span>71 <span style=''>    *   the list of ranks
+</span>72 <span style=''>    * @return
+</span>73 <span style=''>    *   the GameBuilder instance with the set ranks
+</span>74 <span style=''>    */
+</span>75 <span style=''>  def setRanks(ranks: List[String]): GameBuilder
+</span>76 <span style=''>  /** Sets the size of the hands for each player.
+</span>77 <span style=''>    * @param handSize
+</span>78 <span style=''>    *   the size of the hands
+</span>79 <span style=''>    * @return
+</span>80 <span style=''>    *   the GameBuilder instance with the set hand size
+</span>81 <span style=''>    */
+</span>82 <span style=''>  def setPlayersHands(handSize: Int): GameBuilder
+</span>83 <span style=''>  /** Sets the starting player of the game.
+</span>84 <span style=''>    * @param name
+</span>85 <span style=''>    *   the name of the starting player
+</span>86 <span style=''>    * @return
+</span>87 <span style=''>    *   the GameBuilder instance with the set starting player
+</span>88 <span style=''>    */
+</span>89 <span style=''>  def setStartingPlayer(name: String): GameBuilder
+</span>90 <span style=''>  /** Sets the point rules for the game.
+</span>91 <span style=''>    * @param rule
+</span>92 <span style=''>    *   the points rule to be set
+</span>93 <span style=''>    * @return
+</span>94 <span style=''>    *   the GameBuilder instance with the set point rules
+</span>95 <span style=''>    */
+</span>96 <span style=''>  def setPointRule(rule: PointsRule): GameBuilder
+</span>97 <span style=''>  /** Sets the play rules for the game.
+</span>98 <span style=''>    * @param rule
+</span>99 <span style=''>    *   the play rule to be set
+</span>100 <span style=''>    * @return
+</span>101 <span style=''>    *   the GameBuilder instance with the set play rules
+</span>102 <span style=''>    */
+</span>103 <span style=''>  def setPlayRule(rule: PlayRule): GameBuilder
+</span>104 <span style=''>  /** Sets the hand rule for the game.
+</span>105 <span style=''>    * @param rule
+</span>106 <span style=''>    *   the hand rule to be set
+</span>107 <span style=''>    * @return
+</span>108 <span style=''>    *   the GameBuilder instance with the set hand rule
+</span>109 <span style=''>    */
+</span>110 <span style=''>  def setHandRule(rule: HandRule): GameBuilder
+</span>111 <span style=''>  /** Sets the win rule for the game.
+</span>112 <span style=''>    * @param rule
+</span>113 <span style=''>    *   the win rule to be set
+</span>114 <span style=''>    * @return
+</span>115 <span style=''>    *   the GameBuilder instance with the set win rule
+</span>116 <span style=''>    */
+</span>117 <span style=''>  def setWinRule(rule: WinRule): GameBuilder
+</span>118 <span style=''>  /** Adds a team to the game.
+</span>119 <span style=''>    * @param names
+</span>120 <span style=''>    *   the list of player names in the team
+</span>121 <span style=''>    * @return
+</span>122 <span style=''>    *   the GameBuilder instance with the added team
+</span>123 <span style=''>    * @throws IllegalArgumentException
+</span>124 <span style=''>    *   if any player in the team does not exist or is already in another team
+</span>125 <span style=''>    */
+</span>126 <span style=''>  def addTeam(names: List[String]): GameBuilder
+</span>127 <span style=''>  /** Sets the suit of the briscola card.
+</span>128 <span style=''>      * @param suit
+</span>129 <span style=''>      *   the suit of the briscola card
+</span>130 <span style=''>      * @return
+</span>131 <span style=''>      *   the GameBuilder instance with the set briscola suit
+</span>132 <span style=''>      * @throws IllegalArgumentException
+</span>133 <span style=''>      *   if the suit is not defined in the game
+</span>134 <span style=''>      */
+</span>135 <span style=''>  def setBriscolaSuit(suit: String): GameBuilder
+</span>136 <span style=''>  /** Returns the suit of the briscola card.
+</span>137 <span style=''>    * @return
+</span>138 <span style=''>    *   the suit of the briscola card
+</span>139 <span style=''>    */
+</span>140 <span style=''>  </span><span style='background: #AEF1AE'>def briscola</span><span style=''>: String = &quot;&quot;
+</span>141 <span style=''>  /** Builds the game model.
+</span>142 <span style=''>    * @return
+</span>143 <span style=''>    *   the FullEngineModel representing the game
+</span>144 <span style=''>    * @throws IllegalArgumentException
+</span>145 <span style=''>    *   if the number of players does not match the set player count or if any
+</span>146 <span style=''>    *   other required field is not set correctly
+</span>147 <span style=''>    */
+</span>148 <span style=''>  def build(): FullEngineModel
+</span>149 <span style=''>
+</span>150 <span style=''>object GameBuilder:
+</span>151 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameName: String): GameBuilder = </span><span style='background: #AEF1AE'>GameBuilderImpl(gameName)</span><span style=''>
+</span>152 <span style=''>
+</span>153 <span style=''>  private class GameBuilderImpl(val gameName: String) extends GameBuilder:
+</span>154 <span style=''>    private var players: List[PlayerModel] = </span><span style='background: #AEF1AE'>List.empty</span><span style=''>
+</span>155 <span style=''>    private var playerCount: PlayerCount = _
+</span>156 <span style=''>    private var suits: Suits = _
+</span>157 <span style=''>    private var ranks: List[String] = </span><span style='background: #AEF1AE'>List.empty</span><span style=''>
+</span>158 <span style=''>    private var handSize: HandSize = _
+</span>159 <span style=''>    private var startingPlayerIndex: Option[Int] = None
+</span>160 <span style=''>    private var pointRules: Option[List[PointsRule]] = None
+</span>161 <span style=''>    private var playRules: Option[List[PlayRule]] = None
+</span>162 <span style=''>    private var winRule: Option[WinRule] = None
+</span>163 <span style=''>    private var teams: List[Team] = </span><span style='background: #AEF1AE'>List.empty</span><span style=''>
+</span>164 <span style=''>    private var handRule: Option[HandRule] = None
+</span>165 <span style=''>    private var briscolaSuit: String = &quot;&quot;
+</span>166 <span style=''>
+</span>167 <span style=''>    </span><span style='background: #AEF1AE'>override def briscola</span><span style=''>: String = this.briscolaSuit
+</span>168 <span style=''>
+</span>169 <span style=''>    </span><span style='background: #AEF1AE'>override def addPlayer</span><span style=''>(name: String): GameBuilder =
+</span>170 <span style=''>      players = </span><span style='background: #AEF1AE'>players :+ PlayerModel(name)</span><span style=''>
+</span>171 <span style=''>      this
+</span>172 <span style=''>
+</span>173 <span style=''>    </span><span style='background: #AEF1AE'>override def addBotPlayer</span><span style=''>(name: String, botType: BotType): GameBuilder =
+</span>174 <span style=''>      players = </span><span style='background: #AEF1AE'>players :+ BotPlayerModel(name, botType)</span><span style=''>
+</span>175 <span style=''>      this
+</span>176 <span style=''>
+</span>177 <span style=''>    </span><span style='background: #AEF1AE'>override def addTeam</span><span style=''>(names: List[String]): GameBuilder =
+</span>178 <span style=''>      //check whether the player exist
+</span>179 <span style=''>      </span><span style='background: #AEF1AE'>names.foreach(newPlayerName =&gt;
+</span>180 <span style=''></span><span style='background: #AEF1AE'>        val playerExists = players.exists(p =&gt; p.name == newPlayerName)
+</span>181 <span style=''></span><span style='background: #AEF1AE'>        if !playerExists then
+</span>182 <span style=''></span><span style='background: #AEF1AE'>          throw IllegalArgumentException(&quot;Player/s doesn't exists&quot;)
+</span>183 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>184 <span style=''>      //check whether a player is already inside another team
+</span>185 <span style=''>      if </span><span style='background: #AEF1AE'>names.intersect(teams.flatMap(t =&gt; t.toList)).nonEmpty</span><span style=''> then
+</span>186 <span style=''>        </span><span style='background: #AEF1AE'>throw IllegalArgumentException(&quot;Players already inside another team&quot;)</span><span style=''>
+</span>187 <span style=''>
+</span>188 <span style=''>      teams = </span><span style='background: #AEF1AE'>teams :+ Team(names)</span><span style=''>
+</span>189 <span style=''>      this
+</span>190 <span style=''>
+</span>191 <span style=''>    </span><span style='background: #AEF1AE'>override def setPlayers</span><span style=''>(n: Int): GameBuilder =
+</span>192 <span style=''>      playerCount = </span><span style='background: #AEF1AE'>PlayerCount(n)</span><span style=''>
+</span>193 <span style=''>      this
+</span>194 <span style=''>
+</span>195 <span style=''>    </span><span style='background: #AEF1AE'>override def setSuits</span><span style=''>(suits: List[String]): GameBuilder =
+</span>196 <span style=''>      this.suits = </span><span style='background: #AEF1AE'>Suits(suits)</span><span style=''>
+</span>197 <span style=''>      this
+</span>198 <span style=''>
+</span>199 <span style=''>    </span><span style='background: #AEF1AE'>override def setRanks</span><span style=''>(ranks: List[String]): GameBuilder =
+</span>200 <span style=''>      this.ranks = ranks
+</span>201 <span style=''>      this
+</span>202 <span style=''>
+</span>203 <span style=''>    </span><span style='background: #AEF1AE'>override def setPlayersHands</span><span style=''>(handSize: Int): GameBuilder =
+</span>204 <span style=''>      this.handSize = </span><span style='background: #AEF1AE'>HandSize(handSize)</span><span style=''>
+</span>205 <span style=''>      this
+</span>206 <span style=''>
+</span>207 <span style=''>    </span><span style='background: #AEF1AE'>override def setStartingPlayer</span><span style=''>(name: String): GameBuilder =
+</span>208 <span style=''>      if </span><span style='background: #AEF1AE'>players.isEmpty</span><span style=''> || !</span><span style='background: #AEF1AE'>players.map(_.name).contains(name)</span><span style=''> then
+</span>209 <span style=''>        </span><span style='background: #AEF1AE'>throw new IllegalArgumentException(&quot;Player not found&quot;)</span><span style=''>
+</span>210 <span style=''>
+</span>211 <span style=''>      this.startingPlayerIndex = this.startingPlayerIndex match
+</span>212 <span style=''>        case Some(index) </span><span style='background: #AEF1AE'>=&gt;
+</span>213 <span style=''></span><span style='background: #AEF1AE'>          throw new IllegalArgumentException(&quot;Starting player already set&quot;)</span><span style=''>
+</span>214 <span style=''>        case _ </span><span style='background: #AEF1AE'>=&gt; Some(players.map(_.name).indexOf(name))</span><span style=''>
+</span>215 <span style=''>      this
+</span>216 <span style=''>
+</span>217 <span style=''>    </span><span style='background: #AEF1AE'>override def setPointRule</span><span style=''>(rule: PointsRule): GameBuilder =
+</span>218 <span style=''>      val newRules = this.pointRules match
+</span>219 <span style=''>        case Some(rules) </span><span style='background: #AEF1AE'>=&gt; rules :+ rule</span><span style=''>
+</span>220 <span style=''>        case None        </span><span style='background: #AEF1AE'>=&gt; List(rule)</span><span style=''>
+</span>221 <span style=''>      this.pointRules = Some(newRules)
+</span>222 <span style=''>      this
+</span>223 <span style=''>
+</span>224 <span style=''>    </span><span style='background: #AEF1AE'>override def setPlayRule</span><span style=''>(rule: PlayRule): GameBuilder =
+</span>225 <span style=''>      val newRules = this.playRules match
+</span>226 <span style=''>        case Some(rules) </span><span style='background: #F0ADAD'>=&gt; rules :+ rule</span><span style=''>
+</span>227 <span style=''>        case None        </span><span style='background: #AEF1AE'>=&gt; List(rule)</span><span style=''>
+</span>228 <span style=''>      this.playRules = Some(newRules)
+</span>229 <span style=''>      this
+</span>230 <span style=''>
+</span>231 <span style=''>    </span><span style='background: #AEF1AE'>override def setWinRule</span><span style=''>(rule: WinRule): GameBuilder =
+</span>232 <span style=''>      this.winRule = Some(rule)
+</span>233 <span style=''>      this
+</span>234 <span style=''>
+</span>235 <span style=''>    </span><span style='background: #AEF1AE'>private def briscola_=</span><span style=''>(newBriscolaSuit: String): Unit =
+</span>236 <span style=''>      if !</span><span style='background: #AEF1AE'>this.suits.contains(newBriscolaSuit)</span><span style=''> then
+</span>237 <span style=''>        </span><span style='background: #AEF1AE'>throw new IllegalArgumentException(&quot;Briscola suit is not defined&quot;)</span><span style=''>
+</span>238 <span style=''>      else </span><span style='background: #AEF1AE'>this.briscolaSuit = newBriscolaSuit</span><span style=''>
+</span>239 <span style=''>
+</span>240 <span style=''>    </span><span style='background: #AEF1AE'>override def setBriscolaSuit</span><span style=''>(suit: String): GameBuilder =
+</span>241 <span style=''>      </span><span style='background: #AEF1AE'>briscola = suit</span><span style=''>
+</span>242 <span style=''>      this
+</span>243 <span style=''>
+</span>244 <span style=''>    </span><span style='background: #AEF1AE'>override def setHandRule</span><span style=''>(rule: HandRule): GameBuilder =
+</span>245 <span style=''>      this.handRule = Some(rule)
+</span>246 <span style=''>      this
+</span>247 <span style=''>
+</span>248 <span style=''>    </span><span style='background: #AEF1AE'>override def build</span><span style=''>(): FullEngineModel =
+</span>249 <span style=''>      if !playerCount.equals(</span><span style='background: #AEF1AE'>PlayerCount(players.size)</span><span style=''>) then
+</span>250 <span style=''>        </span><span style='background: #AEF1AE'>throw new IllegalArgumentException(&quot;Incorrect number of players joined&quot;)</span><span style=''>
+</span>251 <span style=''>
+</span>252 <span style=''>      val game = </span><span style='background: #AEF1AE'>FullEngineModel(gameName)</span><span style=''>
+</span>253 <span style=''>      </span><span style='background: #AEF1AE'>game.addPlayers(players)</span><span style=''>
+</span>254 <span style=''>      </span><span style='background: #AEF1AE'>game.addTeams(teams)</span><span style=''>
+</span>255 <span style=''>      </span><span style='background: #AEF1AE'>game.createDeck(suits, ranks)</span><span style=''>
+</span>256 <span style=''>      </span><span style='background: #AEF1AE'>game.giveCardsToPlayers(handSize.value)</span><span style=''>
+</span>257 <span style=''>      </span><span style='background: #AEF1AE'>game.setStartingPlayer(startingPlayerIndex.getOrElse(0))</span><span style=''>
+</span>258 <span style=''>      </span><span style='background: #AEF1AE'>game.setBriscolaSuit(briscolaSuit)</span><span style=''>
+</span>259 <span style=''>      handRule match
+</span>260 <span style=''>        case Some(rule) </span><span style='background: #AEF1AE'>=&gt; game.setHandRule(rule)</span><span style=''>
+</span>261 <span style=''>        case None       </span><span style='background: #F0ADAD'>=&gt; ()</span><span style=''>
+</span>262 <span style=''>      pointRules match
+</span>263 <span style=''>        case Some(rules) </span><span style='background: #AEF1AE'>=&gt; game.setPointRules(rules)</span><span style=''>
+</span>264 <span style=''>        case None        </span><span style='background: #F0ADAD'>=&gt; ()</span><span style=''>
+</span>265 <span style=''>      playRules match
+</span>266 <span style=''>        case Some(rules) </span><span style='background: #AEF1AE'>=&gt; game.setPlayRules(rules)</span><span style=''>
+</span>267 <span style=''>        case None        </span><span style='background: #F0ADAD'>=&gt; ()</span><span style=''>
+</span>268 <span style=''>      winRule match
+</span>269 <span style=''>        case Some(rule) </span><span style='background: #AEF1AE'>=&gt; game.setWinRule(rule)</span><span style=''>
+</span>270 <span style=''>        case None       </span><span style='background: #F0ADAD'>=&gt; ()</span><span style=''>
+</span>271 <span style=''>      game
+</span>272 <span style=''>
+</span>273 <span style=''>    </span><span style='background: #AEF1AE'>override def simpleEquals</span><span style=''>(obj: Any): Boolean =
+</span>274 <span style=''>      obj match
+</span>275 <span style=''>        case that: SimpleGameBuilder =&gt;
+</span>276 <span style=''>          </span><span style='background: #AEF1AE'>val player = players.head
+</span>277 <span style=''></span><span style='background: #AEF1AE'>          val hand = DeckModel()
+</span>278 <span style=''></span><span style='background: #AEF1AE'>          val card = CardModel(&quot;Ace&quot;, 11, briscola)
+</span>279 <span style=''></span><span style='background: #AEF1AE'>          hand.addCard(card)
+</span>280 <span style=''></span><span style='background: #AEF1AE'>
+</span>281 <span style=''></span><span style='background: #AEF1AE'>          val checkValues = this.gameName == that.gameName &amp;&amp;
+</span>282 <span style=''></span><span style='background: #AEF1AE'>            this.players.forall(p1 =&gt;
+</span>283 <span style=''></span><span style='background: #AEF1AE'>              that.players.map(p2 =&gt; p2.name).contains(p1.name)
+</span>284 <span style=''></span><span style='background: #AEF1AE'>            ) &amp;&amp;
+</span>285 <span style=''></span><span style='background: #AEF1AE'>            this.playerCount == that.playerCount &amp;&amp;
+</span>286 <span style=''></span><span style='background: #AEF1AE'>            this.teams.forall(team =&gt; that.teams.contains(team)) &amp;&amp;
+</span>287 <span style=''></span><span style='background: #AEF1AE'>            this.suits.equals(that.suits) &amp;&amp;
+</span>288 <span style=''></span><span style='background: #AEF1AE'>            this.ranks.equals(that.ranks) &amp;&amp;
+</span>289 <span style=''></span><span style='background: #AEF1AE'>            this.briscola == that.briscola &amp;&amp;
+</span>290 <span style=''></span><span style='background: #AEF1AE'>            this.handSize == that.handSize &amp;&amp;
+</span>291 <span style=''></span><span style='background: #AEF1AE'>            this.startingPlayerIndex == that.startingPlayerIndex
+</span>292 <span style=''></span><span style='background: #AEF1AE'>          val checkPointRules =
+</span>293 <span style=''></span><span style='background: #AEF1AE'>            (this.pointRules.isEmpty &amp;&amp; </span><span style='background: #F0ADAD'>that.pointRules.isEmpty</span><span style='background: #AEF1AE'>) ||
+</span>294 <span style=''></span><span style='background: #AEF1AE'>              this.pointRules.get.head(&quot;Ace&quot;, &quot;Cups&quot;) ==
+</span>295 <span style=''></span><span style='background: #AEF1AE'>              that.pointRules.get.head(&quot;Ace&quot;, &quot;Cups&quot;)
+</span>296 <span style=''></span><span style='background: #AEF1AE'>          val checkHandRule =
+</span>297 <span style=''></span><span style='background: #AEF1AE'>            (this.handRule.isEmpty &amp;&amp; that.handRule.isEmpty) ||
+</span>298 <span style=''></span><span style='background: #AEF1AE'>              (this.handRule.get(List.empty, hand, card) ==
+</span>299 <span style=''></span><span style='background: #AEF1AE'>                that.handRule.get(List.empty, hand, card))
+</span>300 <span style=''></span><span style='background: #AEF1AE'>          val checkPlayRules =
+</span>301 <span style=''></span><span style='background: #AEF1AE'>            (this.playRules.isEmpty &amp;&amp; </span><span style='background: #F0ADAD'>that.playRules.isEmpty</span><span style='background: #AEF1AE'>) ||
+</span>302 <span style=''></span><span style='background: #AEF1AE'>              (this.playRules.get.head(List((player, card))) ==
+</span>303 <span style=''></span><span style='background: #AEF1AE'>                that.playRules.get.head(List((player, card))))
+</span>304 <span style=''></span><span style='background: #AEF1AE'>          val checkWinRule = (this.winRule.isEmpty &amp;&amp; </span><span style='background: #F0ADAD'>that.winRule.isEmpty</span><span style='background: #AEF1AE'>) ||
+</span>305 <span style=''></span><span style='background: #AEF1AE'>            (this.winRule.get(teams, players) ==
+</span>306 <span style=''></span><span style='background: #AEF1AE'>              that.winRule.get(teams, players))
+</span>307 <span style=''></span><span style='background: #AEF1AE'>
+</span>308 <span style=''></span><span style='background: #AEF1AE'>          checkValues &amp;&amp; checkPointRules &amp;&amp;
+</span>309 <span style=''></span><span style='background: #AEF1AE'>          checkHandRule &amp;&amp; checkPlayRules &amp;&amp; checkWinRule</span><span style=''>
+</span>310 <span style=''>        case _ </span><span style='background: #AEF1AE'>=&gt; false</span><span style=''>
+</span>311 <span style=''>
+</span>312 <span style=''>class SimpleGameBuilder(val _gameName: String = &quot;Simple Game&quot;)
+</span>313 <span style=''>    extends GameBuilder:
+</span>314 <span style=''>  var players: List[PlayerModel] = </span><span style='background: #AEF1AE'>List.empty</span><span style=''>
+</span>315 <span style=''>  var playerCount: PlayerCount = _
+</span>316 <span style=''>  var suits: Suits = _
+</span>317 <span style=''>  var ranks: List[String] = </span><span style='background: #AEF1AE'>List.empty</span><span style=''>
+</span>318 <span style=''>  var handSize: HandSize = _
+</span>319 <span style=''>  var startingPlayerIndex: Option[Int] = None
+</span>320 <span style=''>  var pointRules: Option[List[PointsRule]] = None
+</span>321 <span style=''>  var playRules: Option[List[PlayRule]] = None
+</span>322 <span style=''>  var winRule: Option[WinRule] = None
+</span>323 <span style=''>  private var briscolaSuit: String = &quot;&quot;
+</span>324 <span style=''>  var teams: List[List[String]] = </span><span style='background: #AEF1AE'>List.empty</span><span style=''>
+</span>325 <span style=''>  var handRule: Option[HandRule] = None
+</span>326 <span style=''>
+</span>327 <span style=''>  </span><span style='background: #AEF1AE'>override def briscola</span><span style=''>: String = this.briscolaSuit
+</span>328 <span style=''>
+</span>329 <span style=''>  override val gameName: String = _gameName
+</span>330 <span style=''>
+</span>331 <span style=''>  </span><span style='background: #F0ADAD'>override def simpleEquals</span><span style=''>(obj: Any): Boolean = true
+</span>332 <span style=''>  </span><span style='background: #AEF1AE'>override def addPlayer</span><span style=''>(name: String): GameBuilder =
+</span>333 <span style=''>    players = </span><span style='background: #AEF1AE'>players :+ PlayerModel(name)</span><span style=''>
+</span>334 <span style=''>    this
+</span>335 <span style=''>
+</span>336 <span style=''>  </span><span style='background: #AEF1AE'>override def addBotPlayer</span><span style=''>(name: String, botType: BotType): GameBuilder =
+</span>337 <span style=''>    players = </span><span style='background: #AEF1AE'>players :+ BotPlayerModel(name, botType)</span><span style=''>
+</span>338 <span style=''>    this
+</span>339 <span style=''>
+</span>340 <span style=''>  </span><span style='background: #AEF1AE'>override def addTeam</span><span style=''>(names: List[String]): GameBuilder =
+</span>341 <span style=''>    //check whether the player exist
+</span>342 <span style=''>    </span><span style='background: #AEF1AE'>names.foreach(newPlayerName =&gt;
+</span>343 <span style=''></span><span style='background: #AEF1AE'>      val playerExists = players.exists(p =&gt; p.name == newPlayerName)
+</span>344 <span style=''></span><span style='background: #AEF1AE'>      if !playerExists then
+</span>345 <span style=''></span><span style='background: #AEF1AE'>        throw IllegalArgumentException(&quot;Player &quot; + newPlayerName + &quot; doesn't exists in &quot; + players.map(_.name))
+</span>346 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>347 <span style=''>    //check whether a player is already inside another team
+</span>348 <span style=''>    if </span><span style='background: #AEF1AE'>names.intersect(teams.flatMap(t =&gt; t.toList)).nonEmpty</span><span style=''> then
+</span>349 <span style=''>      </span><span style='background: #AEF1AE'>throw IllegalArgumentException(&quot;Players already inside another team&quot;)</span><span style=''>
+</span>350 <span style=''>
+</span>351 <span style=''>    teams = </span><span style='background: #AEF1AE'>teams :+ names</span><span style=''>
+</span>352 <span style=''>    this
+</span>353 <span style=''>
+</span>354 <span style=''>  </span><span style='background: #AEF1AE'>override def setPlayers</span><span style=''>(n: Int): GameBuilder =
+</span>355 <span style=''>    playerCount = </span><span style='background: #AEF1AE'>PlayerCount(n)</span><span style=''>
+</span>356 <span style=''>    this
+</span>357 <span style=''>
+</span>358 <span style=''>  </span><span style='background: #AEF1AE'>override def setSuits</span><span style=''>(suits: List[String]): GameBuilder =
+</span>359 <span style=''>    this.suits = </span><span style='background: #AEF1AE'>Suits(suits)</span><span style=''>
+</span>360 <span style=''>    this
+</span>361 <span style=''>
+</span>362 <span style=''>  </span><span style='background: #AEF1AE'>override def setRanks</span><span style=''>(ranks: List[String]): GameBuilder =
+</span>363 <span style=''>    this.ranks = ranks
+</span>364 <span style=''>    this
+</span>365 <span style=''>
+</span>366 <span style=''>  </span><span style='background: #AEF1AE'>override def setPlayersHands</span><span style=''>(handSize: Int): GameBuilder =
+</span>367 <span style=''>    this.handSize = </span><span style='background: #AEF1AE'>HandSize(handSize)</span><span style=''>
+</span>368 <span style=''>    this
+</span>369 <span style=''>
+</span>370 <span style=''>  </span><span style='background: #AEF1AE'>override def setStartingPlayer</span><span style=''>(name: String): GameBuilder =
+</span>371 <span style=''>    if </span><span style='background: #AEF1AE'>players.isEmpty</span><span style=''> || !</span><span style='background: #AEF1AE'>players.map(_.name).contains(name)</span><span style=''> then
+</span>372 <span style=''>      </span><span style='background: #AEF1AE'>throw new IllegalArgumentException(&quot;Player &quot; + name + &quot; not found in &quot; + players.map(_.name))</span><span style=''>
+</span>373 <span style=''>
+</span>374 <span style=''>    this.startingPlayerIndex = this.startingPlayerIndex match
+</span>375 <span style=''>      case Some(index) </span><span style='background: #AEF1AE'>=&gt;
+</span>376 <span style=''></span><span style='background: #AEF1AE'>        throw new IllegalArgumentException(&quot;Starting player already set&quot;)</span><span style=''>
+</span>377 <span style=''>      case _ </span><span style='background: #AEF1AE'>=&gt; Some(players.map(_.name).indexOf(name))</span><span style=''>
+</span>378 <span style=''>    this
+</span>379 <span style=''>
+</span>380 <span style=''>  </span><span style='background: #AEF1AE'>override def setPointRule</span><span style=''>(rule: PointsRule): GameBuilder =
+</span>381 <span style=''>    val newRules = this.pointRules match
+</span>382 <span style=''>      case Some(rules) </span><span style='background: #AEF1AE'>=&gt; rules :+ rule</span><span style=''>
+</span>383 <span style=''>      case None        </span><span style='background: #AEF1AE'>=&gt; List(rule)</span><span style=''>
+</span>384 <span style=''>    this.pointRules = Some(newRules)
+</span>385 <span style=''>    this
+</span>386 <span style=''>
+</span>387 <span style=''>  </span><span style='background: #AEF1AE'>override def setPlayRule</span><span style=''>(rule: PlayRule): GameBuilder =
+</span>388 <span style=''>    val newRules = this.playRules match
+</span>389 <span style=''>      case Some(rules) </span><span style='background: #F0ADAD'>=&gt; rules :+ rule</span><span style=''>
+</span>390 <span style=''>      case None        </span><span style='background: #AEF1AE'>=&gt; List(rule)</span><span style=''>
+</span>391 <span style=''>    this.playRules = Some(newRules)
+</span>392 <span style=''>    this
+</span>393 <span style=''>
+</span>394 <span style=''>  </span><span style='background: #AEF1AE'>override def setWinRule</span><span style=''>(rule: WinRule): GameBuilder =
+</span>395 <span style=''>    this.winRule = Some(rule)
+</span>396 <span style=''>    this
+</span>397 <span style=''>
+</span>398 <span style=''>  </span><span style='background: #AEF1AE'>override def setBriscolaSuit</span><span style=''>(suit: String): GameBuilder =
+</span>399 <span style=''>    this.briscolaSuit = suit
+</span>400 <span style=''>    this
+</span>401 <span style=''>
+</span>402 <span style=''>  </span><span style='background: #AEF1AE'>override def setHandRule</span><span style=''>(rule: HandRule): GameBuilder =
+</span>403 <span style=''>    this.handRule = Some(rule)
+</span>404 <span style=''>    this
+</span>405 <span style=''>
+</span>406 <span style=''>  </span><span style='background: #AEF1AE'>override def build</span><span style=''>(): FullEngineModel =
+</span>407 <span style=''>    </span><span style='background: #AEF1AE'>FullEngineModel(gameName)</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          14
+        </td>
+        <td>
+          4079
+          -
+          4091
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def briscola
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          16
+        </td>
+        <td>
+          4438
+          -
+          4447
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          15
+        </td>
+        <td>
+          4481
+          -
+          4506
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          GameBuilderImpl(gameName)
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          17
+        </td>
+        <td>
+          4631
+          -
+          4635
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          18
+        </td>
+        <td>
+          4631
+          -
+          4641
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          20
+        </td>
+        <td>
+          4761
+          -
+          4771
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          19
+        </td>
+        <td>
+          4761
+          -
+          4765
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          22
+        </td>
+        <td>
+          5074
+          -
+          5084
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          21
+        </td>
+        <td>
+          5074
+          -
+          5078
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          23
+        </td>
+        <td>
+          5186
+          -
+          5207
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def briscola
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          26
+        </td>
+        <td>
+          5243
+          -
+          5265
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def addPlayer
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          25
+        </td>
+        <td>
+          5323
+          -
+          5340
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerModel(name)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          24
+        </td>
+        <td>
+          5312
+          -
+          5340
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players :+ PlayerModel(name)
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          29
+        </td>
+        <td>
+          5360
+          -
+          5385
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addBotPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def addBotPlayer
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          28
+        </td>
+        <td>
+          5461
+          -
+          5490
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          BotPlayerModel(name, botType)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          27
+        </td>
+        <td>
+          5450
+          -
+          5490
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players :+ BotPlayerModel(name, botType)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          46
+        </td>
+        <td>
+          5510
+          -
+          5530
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def addTeam
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          30
+        </td>
+        <td>
+          5614
+          -
+          5826
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          names.foreach(newPlayerName =&gt;\r\n        val playerExists = players.exists(p =&gt; p.name == newPlayerName)\r\n        if !playerExists then\r\n          throw IllegalArgumentException(&quot;Player/s doesn't exists&quot;)\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          31
+        </td>
+        <td>
+          5673
+          -
+          5717
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          exists
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.exists(p =&gt; p.name == newPlayerName)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          32
+        </td>
+        <td>
+          5760
+          -
+          5817
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Player/s doesn't exists&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          35
+        </td>
+        <td>
+          5817
+          -
+          5817
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          34
+        </td>
+        <td>
+          5760
+          -
+          5817
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Player/s doesn't exists&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          33
+        </td>
+        <td>
+          5766
+          -
+          5817
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          IllegalArgumentException(&quot;Player/s doesn't exists&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          38
+        </td>
+        <td>
+          5935
+          -
+          5943
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          t.toList
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          37
+        </td>
+        <td>
+          5916
+          -
+          5944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teams.flatMap(t =&gt; t.toList)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          36
+        </td>
+        <td>
+          5900
+          -
+          5945
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          intersect
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          names.intersect(teams.flatMap(t =&gt; t.toList))
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          39
+        </td>
+        <td>
+          5900
+          -
+          5954
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          nonEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          names.intersect(teams.flatMap(t =&gt; t.toList)).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          41
+        </td>
+        <td>
+          5975
+          -
+          6038
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          IllegalArgumentException(&quot;Players already inside another team&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          40
+        </td>
+        <td>
+          5969
+          -
+          6038
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Players already inside another team&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          43
+        </td>
+        <td>
+          6038
+          -
+          6038
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          42
+        </td>
+        <td>
+          5969
+          -
+          6038
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Players already inside another team&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          44
+        </td>
+        <td>
+          6056
+          -
+          6076
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teams :+ Team(names)
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          45
+        </td>
+        <td>
+          6065
+          -
+          6076
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Team(names)
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          48
+        </td>
+        <td>
+          6096
+          -
+          6119
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPlayers
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          47
+        </td>
+        <td>
+          6164
+          -
+          6178
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerCount(n)
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          50
+        </td>
+        <td>
+          6198
+          -
+          6219
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setSuits
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setSuits
+        </td>
+      </tr><tr>
+        <td>
+          196
+        </td>
+        <td>
+          49
+        </td>
+        <td>
+          6276
+          -
+          6288
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Suits(suits)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          51
+        </td>
+        <td>
+          6308
+          -
+          6329
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setRanks
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setRanks
+        </td>
+      </tr><tr>
+        <td>
+          203
+        </td>
+        <td>
+          53
+        </td>
+        <td>
+          6411
+          -
+          6439
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayersHands
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPlayersHands
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          52
+        </td>
+        <td>
+          6493
+          -
+          6511
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HandSize(handSize)
+        </td>
+      </tr><tr>
+        <td>
+          207
+        </td>
+        <td>
+          67
+        </td>
+        <td>
+          6531
+          -
+          6561
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setStartingPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setStartingPlayer
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          56
+        </td>
+        <td>
+          6621
+          -
+          6640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          55
+        </td>
+        <td>
+          6621
+          -
+          6655
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name).contains(name)
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          54
+        </td>
+        <td>
+          6601
+          -
+          6616
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          59
+        </td>
+        <td>
+          6670
+          -
+          6724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Player not found&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          58
+        </td>
+        <td>
+          6676
+          -
+          6724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Player not found&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          60
+        </td>
+        <td>
+          6724
+          -
+          6724
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          57
+        </td>
+        <td>
+          6670
+          -
+          6724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Player not found&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          212
+        </td>
+        <td>
+          63
+        </td>
+        <td>
+          6818
+          -
+          6897
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n          throw new IllegalArgumentException(&quot;Starting player already set&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          62
+        </td>
+        <td>
+          6838
+          -
+          6897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Starting player already set&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          213
+        </td>
+        <td>
+          61
+        </td>
+        <td>
+          6832
+          -
+          6897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Starting player already set&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          65
+        </td>
+        <td>
+          6922
+          -
+          6941
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          64
+        </td>
+        <td>
+          6922
+          -
+          6955
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          indexOf
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name).indexOf(name)
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          66
+        </td>
+        <td>
+          6914
+          -
+          6956
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; Some(players.map(_.name).indexOf(name))
+        </td>
+      </tr><tr>
+        <td>
+          217
+        </td>
+        <td>
+          73
+        </td>
+        <td>
+          6976
+          -
+          7001
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPointRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPointRule
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          68
+        </td>
+        <td>
+          7108
+          -
+          7121
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          219
+        </td>
+        <td>
+          69
+        </td>
+        <td>
+          7105
+          -
+          7121
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          71
+        </td>
+        <td>
+          7151
+          -
+          7155
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          70
+        </td>
+        <td>
+          7151
+          -
+          7161
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          72
+        </td>
+        <td>
+          7148
+          -
+          7161
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          224
+        </td>
+        <td>
+          79
+        </td>
+        <td>
+          7221
+          -
+          7245
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPlayRule
+        </td>
+      </tr><tr>
+        <td>
+          226
+        </td>
+        <td>
+          74
+        </td>
+        <td>
+          7349
+          -
+          7362
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          226
+        </td>
+        <td>
+          75
+        </td>
+        <td>
+          7346
+          -
+          7362
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          77
+        </td>
+        <td>
+          7392
+          -
+          7396
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          76
+        </td>
+        <td>
+          7392
+          -
+          7402
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          227
+        </td>
+        <td>
+          78
+        </td>
+        <td>
+          7389
+          -
+          7402
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          80
+        </td>
+        <td>
+          7461
+          -
+          7484
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setWinRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setWinRule
+        </td>
+      </tr><tr>
+        <td>
+          235
+        </td>
+        <td>
+          86
+        </td>
+        <td>
+          7567
+          -
+          7589
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          briscola_=
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def briscola_=
+        </td>
+      </tr><tr>
+        <td>
+          236
+        </td>
+        <td>
+          81
+        </td>
+        <td>
+          7634
+          -
+          7670
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.suits.contains(newBriscolaSuit)
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          83
+        </td>
+        <td>
+          7691
+          -
+          7751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Briscola suit is not defined&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          82
+        </td>
+        <td>
+          7685
+          -
+          7751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Briscola suit is not defined&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          84
+        </td>
+        <td>
+          7685
+          -
+          7751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Briscola suit is not defined&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          238
+        </td>
+        <td>
+          85
+        </td>
+        <td>
+          7764
+          -
+          7799
+        </td>
+        <td>
+          Assign
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.briscolaSuit = newBriscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          88
+        </td>
+        <td>
+          7807
+          -
+          7835
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setBriscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setBriscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          241
+        </td>
+        <td>
+          87
+        </td>
+        <td>
+          7872
+          -
+          7887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          briscola_=
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          briscola = suit
+        </td>
+      </tr><tr>
+        <td>
+          244
+        </td>
+        <td>
+          89
+        </td>
+        <td>
+          7907
+          -
+          7931
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setHandRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setHandRule
+        </td>
+      </tr><tr>
+        <td>
+          248
+        </td>
+        <td>
+          118
+        </td>
+        <td>
+          8016
+          -
+          8034
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          build
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def build
+        </td>
+      </tr><tr>
+        <td>
+          249
+        </td>
+        <td>
+          91
+        </td>
+        <td>
+          8098
+          -
+          8110
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.size
+        </td>
+      </tr><tr>
+        <td>
+          249
+        </td>
+        <td>
+          90
+        </td>
+        <td>
+          8086
+          -
+          8111
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerCount(players.size)
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          92
+        </td>
+        <td>
+          8127
+          -
+          8199
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Incorrect number of players joined&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          95
+        </td>
+        <td>
+          8199
+          -
+          8199
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          94
+        </td>
+        <td>
+          8127
+          -
+          8199
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Incorrect number of players joined&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          93
+        </td>
+        <td>
+          8133
+          -
+          8199
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Incorrect number of players joined&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          252
+        </td>
+        <td>
+          97
+        </td>
+        <td>
+          8220
+          -
+          8235
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          $lessinit$greater$default$2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          FullEngineModel
+        </td>
+      </tr><tr>
+        <td>
+          252
+        </td>
+        <td>
+          96
+        </td>
+        <td>
+          8220
+          -
+          8245
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          FullEngineModel(gameName)
+        </td>
+      </tr><tr>
+        <td>
+          253
+        </td>
+        <td>
+          98
+        </td>
+        <td>
+          8253
+          -
+          8277
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.addPlayers(players)
+        </td>
+      </tr><tr>
+        <td>
+          254
+        </td>
+        <td>
+          99
+        </td>
+        <td>
+          8285
+          -
+          8305
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addTeams
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.addTeams(teams)
+        </td>
+      </tr><tr>
+        <td>
+          255
+        </td>
+        <td>
+          100
+        </td>
+        <td>
+          8313
+          -
+          8342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          createDeck
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.createDeck(suits, ranks)
+        </td>
+      </tr><tr>
+        <td>
+          256
+        </td>
+        <td>
+          101
+        </td>
+        <td>
+          8350
+          -
+          8389
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          giveCardsToPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.giveCardsToPlayers(handSize.value)
+        </td>
+      </tr><tr>
+        <td>
+          256
+        </td>
+        <td>
+          102
+        </td>
+        <td>
+          8374
+          -
+          8388
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          value
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          handSize.value
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          104
+        </td>
+        <td>
+          8420
+          -
+          8452
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getOrElse
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          startingPlayerIndex.getOrElse(0)
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          103
+        </td>
+        <td>
+          8397
+          -
+          8453
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setStartingPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.setStartingPlayer(startingPlayerIndex.getOrElse(0))
+        </td>
+      </tr><tr>
+        <td>
+          258
+        </td>
+        <td>
+          105
+        </td>
+        <td>
+          8461
+          -
+          8495
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setBriscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.setBriscolaSuit(briscolaSuit)
+        </td>
+      </tr><tr>
+        <td>
+          260
+        </td>
+        <td>
+          107
+        </td>
+        <td>
+          8543
+          -
+          8568
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; game.setHandRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          260
+        </td>
+        <td>
+          106
+        </td>
+        <td>
+          8546
+          -
+          8568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setHandRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.setHandRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          261
+        </td>
+        <td>
+          108
+        </td>
+        <td>
+          8594
+          -
+          8599
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; ()
+        </td>
+      </tr><tr>
+        <td>
+          263
+        </td>
+        <td>
+          110
+        </td>
+        <td>
+          8650
+          -
+          8678
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; game.setPointRules(rules)
+        </td>
+      </tr><tr>
+        <td>
+          263
+        </td>
+        <td>
+          109
+        </td>
+        <td>
+          8653
+          -
+          8678
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPointRules
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.setPointRules(rules)
+        </td>
+      </tr><tr>
+        <td>
+          264
+        </td>
+        <td>
+          111
+        </td>
+        <td>
+          8705
+          -
+          8710
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; ()
+        </td>
+      </tr><tr>
+        <td>
+          266
+        </td>
+        <td>
+          113
+        </td>
+        <td>
+          8760
+          -
+          8787
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; game.setPlayRules(rules)
+        </td>
+      </tr><tr>
+        <td>
+          266
+        </td>
+        <td>
+          112
+        </td>
+        <td>
+          8763
+          -
+          8787
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPlayRules
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.setPlayRules(rules)
+        </td>
+      </tr><tr>
+        <td>
+          267
+        </td>
+        <td>
+          114
+        </td>
+        <td>
+          8814
+          -
+          8819
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; ()
+        </td>
+      </tr><tr>
+        <td>
+          269
+        </td>
+        <td>
+          116
+        </td>
+        <td>
+          8866
+          -
+          8890
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; game.setWinRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          269
+        </td>
+        <td>
+          115
+        </td>
+        <td>
+          8869
+          -
+          8890
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setWinRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game.setWinRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          270
+        </td>
+        <td>
+          117
+        </td>
+        <td>
+          8916
+          -
+          8921
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; ()
+        </td>
+      </tr><tr>
+        <td>
+          273
+        </td>
+        <td>
+          170
+        </td>
+        <td>
+          8941
+          -
+          8966
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          simpleEquals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def simpleEquals
+        </td>
+      </tr><tr>
+        <td>
+          276
+        </td>
+        <td>
+          119
+        </td>
+        <td>
+          9070
+          -
+          9082
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.head
+        </td>
+      </tr><tr>
+        <td>
+          276
+        </td>
+        <td>
+          168
+        </td>
+        <td>
+          9057
+          -
+          10705
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          val player = players.head\r\n          val hand = DeckModel()\r\n          val card = CardModel(&quot;Ace&quot;, 11, briscola)\r\n          hand.addCard(card)\r\n\r\n          val checkValues = this.gameName == that.gameName &amp;&amp;\r\n            this.players.forall(p1 =&gt;\r\n              that.players.map(p2 =&gt; p2.name).contains(p1.name)\r\n            ) &amp;&amp;\r\n            this.playerCount == that.playerCount &amp;&amp;\r\n            this.teams.forall(team =&gt; that.teams.contains(team)) &amp;&amp;\r\n            this.suits.equals(that.suits) &amp;&amp;\r\n            this.ranks.equals(that.ranks) &amp;&amp;\r\n            this.briscola == that.briscola &amp;&amp;\r\n            this.handSize == that.handSize &amp;&amp;\r\n            this.startingPlayerIndex == that.startingPlayerIndex\r\n          val checkPointRules =\r\n            (this.pointRules.isEmpty &amp;&amp; that.pointRules.isEmpty) ||\r\n              this.pointRules.get.head(&quot;Ace&quot;, &quot;Cups&quot;) ==\r\n              that.pointRules.get.head(&quot;Ace&quot;, &quot;Cups&quot;)\r\n          val checkHandRule =\r\n            (this.handRule.isEmpty &amp;&amp; that.handRule.isEmpty) ||\r\n              (this.handRule.get(List.empty, hand, card) ==\r\n                that.handRule.get(List.empty, hand, card))\r\n          val checkPlayRules =\r\n            (this.playRules.isEmpty &amp;&amp; that.playRules.isEmpty) ||\r\n              (this.playRules.get.head(List((player, card))) ==\r\n                that.playRules.get.head(List((player, card))))\r\n          val checkWinRule = (this.winRule.isEmpty &amp;&amp; that.winRule.isEmpty) ||\r\n            (this.winRule.get(teams, players) ==\r\n              that.winRule.get(teams, players))\r\n\r\n          checkValues &amp;&amp; checkPointRules &amp;&amp;\r\n          checkHandRule &amp;&amp; checkPlayRules &amp;&amp; checkWinRule
+        </td>
+      </tr><tr>
+        <td>
+          277
+        </td>
+        <td>
+          120
+        </td>
+        <td>
+          9105
+          -
+          9116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          DeckModel()
+        </td>
+      </tr><tr>
+        <td>
+          278
+        </td>
+        <td>
+          122
+        </td>
+        <td>
+          9160
+          -
+          9168
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          briscola
+        </td>
+      </tr><tr>
+        <td>
+          278
+        </td>
+        <td>
+          121
+        </td>
+        <td>
+          9139
+          -
+          9169
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          CardModel(&quot;Ace&quot;, 11, briscola)
+        </td>
+      </tr><tr>
+        <td>
+          279
+        </td>
+        <td>
+          123
+        </td>
+        <td>
+          9181
+          -
+          9199
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          hand.addCard(card)
+        </td>
+      </tr><tr>
+        <td>
+          282
+        </td>
+        <td>
+          124
+        </td>
+        <td>
+          9278
+          -
+          9383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          forall
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.players.forall(p1 =&gt;\r\n              that.players.map(p2 =&gt; p2.name).contains(p1.name)\r\n            )
+        </td>
+      </tr><tr>
+        <td>
+          283
+        </td>
+        <td>
+          125
+        </td>
+        <td>
+          9319
+          -
+          9368
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.players.map(p2 =&gt; p2.name).contains(p1.name)
+        </td>
+      </tr><tr>
+        <td>
+          283
+        </td>
+        <td>
+          126
+        </td>
+        <td>
+          9319
+          -
+          9350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.players.map(p2 =&gt; p2.name)
+        </td>
+      </tr><tr>
+        <td>
+          286
+        </td>
+        <td>
+          128
+        </td>
+        <td>
+          9479
+          -
+          9504
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.teams.contains(team)
+        </td>
+      </tr><tr>
+        <td>
+          286
+        </td>
+        <td>
+          127
+        </td>
+        <td>
+          9453
+          -
+          9505
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          forall
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.teams.forall(team =&gt; that.teams.contains(team))
+        </td>
+      </tr><tr>
+        <td>
+          288
+        </td>
+        <td>
+          129
+        </td>
+        <td>
+          9568
+          -
+          9597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          equals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.ranks.equals(that.ranks)
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          131
+        </td>
+        <td>
+          9631
+          -
+          9644
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.briscola
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          130
+        </td>
+        <td>
+          9614
+          -
+          9627
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.briscola
+        </td>
+      </tr><tr>
+        <td>
+          293
+        </td>
+        <td>
+          133
+        </td>
+        <td>
+          9835
+          -
+          9858
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          that.pointRules.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          293
+        </td>
+        <td>
+          132
+        </td>
+        <td>
+          9808
+          -
+          9831
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.pointRules.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          294
+        </td>
+        <td>
+          134
+        </td>
+        <td>
+          9878
+          -
+          9917
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.pointRules.get.head(&quot;Ace&quot;, &quot;Cups&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          294
+        </td>
+        <td>
+          136
+        </td>
+        <td>
+          9878
+          -
+          9902
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.pointRules.get.head
+        </td>
+      </tr><tr>
+        <td>
+          294
+        </td>
+        <td>
+          135
+        </td>
+        <td>
+          9878
+          -
+          9897
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.pointRules.get
+        </td>
+      </tr><tr>
+        <td>
+          295
+        </td>
+        <td>
+          137
+        </td>
+        <td>
+          9936
+          -
+          9975
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.pointRules.get.head(&quot;Ace&quot;, &quot;Cups&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          295
+        </td>
+        <td>
+          139
+        </td>
+        <td>
+          9936
+          -
+          9960
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.pointRules.get.head
+        </td>
+      </tr><tr>
+        <td>
+          295
+        </td>
+        <td>
+          138
+        </td>
+        <td>
+          9936
+          -
+          9955
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.pointRules.get
+        </td>
+      </tr><tr>
+        <td>
+          297
+        </td>
+        <td>
+          140
+        </td>
+        <td>
+          10021
+          -
+          10042
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.handRule.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          297
+        </td>
+        <td>
+          141
+        </td>
+        <td>
+          10046
+          -
+          10067
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.handRule.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          142
+        </td>
+        <td>
+          10088
+          -
+          10129
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.handRule.get(List.empty, hand, card)
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          145
+        </td>
+        <td>
+          10106
+          -
+          10116
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          144
+        </td>
+        <td>
+          10106
+          -
+          10110
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          143
+        </td>
+        <td>
+          10088
+          -
+          10105
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.handRule.get
+        </td>
+      </tr><tr>
+        <td>
+          299
+        </td>
+        <td>
+          146
+        </td>
+        <td>
+          10150
+          -
+          10191
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.handRule.get(List.empty, hand, card)
+        </td>
+      </tr><tr>
+        <td>
+          299
+        </td>
+        <td>
+          149
+        </td>
+        <td>
+          10168
+          -
+          10178
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          299
+        </td>
+        <td>
+          148
+        </td>
+        <td>
+          10168
+          -
+          10172
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          299
+        </td>
+        <td>
+          147
+        </td>
+        <td>
+          10150
+          -
+          10167
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.handRule.get
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          151
+        </td>
+        <td>
+          10265
+          -
+          10287
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          that.playRules.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          301
+        </td>
+        <td>
+          150
+        </td>
+        <td>
+          10239
+          -
+          10261
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.playRules.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          155
+        </td>
+        <td>
+          10332
+          -
+          10352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List((player, card))
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          154
+        </td>
+        <td>
+          10308
+          -
+          10331
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.playRules.get.head
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          156
+        </td>
+        <td>
+          10332
+          -
+          10336
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          153
+        </td>
+        <td>
+          10308
+          -
+          10326
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.playRules.get
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          152
+        </td>
+        <td>
+          10308
+          -
+          10353
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.playRules.get.head(List((player, card)))
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          158
+        </td>
+        <td>
+          10374
+          -
+          10392
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.playRules.get
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          160
+        </td>
+        <td>
+          10398
+          -
+          10418
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List((player, card))
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          157
+        </td>
+        <td>
+          10374
+          -
+          10419
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.playRules.get.head(List((player, card)))
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          159
+        </td>
+        <td>
+          10374
+          -
+          10397
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.playRules.get.head
+        </td>
+      </tr><tr>
+        <td>
+          303
+        </td>
+        <td>
+          161
+        </td>
+        <td>
+          10398
+          -
+          10402
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          304
+        </td>
+        <td>
+          163
+        </td>
+        <td>
+          10476
+          -
+          10496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          that.winRule.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          304
+        </td>
+        <td>
+          162
+        </td>
+        <td>
+          10452
+          -
+          10472
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.winRule.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          305
+        </td>
+        <td>
+          164
+        </td>
+        <td>
+          10515
+          -
+          10547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.winRule.get(teams, players)
+        </td>
+      </tr><tr>
+        <td>
+          305
+        </td>
+        <td>
+          165
+        </td>
+        <td>
+          10515
+          -
+          10531
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          this.winRule.get
+        </td>
+      </tr><tr>
+        <td>
+          306
+        </td>
+        <td>
+          167
+        </td>
+        <td>
+          10566
+          -
+          10582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.winRule.get
+        </td>
+      </tr><tr>
+        <td>
+          306
+        </td>
+        <td>
+          166
+        </td>
+        <td>
+          10566
+          -
+          10598
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          that.winRule.get(teams, players)
+        </td>
+      </tr><tr>
+        <td>
+          310
+        </td>
+        <td>
+          169
+        </td>
+        <td>
+          10722
+          -
+          10730
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; false
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          248
+        </td>
+        <td>
+          10782
+          -
+          10782
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          $lessinit$greater$default$1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          314
+        </td>
+        <td>
+          172
+        </td>
+        <td>
+          10859
+          -
+          10869
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          314
+        </td>
+        <td>
+          171
+        </td>
+        <td>
+          10859
+          -
+          10863
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          317
+        </td>
+        <td>
+          173
+        </td>
+        <td>
+          10959
+          -
+          10963
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          317
+        </td>
+        <td>
+          174
+        </td>
+        <td>
+          10959
+          -
+          10969
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          176
+        </td>
+        <td>
+          11261
+          -
+          11271
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          324
+        </td>
+        <td>
+          175
+        </td>
+        <td>
+          11261
+          -
+          11265
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          327
+        </td>
+        <td>
+          177
+        </td>
+        <td>
+          11318
+          -
+          11339
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def briscola
+        </td>
+      </tr><tr>
+        <td>
+          331
+        </td>
+        <td>
+          178
+        </td>
+        <td>
+          11420
+          -
+          11445
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          simpleEquals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          override def simpleEquals
+        </td>
+      </tr><tr>
+        <td>
+          332
+        </td>
+        <td>
+          181
+        </td>
+        <td>
+          11475
+          -
+          11497
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def addPlayer
+        </td>
+      </tr><tr>
+        <td>
+          333
+        </td>
+        <td>
+          180
+        </td>
+        <td>
+          11553
+          -
+          11570
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerModel(name)
+        </td>
+      </tr><tr>
+        <td>
+          333
+        </td>
+        <td>
+          179
+        </td>
+        <td>
+          11542
+          -
+          11570
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players :+ PlayerModel(name)
+        </td>
+      </tr><tr>
+        <td>
+          336
+        </td>
+        <td>
+          184
+        </td>
+        <td>
+          11586
+          -
+          11611
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addBotPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def addBotPlayer
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          182
+        </td>
+        <td>
+          11674
+          -
+          11714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players :+ BotPlayerModel(name, botType)
+        </td>
+      </tr><tr>
+        <td>
+          337
+        </td>
+        <td>
+          183
+        </td>
+        <td>
+          11685
+          -
+          11714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          BotPlayerModel(name, botType)
+        </td>
+      </tr><tr>
+        <td>
+          340
+        </td>
+        <td>
+          204
+        </td>
+        <td>
+          11730
+          -
+          11750
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def addTeam
+        </td>
+      </tr><tr>
+        <td>
+          342
+        </td>
+        <td>
+          185
+        </td>
+        <td>
+          11830
+          -
+          12080
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          names.foreach(newPlayerName =&gt;\r\n      val playerExists = players.exists(p =&gt; p.name == newPlayerName)\r\n      if !playerExists then\r\n        throw IllegalArgumentException(&quot;Player &quot; + newPlayerName + &quot; doesn't exists in &quot; + players.map(_.name))\r\n    )
+        </td>
+      </tr><tr>
+        <td>
+          343
+        </td>
+        <td>
+          186
+        </td>
+        <td>
+          11887
+          -
+          11931
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          exists
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.exists(p =&gt; p.name == newPlayerName)
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          191
+        </td>
+        <td>
+          12001
+          -
+          12026
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Player &quot; + newPlayerName
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          194
+        </td>
+        <td>
+          12073
+          -
+          12073
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          193
+        </td>
+        <td>
+          11970
+          -
+          12073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Player &quot; + newPlayerName + &quot; doesn't exists in &quot; + players.map(_.name))
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          187
+        </td>
+        <td>
+          11970
+          -
+          12073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Player &quot; + newPlayerName + &quot; doesn't exists in &quot; + players.map(_.name))
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          190
+        </td>
+        <td>
+          12001
+          -
+          12050
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Player &quot; + newPlayerName + &quot; doesn't exists in &quot;
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          189
+        </td>
+        <td>
+          12001
+          -
+          12072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Player &quot; + newPlayerName + &quot; doesn't exists in &quot; + players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          192
+        </td>
+        <td>
+          12053
+          -
+          12072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          345
+        </td>
+        <td>
+          188
+        </td>
+        <td>
+          11976
+          -
+          12073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          IllegalArgumentException(&quot;Player &quot; + newPlayerName + &quot; doesn't exists in &quot; + players.map(_.name))
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          196
+        </td>
+        <td>
+          12166
+          -
+          12194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teams.flatMap(t =&gt; t.toList)
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          198
+        </td>
+        <td>
+          12150
+          -
+          12204
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          nonEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          names.intersect(teams.flatMap(t =&gt; t.toList)).nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          195
+        </td>
+        <td>
+          12150
+          -
+          12195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          intersect
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          names.intersect(teams.flatMap(t =&gt; t.toList))
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          197
+        </td>
+        <td>
+          12185
+          -
+          12193
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          t.toList
+        </td>
+      </tr><tr>
+        <td>
+          349
+        </td>
+        <td>
+          200
+        </td>
+        <td>
+          12223
+          -
+          12286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          IllegalArgumentException(&quot;Players already inside another team&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          349
+        </td>
+        <td>
+          202
+        </td>
+        <td>
+          12286
+          -
+          12286
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          349
+        </td>
+        <td>
+          199
+        </td>
+        <td>
+          12217
+          -
+          12286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Players already inside another team&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          349
+        </td>
+        <td>
+          201
+        </td>
+        <td>
+          12217
+          -
+          12286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw IllegalArgumentException(&quot;Players already inside another team&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          351
+        </td>
+        <td>
+          203
+        </td>
+        <td>
+          12302
+          -
+          12316
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teams :+ names
+        </td>
+      </tr><tr>
+        <td>
+          354
+        </td>
+        <td>
+          206
+        </td>
+        <td>
+          12332
+          -
+          12355
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPlayers
+        </td>
+      </tr><tr>
+        <td>
+          355
+        </td>
+        <td>
+          205
+        </td>
+        <td>
+          12398
+          -
+          12412
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerCount(n)
+        </td>
+      </tr><tr>
+        <td>
+          358
+        </td>
+        <td>
+          208
+        </td>
+        <td>
+          12428
+          -
+          12449
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setSuits
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setSuits
+        </td>
+      </tr><tr>
+        <td>
+          359
+        </td>
+        <td>
+          207
+        </td>
+        <td>
+          12504
+          -
+          12516
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Suits(suits)
+        </td>
+      </tr><tr>
+        <td>
+          362
+        </td>
+        <td>
+          209
+        </td>
+        <td>
+          12532
+          -
+          12553
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setRanks
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setRanks
+        </td>
+      </tr><tr>
+        <td>
+          366
+        </td>
+        <td>
+          211
+        </td>
+        <td>
+          12629
+          -
+          12657
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayersHands
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPlayersHands
+        </td>
+      </tr><tr>
+        <td>
+          367
+        </td>
+        <td>
+          210
+        </td>
+        <td>
+          12709
+          -
+          12727
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HandSize(handSize)
+        </td>
+      </tr><tr>
+        <td>
+          370
+        </td>
+        <td>
+          229
+        </td>
+        <td>
+          12743
+          -
+          12773
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setStartingPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setStartingPlayer
+        </td>
+      </tr><tr>
+        <td>
+          371
+        </td>
+        <td>
+          214
+        </td>
+        <td>
+          12831
+          -
+          12850
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          371
+        </td>
+        <td>
+          213
+        </td>
+        <td>
+          12831
+          -
+          12865
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name).contains(name)
+        </td>
+      </tr><tr>
+        <td>
+          371
+        </td>
+        <td>
+          212
+        </td>
+        <td>
+          12811
+          -
+          12826
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          218
+        </td>
+        <td>
+          12913
+          -
+          12948
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Player &quot; + name + &quot; not found in &quot;
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          220
+        </td>
+        <td>
+          12951
+          -
+          12970
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          217
+        </td>
+        <td>
+          12913
+          -
+          12970
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Player &quot; + name + &quot; not found in &quot; + players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          216
+        </td>
+        <td>
+          12884
+          -
+          12971
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Player &quot; + name + &quot; not found in &quot; + players.map(_.name))
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          219
+        </td>
+        <td>
+          12913
+          -
+          12929
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Player &quot; + name
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          222
+        </td>
+        <td>
+          12971
+          -
+          12971
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          221
+        </td>
+        <td>
+          12878
+          -
+          12971
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Player &quot; + name + &quot; not found in &quot; + players.map(_.name))
+        </td>
+      </tr><tr>
+        <td>
+          372
+        </td>
+        <td>
+          215
+        </td>
+        <td>
+          12878
+          -
+          12971
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Player &quot; + name + &quot; not found in &quot; + players.map(_.name))
+        </td>
+      </tr><tr>
+        <td>
+          375
+        </td>
+        <td>
+          225
+        </td>
+        <td>
+          13061
+          -
+          13138
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n        throw new IllegalArgumentException(&quot;Starting player already set&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          376
+        </td>
+        <td>
+          223
+        </td>
+        <td>
+          13073
+          -
+          13138
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalArgumentException(&quot;Starting player already set&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          376
+        </td>
+        <td>
+          224
+        </td>
+        <td>
+          13079
+          -
+          13138
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalArgumentException(&quot;Starting player already set&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          377
+        </td>
+        <td>
+          227
+        </td>
+        <td>
+          13161
+          -
+          13180
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name)
+        </td>
+      </tr><tr>
+        <td>
+          377
+        </td>
+        <td>
+          226
+        </td>
+        <td>
+          13161
+          -
+          13194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          indexOf
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(_.name).indexOf(name)
+        </td>
+      </tr><tr>
+        <td>
+          377
+        </td>
+        <td>
+          228
+        </td>
+        <td>
+          13153
+          -
+          13195
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; Some(players.map(_.name).indexOf(name))
+        </td>
+      </tr><tr>
+        <td>
+          380
+        </td>
+        <td>
+          235
+        </td>
+        <td>
+          13211
+          -
+          13236
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPointRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPointRule
+        </td>
+      </tr><tr>
+        <td>
+          382
+        </td>
+        <td>
+          231
+        </td>
+        <td>
+          13336
+          -
+          13352
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          382
+        </td>
+        <td>
+          230
+        </td>
+        <td>
+          13339
+          -
+          13352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          383
+        </td>
+        <td>
+          232
+        </td>
+        <td>
+          13380
+          -
+          13390
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          383
+        </td>
+        <td>
+          234
+        </td>
+        <td>
+          13377
+          -
+          13390
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          383
+        </td>
+        <td>
+          233
+        </td>
+        <td>
+          13380
+          -
+          13384
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          387
+        </td>
+        <td>
+          241
+        </td>
+        <td>
+          13444
+          -
+          13468
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setPlayRule
+        </td>
+      </tr><tr>
+        <td>
+          389
+        </td>
+        <td>
+          236
+        </td>
+        <td>
+          13568
+          -
+          13581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          389
+        </td>
+        <td>
+          237
+        </td>
+        <td>
+          13565
+          -
+          13581
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; rules :+ rule
+        </td>
+      </tr><tr>
+        <td>
+          390
+        </td>
+        <td>
+          238
+        </td>
+        <td>
+          13609
+          -
+          13619
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          390
+        </td>
+        <td>
+          240
+        </td>
+        <td>
+          13606
+          -
+          13619
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; List(rule)
+        </td>
+      </tr><tr>
+        <td>
+          390
+        </td>
+        <td>
+          239
+        </td>
+        <td>
+          13609
+          -
+          13613
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          394
+        </td>
+        <td>
+          242
+        </td>
+        <td>
+          13672
+          -
+          13695
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setWinRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setWinRule
+        </td>
+      </tr><tr>
+        <td>
+          398
+        </td>
+        <td>
+          243
+        </td>
+        <td>
+          13772
+          -
+          13800
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setBriscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setBriscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          402
+        </td>
+        <td>
+          244
+        </td>
+        <td>
+          13875
+          -
+          13899
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setHandRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def setHandRule
+        </td>
+      </tr><tr>
+        <td>
+          406
+        </td>
+        <td>
+          247
+        </td>
+        <td>
+          13978
+          -
+          13996
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          build
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def build
+        </td>
+      </tr><tr>
+        <td>
+          407
+        </td>
+        <td>
+          245
+        </td>
+        <td>
+          14023
+          -
+          14048
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          FullEngineModel(gameName)
+        </td>
+      </tr><tr>
+        <td>
+          407
+        </td>
+        <td>
+          246
+        </td>
+        <td>
+          14023
+          -
+          14038
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          $lessinit$greater$default$2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          FullEngineModel
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

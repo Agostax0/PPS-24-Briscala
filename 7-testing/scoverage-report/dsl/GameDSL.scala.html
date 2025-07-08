@@ -1,0 +1,1029 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          dsl\GameDSL.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package dsl
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.syntax.SyntacticSugar.{EntitySyntacticSugar, PlayerSyntacticSugar, PointsSyntacticSugar, RulesSyntacticSugar, StartsSyntacticSugar, TeamSyntacticSugar}
+</span>4 <span style=''>import dsl.syntax.SyntacticSugarBuilder.*
+</span>5 <span style=''>
+</span>6 <span style=''>object GameDSL:
+</span>7 <span style=''>  private var builder: GameBuilder = _
+</span>8 <span style=''>
+</span>9 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameBuilder: GameBuilder): Unit = builder = gameBuilder
+</span>10 <span style=''>  </span><span style='background: #AEF1AE'>implicit def game</span><span style=''>: GameBuilder = builder
+</span>11 <span style=''>  </span><span style='background: #AEF1AE'>implicit def briscolaSuit</span><span style=''>: String = </span><span style='background: #AEF1AE'>builder.briscola</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  extension (gameBuilder: GameBuilder)
+</span>14 <span style=''>
+</span>15 <span style=''>    /** Creates a new game with the given name. To be used as first rule: it
+</span>16 <span style=''>      * erases any previous configuration.
+</span>17 <span style=''>      *
+</span>18 <span style=''>      * To be used like this:
+</span>19 <span style=''>      * {{{
+</span>20 <span style=''>      *   game is &quot;Game Name&quot;
+</span>21 <span style=''>      * }}}
+</span>22 <span style=''>      * @param name
+</span>23 <span style=''>      *   Game name
+</span>24 <span style=''>      * @return
+</span>25 <span style=''>      *   The builder for the game
+</span>26 <span style=''>      */
+</span>27 <span style=''>    </span><span style='background: #AEF1AE'>infix def is</span><span style=''>(name: String): GameBuilder =
+</span>28 <span style=''>      builder = </span><span style='background: #AEF1AE'>OrderedGameBuilder(name, GameBuilder(name))</span><span style=''>
+</span>29 <span style=''>      builder
+</span>30 <span style=''>
+</span>31 <span style=''>    /** Sets the game to have a specific number of players.
+</span>32 <span style=''>      *
+</span>33 <span style=''>      * To be used like this:
+</span>34 <span style=''>      * {{{
+</span>35 <span style=''>      *   game has 2 players
+</span>36 <span style=''>      * }}}
+</span>37 <span style=''>      * @param playerCount
+</span>38 <span style=''>      *   the number of players expected to be added
+</span>39 <span style=''>      * @return
+</span>40 <span style=''>      *   The builder for the game
+</span>41 <span style=''>      */
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>infix def has</span><span style=''>(playerCount: Int): PlayerCountBuilder =
+</span>43 <span style=''>      </span><span style='background: #AEF1AE'>PlayerCountBuilder(gameBuilder, playerCount)</span><span style=''>
+</span>44 <span style=''>
+</span>45 <span style=''>    /** Adds a player to the game.
+</span>46 <span style=''>      *
+</span>47 <span style=''>      * To be used like this:
+</span>48 <span style=''>      * {{{
+</span>49 <span style=''>      *   game has player called &quot;Alice&quot;
+</span>50 <span style=''>      * }}}
+</span>51 <span style=''>     *
+</span>52 <span style=''>      * @param playerSyntax
+</span>53 <span style=''>      *   &quot;PlayerSyntacticSugar&quot; instance representing the player
+</span>54 <span style=''>      * @return
+</span>55 <span style=''>      *   The builder for the game
+</span>56 <span style=''>      */
+</span>57 <span style=''>    </span><span style='background: #AEF1AE'>infix def has</span><span style=''>(entitySyntax: EntitySyntacticSugar ): EntityBuilder =
+</span>58 <span style=''>      </span><span style='background: #AEF1AE'>EntityBuilder(gameBuilder, entitySyntax)</span><span style=''>
+</span>59 <span style=''>
+</span>60 <span style=''>    </span><span style='background: #AEF1AE'>infix def has</span><span style=''>(teamSyntax: TeamSyntacticSugar): TeamBuilder =
+</span>61 <span style=''>      </span><span style='background: #AEF1AE'>TeamBuilder(gameBuilder)</span><span style=''>
+</span>62 <span style=''>
+</span>63 <span style=''>    /** Adds 4 suits with distinct names.
+</span>64 <span style=''>      *
+</span>65 <span style=''>      * To be used like this:
+</span>66 <span style=''>      * {{{
+</span>67 <span style=''>      *   game suitsAre (&quot;Cups&quot;, &quot;Coins&quot;, &quot;Swords&quot;, &quot;Batons&quot;)
+</span>68 <span style=''>      * }}}
+</span>69 <span style=''>      *
+</span>70 <span style=''>      * @param suits
+</span>71 <span style=''>      *   The name of the suits
+</span>72 <span style=''>      * @return
+</span>73 <span style=''>      *   The builder for the game
+</span>74 <span style=''>      */
+</span>75 <span style=''>    </span><span style='background: #AEF1AE'>infix def suitsAre</span><span style=''>(suits: String*): GameBuilder =
+</span>76 <span style=''>      </span><span style='background: #AEF1AE'>gameBuilder.setSuits(suits.toList)</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>    /** Adds the cards to build the deck, creating a card for every suit.
+</span>79 <span style=''>     *
+</span>80 <span style=''>     * To be used like this:
+</span>81 <span style=''>     * {{{
+</span>82 <span style=''>     *   game ranksAre (&quot;2&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;Knave&quot;, &quot;Knight&quot;, &quot;King&quot;, &quot;3&quot;, &quot;Ace&quot;)
+</span>83 <span style=''>     * }}}
+</span>84 <span style=''>     *
+</span>85 <span style=''>     * @param ranks
+</span>86 <span style=''>     * The name of the suits
+</span>87 <span style=''>     * @return
+</span>88 <span style=''>     * The builder for the game
+</span>89 <span style=''>     */
+</span>90 <span style=''>    </span><span style='background: #AEF1AE'>infix def ranksAre</span><span style=''>(ranks: String*): GameBuilder =
+</span>91 <span style=''>      </span><span style='background: #AEF1AE'>gameBuilder.setRanks(ranks.toList)</span><span style=''>
+</span>92 <span style=''>
+</span>93 <span style=''>
+</span>94 <span style=''>    /** Sets the number of cards to be given to each player at the start of each turns
+</span>95 <span style=''>     *
+</span>96 <span style=''>     * To be used like this:
+</span>97 <span style=''>     *  {{{
+</span>98 <span style=''>     *   game gives 10 cards to every player
+</span>99 <span style=''>     *  }}}
+</span>100 <span style=''>     *
+</span>101 <span style=''>     * @param handSize
+</span>102 <span style=''>     *  The number of cards to be given to each player
+</span>103 <span style=''>     * @return
+</span>104 <span style=''>     *  The builder for the game
+</span>105 <span style=''>     */
+</span>106 <span style=''>    </span><span style='background: #AEF1AE'>infix def gives</span><span style=''>(handSize: Int): HandBuilder =
+</span>107 <span style=''>      </span><span style='background: #AEF1AE'>HandBuilder(gameBuilder, handSize)</span><span style=''>
+</span>108 <span style=''>
+</span>109 <span style=''>    /** Sets which player plays the first card
+</span>110 <span style=''>      *
+</span>111 <span style=''>      * To be used like this:
+</span>112 <span style=''>      * {{{
+</span>113 <span style=''>      *   game firstTurn starts from &quot;Alice&quot;
+</span>114 <span style=''>      * }}}
+</span>115 <span style=''>      *
+</span>116 <span style=''>      * @param starts
+</span>117 <span style=''>      *   &quot;StartsSyntacticSugar&quot; instance
+</span>118 <span style=''>      * @return
+</span>119 <span style=''>      *   The builder for this game
+</span>120 <span style=''>      */
+</span>121 <span style=''>    </span><span style='background: #AEF1AE'>infix def firstTurn</span><span style=''>(starts: StartsSyntacticSugar): StartingTurnBuilder =
+</span>122 <span style=''>      </span><span style='background: #AEF1AE'>StartingTurnBuilder(gameBuilder)</span><span style=''>
+</span>123 <span style=''>
+</span>124 <span style=''>    /** Sets the points for each card, based on the card name and/or suit.
+</span>125 <span style=''>     *
+</span>126 <span style=''>     * To be used like this:
+</span>127 <span style=''>     * {{{
+</span>128 <span style=''>     *   game card points are:
+</span>129 <span style=''>     *     (name, suit) =&gt;
+</span>130 <span style=''>     *       name match
+</span>131 <span style=''>     *         case &quot;Ace&quot; =&gt; 10
+</span>132 <span style=''>     *         case _ =&gt; 0
+</span>133 <span style=''>     * }}}
+</span>134 <span style=''> *
+</span>135 <span style=''>     * @param points
+</span>136 <span style=''>     *  syntactic sugar
+</span>137 <span style=''>     * @return
+</span>138 <span style=''>     *  The builder for the game
+</span>139 <span style=''>     */
+</span>140 <span style=''>    </span><span style='background: #AEF1AE'>infix def card</span><span style=''>(points: PointsSyntacticSugar): PointsBuilder =
+</span>141 <span style=''>      </span><span style='background: #AEF1AE'>PointsBuilder(gameBuilder)</span><span style=''>
+</span>142 <span style=''>
+</span>143 <span style=''>    /** Sets the briscola to be used in game.
+</span>144 <span style=''>     *
+</span>145 <span style=''>     * To be used like this:
+</span>146 <span style=''>     * {{{
+</span>147 <span style=''>     *   game briscolaIs &quot;Cups&quot;
+</span>148 <span style=''>     * }}}
+</span>149 <span style=''>     *
+</span>150 <span style=''>     * @param suit
+</span>151 <span style=''>     *  the suit of the briscola
+</span>152 <span style=''>     * @return
+</span>153 <span style=''>     * The builder for the game
+</span>154 <span style=''>     */
+</span>155 <span style=''>    </span><span style='background: #AEF1AE'>infix def briscolaIs</span><span style=''>(suit: String): GameBuilder =
+</span>156 <span style=''>      </span><span style='background: #AEF1AE'>gameBuilder.setBriscolaSuit(suit)</span><span style=''>
+</span>157 <span style=''>
+</span>158 <span style=''>    /** Sets the rules for the hand of cards (which cards can be played and which not)
+</span>159 <span style=''>     *
+</span>160 <span style=''>     * To be used like this:
+</span>161 <span style=''>     * {{{
+</span>162 <span style=''>     *   game hand rules are:
+</span>163 <span style=''>     *     (cardsOnTable, playerHand, playedCard) =&gt;
+</span>164 <span style=''>     *       given List[CardModel] = cardsOnTable
+</span>165 <span style=''>     *       given DeckModel = playerHand
+</span>166 <span style=''>     *       given CardModel = playedCard
+</span>167 <span style=''>     *
+</span>168 <span style=''>     *       freeStart or followFirstSuit
+</span>169 <span style=''>     * }}}
+</span>170 <span style=''>     *
+</span>171 <span style=''>     * @param rules
+</span>172 <span style=''>     *  syntactic sugar for hand rules
+</span>173 <span style=''>     * @return
+</span>174 <span style=''>     *  The builder for the game
+</span>175 <span style=''>     */
+</span>176 <span style=''>    </span><span style='background: #AEF1AE'>infix def hand</span><span style=''>(rules: RulesSyntacticSugar): HandRuleBuilder =
+</span>177 <span style=''>      </span><span style='background: #AEF1AE'>HandRuleBuilder(gameBuilder)</span><span style=''>
+</span>178 <span style=''>
+</span>179 <span style=''>    /** Sets the rules for the cards (which player wins the turn)
+</span>180 <span style=''>     *
+</span>181 <span style=''>     * To be used like this:
+</span>182 <span style=''>     * {{{
+</span>183 <span style=''>     *
+</span>184 <span style=''>     * }}}
+</span>185 <span style=''>     *
+</span>186 <span style=''>     * @param rules
+</span>187 <span style=''>     *  syntactic sugar for play rules
+</span>188 <span style=''>     * @return
+</span>189 <span style=''>     *  The builder for the game
+</span>190 <span style=''>     */
+</span>191 <span style=''>    </span><span style='background: #AEF1AE'>infix def play</span><span style=''>(rules: RulesSyntacticSugar): PlayRulesBuilder =
+</span>192 <span style=''>      </span><span style='background: #AEF1AE'>PlayRulesBuilder(gameBuilder)</span><span style=''>
+</span>193 <span style=''>
+</span>194 <span style=''>    </span><span style='background: #AEF1AE'>infix def win</span><span style=''>(rules: RulesSyntacticSugar): WinRulesBuilder =
+</span>195 <span style=''>      </span><span style='background: #AEF1AE'>WinRulesBuilder(gameBuilder)</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          249
+        </td>
+        <td>
+          285
+          -
+          294
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          250
+        </td>
+        <td>
+          354
+          -
+          371
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          implicit def game
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          252
+        </td>
+        <td>
+          398
+          -
+          423
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          briscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          implicit def briscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          251
+        </td>
+        <td>
+          434
+          -
+          450
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.briscola
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          255
+        </td>
+        <td>
+          824
+          -
+          836
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def is
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          254
+        </td>
+        <td>
+          908
+          -
+          925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          GameBuilder(name)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          253
+        </td>
+        <td>
+          883
+          -
+          926
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          OrderedGameBuilder(name, GameBuilder(name))
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          257
+        </td>
+        <td>
+          1251
+          -
+          1264
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def has
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          256
+        </td>
+        <td>
+          1312
+          -
+          1356
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerCountBuilder(gameBuilder, playerCount)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          259
+        </td>
+        <td>
+          1675
+          -
+          1688
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def has
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          258
+        </td>
+        <td>
+          1750
+          -
+          1790
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          EntityBuilder(gameBuilder, entitySyntax)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          261
+        </td>
+        <td>
+          1798
+          -
+          1811
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def has
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          260
+        </td>
+        <td>
+          1866
+          -
+          1890
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          TeamBuilder(gameBuilder)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          264
+        </td>
+        <td>
+          2197
+          -
+          2215
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          suitsAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def suitsAre
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          262
+        </td>
+        <td>
+          2254
+          -
+          2288
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setSuits
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.setSuits(suits.toList)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          263
+        </td>
+        <td>
+          2275
+          -
+          2287
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.toList
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          267
+        </td>
+        <td>
+          2639
+          -
+          2657
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          ranksAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def ranksAre
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          265
+        </td>
+        <td>
+          2696
+          -
+          2730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setRanks
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.setRanks(ranks.toList)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          266
+        </td>
+        <td>
+          2717
+          -
+          2729
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          ranks.toList
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          269
+        </td>
+        <td>
+          3085
+          -
+          3100
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          gives
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def gives
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          268
+        </td>
+        <td>
+          3138
+          -
+          3172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HandBuilder(gameBuilder, handSize)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          271
+        </td>
+        <td>
+          3479
+          -
+          3498
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          firstTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def firstTurn
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          270
+        </td>
+        <td>
+          3559
+          -
+          3591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          StartingTurnBuilder(gameBuilder)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          273
+        </td>
+        <td>
+          3993
+          -
+          4007
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def card
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          272
+        </td>
+        <td>
+          4062
+          -
+          4088
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PointsBuilder(gameBuilder)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          275
+        </td>
+        <td>
+          4358
+          -
+          4378
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          briscolaIs
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def briscolaIs
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          274
+        </td>
+        <td>
+          4415
+          -
+          4448
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setBriscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameBuilder.setBriscolaSuit(suit)
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          277
+        </td>
+        <td>
+          5007
+          -
+          5021
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          hand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def hand
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          276
+        </td>
+        <td>
+          5076
+          -
+          5104
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          HandRuleBuilder(gameBuilder)
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          279
+        </td>
+        <td>
+          5377
+          -
+          5391
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          play
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def play
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          278
+        </td>
+        <td>
+          5447
+          -
+          5476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayRulesBuilder(gameBuilder)
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          281
+        </td>
+        <td>
+          5484
+          -
+          5497
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          win
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def win
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          280
+        </td>
+        <td>
+          5552
+          -
+          5580
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          WinRulesBuilder(gameBuilder)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

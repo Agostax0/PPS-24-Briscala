@@ -1,0 +1,995 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\view\TableViewManager.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.view
+</span>2 <span style=''>
+</span>3 <span style=''>import engine.model.CardModel
+</span>4 <span style=''>import engine.view.SwingFunctionalFacade.Frame
+</span>5 <span style=''>import engine.view.monads.States.State
+</span>6 <span style=''>import ElementsPositionManager.*
+</span>7 <span style=''>import engine.view.GridLayoutOrientation.{Horizontal, Vertical}
+</span>8 <span style=''>
+</span>9 <span style=''>trait TableViewManager:
+</span>10 <span style=''>  var cardsPlayed: Map[String, CardModel] = _
+</span>11 <span style=''>  private var panelName = &quot;Table&quot;
+</span>12 <span style=''>
+</span>13 <span style=''>  </span><span style='background: #AEF1AE'>def addTable</span><span style=''>(): State[Frame, Unit] =
+</span>14 <span style=''>    cardsPlayed = </span><span style='background: #AEF1AE'>Map.empty</span><span style=''>
+</span>15 <span style=''>    import WindowStateImpl.*
+</span>16 <span style=''>    </span><span style='background: #AEF1AE'>for
+</span>17 <span style=''></span><span style='background: #AEF1AE'>      _ &lt;- addPanel(panelName)(centerTableCoords)(centerTableDims)
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>_ &lt;- setGridLayout(panelName, Horizontal)
+</span>19 <span style=''></span><span style='background: #F0ADAD'>    yield ()</span><span style=''>
+</span>20 <span style=''>  </span><span style='background: #AEF1AE'>def addCardToTable</span><span style=''>(playerName: String, card: CardModel): State[Frame, Unit] =
+</span>21 <span style=''>    cardsPlayed = </span><span style='background: #AEF1AE'>cardsPlayed + (playerName -&gt; card</span><span style=''>)
+</span>22 <span style=''>    val labelName = </span><span style='background: #AEF1AE'>panelName + &quot; &quot; + playerName</span><span style=''>
+</span>23 <span style=''>    import WindowStateImpl.*
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>for
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      _ &lt;- addLabel(
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        playerName + &quot;: &quot; + card.name + &quot; of &quot; + card.suit,
+</span>27 <span style=''></span><span style='background: #AEF1AE'>        labelName
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      )
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>- &lt;- moveComponentIntoPanel(&quot;Table &quot; + playerName, panelName)
+</span>30 <span style=''></span><span style='background: #F0ADAD'>    yield ()</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>  </span><span style='background: #F0ADAD'>def clearTable</span><span style=''>(): State[Frame, Unit] =
+</span>33 <span style=''>    import WindowStateImpl.*
+</span>34 <span style=''>    State(frame =&gt;
+</span>35 <span style=''>      val listPlayers = </span><span style='background: #F0ADAD'>cardsPlayed.keys.toList</span><span style=''>
+</span>36 <span style=''>      </span><span style='background: #F0ADAD'>listPlayers.foreach(playerName =&gt;
+</span>37 <span style=''></span><span style='background: #F0ADAD'>        val labelName = panelName + &quot; &quot; + playerName
+</span>38 <span style=''></span><span style='background: #F0ADAD'>        removeComponentFromPanel(labelName, panelName)(frame)
+</span>39 <span style=''></span><span style='background: #F0ADAD'>      )</span><span style=''>
+</span>40 <span style=''>      (frame, ())
+</span>41 <span style=''>    )
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1227
+        </td>
+        <td>
+          354
+          -
+          366
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addTable
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addTable
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1218
+        </td>
+        <td>
+          410
+          -
+          419
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Map.empty
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1217
+        </td>
+        <td>
+          410
+          -
+          413
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Map
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1219
+        </td>
+        <td>
+          455
+          -
+          589
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for\r\n      _ &lt;- addPanel(panelName)(centerTableCoords)(centerTableDims)\r\n      _ &lt;- setGridLayout(panelName, Horizontal)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1221
+        </td>
+        <td>
+          471
+          -
+          526
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          addPanel(panelName)(centerTableCoords)(centerTableDims)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1220
+        </td>
+        <td>
+          471
+          -
+          526
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          addPanel(panelName)(centerTableCoords)(centerTableDims)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1222
+        </td>
+        <td>
+          534
+          -
+          589
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- setGridLayout(panelName, Horizontal)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1224
+        </td>
+        <td>
+          539
+          -
+          575
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setGridLayout
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          setGridLayout(panelName, Horizontal)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1223
+        </td>
+        <td>
+          539
+          -
+          575
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          setGridLayout(panelName, Horizontal)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1226
+        </td>
+        <td>
+          534
+          -
+          589
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- setGridLayout(panelName, Horizontal)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1225
+        </td>
+        <td>
+          587
+          -
+          589
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1246
+        </td>
+        <td>
+          593
+          -
+          611
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addCardToTable
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addCardToTable
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1228
+        </td>
+        <td>
+          690
+          -
+          723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsPlayed + (playerName -&gt; card
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1229
+        </td>
+        <td>
+          705
+          -
+          723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          -&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerName -&gt; card
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1231
+        </td>
+        <td>
+          746
+          -
+          761
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          panelName + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1230
+        </td>
+        <td>
+          746
+          -
+          774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          panelName + &quot; &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1232
+        </td>
+        <td>
+          810
+          -
+          1007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for\r\n      _ &lt;- addLabel(\r\n        playerName + &quot;: &quot; + card.name + &quot; of &quot; + card.suit,\r\n        labelName\r\n      )\r\n      - &lt;- moveComponentIntoPanel(&quot;Table &quot; + playerName, panelName)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1234
+        </td>
+        <td>
+          826
+          -
+          924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addLabel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          addLabel(\r\n        playerName + &quot;: &quot; + card.name + &quot; of &quot; + card.suit,\r\n        labelName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1233
+        </td>
+        <td>
+          826
+          -
+          924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          addLabel(\r\n        playerName + &quot;: &quot; + card.name + &quot; of &quot; + card.suit,\r\n        labelName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1237
+        </td>
+        <td>
+          845
+          -
+          874
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerName + &quot;: &quot; + card.name
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1240
+        </td>
+        <td>
+          886
+          -
+          895
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card.suit
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1236
+        </td>
+        <td>
+          845
+          -
+          883
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerName + &quot;: &quot; + card.name + &quot; of &quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1239
+        </td>
+        <td>
+          865
+          -
+          874
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          name
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card.name
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1235
+        </td>
+        <td>
+          845
+          -
+          895
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerName + &quot;: &quot; + card.name + &quot; of &quot; + card.suit
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1238
+        </td>
+        <td>
+          845
+          -
+          862
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerName + &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1243
+        </td>
+        <td>
+          937
+          -
+          993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          moveComponentIntoPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(&quot;Table &quot; + playerName, panelName)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1245
+        </td>
+        <td>
+          932
+          -
+          1007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          - &lt;- moveComponentIntoPanel(&quot;Table &quot; + playerName, panelName)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1242
+        </td>
+        <td>
+          937
+          -
+          993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(&quot;Table &quot; + playerName, panelName)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1241
+        </td>
+        <td>
+          932
+          -
+          1007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          - &lt;- moveComponentIntoPanel(&quot;Table &quot; + playerName, panelName)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1244
+        </td>
+        <td>
+          960
+          -
+          981
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Table &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1254
+        </td>
+        <td>
+          1013
+          -
+          1027
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          clearTable
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def clearTable
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1248
+        </td>
+        <td>
+          1127
+          -
+          1150
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          cardsPlayed.keys.toList
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1247
+        </td>
+        <td>
+          1127
+          -
+          1143
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          keys
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          cardsPlayed.keys
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1249
+        </td>
+        <td>
+          1158
+          -
+          1317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          listPlayers.foreach(playerName =&gt;\r\n        val labelName = panelName + &quot; &quot; + playerName\r\n        removeComponentFromPanel(labelName, panelName)(frame)\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1251
+        </td>
+        <td>
+          1217
+          -
+          1232
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1250
+        </td>
+        <td>
+          1217
+          -
+          1245
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1252
+        </td>
+        <td>
+          1255
+          -
+          1308
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          removeComponentFromPanel(labelName, panelName)(frame)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1253
+        </td>
+        <td>
+          1255
+          -
+          1301
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          removeComponentFromPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          removeComponentFromPanel(labelName, panelName)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

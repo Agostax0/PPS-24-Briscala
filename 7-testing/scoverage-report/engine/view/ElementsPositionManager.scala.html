@@ -1,0 +1,439 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\view\ElementsPositionManager.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.view
+</span>2 <span style=''>
+</span>3 <span style=''>import engine.view.GridLayoutOrientation.{Horizontal, Vertical}
+</span>4 <span style=''>
+</span>5 <span style=''>object ElementsPositionManager:
+</span>6 <span style=''>
+</span>7 <span style=''>  val windowWidth = 1000
+</span>8 <span style=''>  val windowHeight = 1000
+</span>9 <span style=''>
+</span>10 <span style=''>  val historyCoords: (Int, Int) = (0,0)
+</span>11 <span style=''>  val historyDims: (Int, Int) = (cardHeigth, cardHeigth)
+</span>12 <span style=''>
+</span>13 <span style=''>  val widthCenter: Int = windowWidth / 2
+</span>14 <span style=''>  val heightCenter: Int = windowHeight / 2
+</span>15 <span style=''>
+</span>16 <span style=''>  val widthPadding = windowWidth / 12
+</span>17 <span style=''>  val heightPadding = windowHeight / 12
+</span>18 <span style=''>
+</span>19 <span style=''>  private val sizeTenth = windowWidth / 10
+</span>20 <span style=''>
+</span>21 <span style=''>  val cardHeigth: Int = sizeTenth * 2
+</span>22 <span style=''>  val playerWidth: Int = sizeTenth * 6
+</span>23 <span style=''>
+</span>24 <span style=''>  val horizontalPlayerDims = (cardHeigth, playerWidth)
+</span>25 <span style=''>  val verticalPlayerDims = (playerWidth, cardHeigth)
+</span>26 <span style=''>
+</span>27 <span style=''>  val centerTableCoords =
+</span>28 <span style=''>    (widthCenter - cardHeigth / 2, heightCenter - cardHeigth / 2)
+</span>29 <span style=''>  val centerTableDims = (cardHeigth, cardHeigth)
+</span>30 <span style=''>
+</span>31 <span style=''>  val upPlayerCoords = (cardHeigth, 0)
+</span>32 <span style=''>
+</span>33 <span style=''>  val rightPlayerCoords =
+</span>34 <span style=''>    (0, cardHeigth)
+</span>35 <span style=''>
+</span>36 <span style=''>  val downPlayerCoords = (
+</span>37 <span style=''>    cardHeigth,
+</span>38 <span style=''>    windowHeight - (cardHeigth + sizeTenth / 2)
+</span>39 <span style=''>  )
+</span>40 <span style=''>
+</span>41 <span style=''>  val leftPlayerCoords = (
+</span>42 <span style=''>    windowWidth - cardHeigth,
+</span>43 <span style=''>    cardHeigth
+</span>44 <span style=''>  )
+</span>45 <span style=''>
+</span>46 <span style=''>  val downPlayerConfig = (downPlayerCoords, verticalPlayerDims, Vertical)
+</span>47 <span style=''>  val upPlayerConfig = (upPlayerCoords, verticalPlayerDims, Vertical)
+</span>48 <span style=''>  val leftPlayerConfig = (leftPlayerCoords, horizontalPlayerDims, Horizontal)
+</span>49 <span style=''>  val rightPlayerConfig = (rightPlayerCoords, horizontalPlayerDims, Horizontal)
+</span>50 <span style=''>
+</span>51 <span style=''>  val playerPositionConfigurations
+</span>52 <span style=''>      : Map[Int, List[((Int, Int), (Int, Int), GridLayoutOrientation)]] =
+</span>53 <span style=''>    </span><span style='background: #AEF1AE'>Map.empty
+</span>54 <span style=''></span><span style='background: #AEF1AE'>      + (2 -&gt; List(downPlayerConfig, upPlayerConfig))
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      + (3 -&gt; List(leftPlayerConfig, downPlayerConfig, rightPlayerConfig))
+</span>56 <span style=''></span><span style='background: #AEF1AE'>      + (4 -&gt; List(
+</span>57 <span style=''></span><span style='background: #AEF1AE'>        upPlayerConfig,
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        leftPlayerConfig,
+</span>59 <span style=''></span><span style='background: #AEF1AE'>        downPlayerConfig,
+</span>60 <span style=''></span><span style='background: #AEF1AE'>        rightPlayerConfig
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1165
+        </td>
+        <td>
+          1534
+          -
+          1597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Map.empty\r\n      + (2 -&gt; List(downPlayerConfig, upPlayerConfig)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1167
+        </td>
+        <td>
+          1534
+          -
+          1543
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Map.empty
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1164
+        </td>
+        <td>
+          1534
+          -
+          1673
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Map.empty\r\n      + (2 -&gt; List(downPlayerConfig, upPlayerConfig))\r\n      + (3 -&gt; List(leftPlayerConfig, downPlayerConfig, rightPlayerConfig)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1163
+        </td>
+        <td>
+          1534
+          -
+          1810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Map.empty\r\n      + (2 -&gt; List(downPlayerConfig, upPlayerConfig))\r\n      + (3 -&gt; List(leftPlayerConfig, downPlayerConfig, rightPlayerConfig))\r\n      + (4 -&gt; List(\r\n        upPlayerConfig,\r\n        leftPlayerConfig,\r\n        downPlayerConfig,\r\n        rightPlayerConfig\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1166
+        </td>
+        <td>
+          1534
+          -
+          1537
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Map
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1169
+        </td>
+        <td>
+          1559
+          -
+          1597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List(downPlayerConfig, upPlayerConfig)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1168
+        </td>
+        <td>
+          1554
+          -
+          1597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          -&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          2 -&gt; List(downPlayerConfig, upPlayerConfig)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1170
+        </td>
+        <td>
+          1559
+          -
+          1563
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1171
+        </td>
+        <td>
+          1609
+          -
+          1673
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          -&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          3 -&gt; List(leftPlayerConfig, downPlayerConfig, rightPlayerConfig)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1173
+        </td>
+        <td>
+          1614
+          -
+          1618
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1172
+        </td>
+        <td>
+          1614
+          -
+          1673
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List(leftPlayerConfig, downPlayerConfig, rightPlayerConfig)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1174
+        </td>
+        <td>
+          1685
+          -
+          1810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          -&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          4 -&gt; List(\r\n        upPlayerConfig,\r\n        leftPlayerConfig,\r\n        downPlayerConfig,\r\n        rightPlayerConfig\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1176
+        </td>
+        <td>
+          1690
+          -
+          1694
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1175
+        </td>
+        <td>
+          1690
+          -
+          1810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List(\r\n        upPlayerConfig,\r\n        leftPlayerConfig,\r\n        downPlayerConfig,\r\n        rightPlayerConfig\r\n      )
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

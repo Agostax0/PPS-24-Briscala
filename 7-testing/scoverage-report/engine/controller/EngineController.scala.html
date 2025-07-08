@@ -1,0 +1,5532 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\controller\EngineController.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.controller
+</span>2 <span style=''>
+</span>3 <span style=''>import engine.controller.EventParser.parseEvent
+</span>4 <span style=''>import engine.model.{BotPlayerModel, CardModel, FullEngineModel, PlayerModel}
+</span>5 <span style=''>import engine.view.EngineView
+</span>6 <span style=''>import engine.view.WindowStateImpl.{Window, initialWindow}
+</span>7 <span style=''>import engine.view.monads.States.State
+</span>8 <span style=''>import engine.view.ElementsPositionManager.*
+</span>9 <span style=''>import engine.view.monads.Monads.Monad.seqN
+</span>10 <span style=''>
+</span>11 <span style=''>sealed trait GameEvent
+</span>12 <span style=''>/** Represents a game event where a player plays a card.
+</span>13 <span style=''> *
+</span>14 <span style=''> * @param playerName The name of the player who played the card.
+</span>15 <span style=''> * @param card The card that was played.
+</span>16 <span style=''> */
+</span>17 <span style=''>case class CardPlayedEvent(playerName: String, card: CardModel) extends GameEvent
+</span>18 <span style=''>case object InvalidEvent extends GameEvent
+</span>19 <span style=''>
+</span>20 <span style=''>object EventParser:
+</span>21 <span style=''>  /**
+</span>22 <span style=''>   * Parses a game event string into a GameEvent.
+</span>23 <span style=''>   *
+</span>24 <span style=''>   * @param event The event string in the format &quot;playerName::cardInfo&quot;, with 'cardInfo' being
+</span>25 <span style=''>   *  'name rank suit'.
+</span>26 <span style=''>   * @return Either an error message or a CardPlayedEvent.
+</span>27 <span style=''>   */
+</span>28 <span style=''>  </span><span style='background: #AEF1AE'>def parseEvent</span><span style=''>(event: String): Either[String, GameEvent] =
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>event.split(&quot;::&quot;).toList</span><span style=''> match
+</span>30 <span style=''>      case playerName :: cardInfo :: Nil </span><span style='background: #AEF1AE'>=&gt;
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        parseCard(cardInfo).map(card =&gt; CardPlayedEvent(playerName, card))</span><span style=''>
+</span>32 <span style=''>      case _ </span><span style='background: #AEF1AE'>=&gt;
+</span>33 <span style=''></span><span style='background: #AEF1AE'>        Left(s&quot;Invalid event format: expected 'playerName::cardInfo', got '$event'&quot;)</span><span style=''>
+</span>34 <span style=''>
+</span>35 <span style=''>  </span><span style='background: #AEF1AE'>private def parseCard</span><span style=''>(cardInfo: String): Either[String, CardModel] =
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>cardInfo.split(&quot; &quot;).toList</span><span style=''> match
+</span>37 <span style=''>      case name :: rankStr :: suit :: Nil </span><span style='background: #AEF1AE'>=&gt;
+</span>38 <span style=''></span><span style='background: #AEF1AE'>        rankStr.toIntOption match
+</span>39 <span style=''></span><span style='background: #AEF1AE'>          case Some(rank) =&gt; Right(CardModel(name, rank, suit))
+</span>40 <span style=''></span><span style='background: #AEF1AE'>          case None =&gt; Left(s&quot;Invalid rank: $rankStr&quot;)</span><span style=''>
+</span>41 <span style=''>      case _ </span><span style='background: #AEF1AE'>=&gt;
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        Left(s&quot;Invalid card format: expected 'name rank suit', got '$cardInfo'&quot;)</span><span style=''>
+</span>43 <span style=''>
+</span>44 <span style=''>sealed trait EngineController:
+</span>45 <span style=''>  /**
+</span>46 <span style=''>   * Starts the engine controller, initializing the game view and handling events.
+</span>47 <span style=''>   */
+</span>48 <span style=''>  def start(): Unit
+</span>49 <span style=''>
+</span>50 <span style=''>object EngineController:
+</span>51 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(model: FullEngineModel): EngineController = </span><span style='background: #AEF1AE'>new EngineControllerImpl(
+</span>52 <span style=''></span><span style='background: #AEF1AE'>    model
+</span>53 <span style=''></span><span style='background: #AEF1AE'>  )</span><span style=''>
+</span>54 <span style=''>
+</span>55 <span style=''>  private class EngineControllerImpl(private val model: FullEngineModel)
+</span>56 <span style=''>      extends EngineController:
+</span>57 <span style=''>
+</span>58 <span style=''>    private val view: EngineView =
+</span>59 <span style=''>      </span><span style='background: #AEF1AE'>EngineView(model.gameName)(windowWidth, windowHeight)</span><span style=''>
+</span>60 <span style=''>
+</span>61 <span style=''>    private var totalRounds: Int = 0
+</span>62 <span style=''>    private var playerTurn: Int = 0
+</span>63 <span style=''>
+</span>64 <span style=''>    </span><span style='background: #F0ADAD'>override def start</span><span style=''>(): Unit =
+</span>65 <span style=''>      val initialState =
+</span>66 <span style=''>        </span><span style='background: #F0ADAD'>for
+</span>67 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.addTurnHistory()
+</span>68 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.addTable()
+</span>69 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- model.players.foldLeft(unitState(): State[Window, Unit]):
+</span>70 <span style=''></span><span style='background: #F0ADAD'>            (state, player) =&gt;
+</span>71 <span style=''></span><span style='background: #F0ADAD'>              for
+</span>72 <span style=''></span><span style='background: #F0ADAD'>                _ &lt;- view.addPlayer(player.name, model.players.size)
+</span>73 <span style=''></span><span style='background: #F0ADAD'>                _ &lt;- state
+</span>74 <span style=''></span><span style='background: #F0ADAD'>                _ &lt;- renderHand(player)
+</span>75 <span style=''></span><span style='background: #F0ADAD'>              yield ()
+</span>76 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- checkBot()
+</span>77 <span style=''></span><span style='background: #F0ADAD'>        yield ()</span><span style=''>
+</span>78 <span style=''>
+</span>79 <span style=''>
+</span>80 <span style=''>      val windowCreation = </span><span style='background: #F0ADAD'>initialState.flatMap(_ =&gt; view.show)</span><span style=''>
+</span>81 <span style=''>
+</span>82 <span style=''>      val windowEventsHandler: State[Window, Unit] = </span><span style='background: #F0ADAD'>for
+</span>83 <span style=''></span><span style='background: #F0ADAD'>        events &lt;- windowCreation
+</span>84 <span style=''></span><span style='background: #F0ADAD'>        _ &lt;- seqN(events.map(event =&gt;
+</span>85 <span style=''></span><span style='background: #F0ADAD'>          val parsedEvent = parseEvent(event)
+</span>86 <span style=''></span><span style='background: #F0ADAD'>          parsedEvent match
+</span>87 <span style=''></span><span style='background: #F0ADAD'>            case Left(error) =&gt;
+</span>88 <span style=''></span><span style='background: #F0ADAD'>              println(s&quot;Error parsing event: $error&quot;)
+</span>89 <span style=''></span><span style='background: #F0ADAD'>              unitState()
+</span>90 <span style=''></span><span style='background: #F0ADAD'>            case Right(CardPlayedEvent(playerName, card)) =&gt;
+</span>91 <span style=''></span><span style='background: #F0ADAD'>              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)
+</span>92 <span style=''></span><span style='background: #F0ADAD'>            case _ =&gt;
+</span>93 <span style=''></span><span style='background: #F0ADAD'>              println(&quot;Invalid event received&quot;)
+</span>94 <span style=''></span><span style='background: #F0ADAD'>              unitState()
+</span>95 <span style=''></span><span style='background: #F0ADAD'>        ))
+</span>96 <span style=''></span><span style='background: #F0ADAD'>      yield ()</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>      </span><span style='background: #F0ADAD'>windowEventsHandler.run(initialWindow)</span><span style=''>
+</span>99 <span style=''>
+</span>100 <span style=''>    </span><span style='background: #F0ADAD'>private def playCardProgrammatically</span><span style=''>(bot: BotPlayerModel): State[Window, Unit] =
+</span>101 <span style=''>      val card: CardModel = </span><span style='background: #F0ADAD'>model.botPlayCard(bot)</span><span style=''>
+</span>102 <span style=''>      </span><span style='background: #F0ADAD'>for
+</span>103 <span style=''></span><span style='background: #F0ADAD'>        _ &lt;- handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
+</span>104 <span style=''></span><span style='background: #F0ADAD'>      yield()</span><span style=''>
+</span>105 <span style=''>
+</span>106 <span style=''>    </span><span style='background: #F0ADAD'>private def checkBot</span><span style=''>():State[Window, Unit] = {
+</span>107 <span style=''>      model.activePlayer match
+</span>108 <span style=''>        case bot: BotPlayerModel if </span><span style='background: #F0ADAD'>bot.hand.view.nonEmpty</span><span style=''> </span><span style='background: #F0ADAD'>=&gt; playCardProgrammatically(bot)</span><span style=''>
+</span>109 <span style=''>        case _ </span><span style='background: #F0ADAD'>=&gt; unitState()</span><span style=''>
+</span>110 <span style=''>    }
+</span>111 <span style=''>
+</span>112 <span style=''>
+</span>113 <span style=''>    </span><span style='background: #F0ADAD'>private def handleCardPlayed</span><span style=''>(playerName: String, name: String , rank: String, suit: String): State[Window, Unit] =
+</span>114 <span style=''>      val card = </span><span style='background: #F0ADAD'>CardModel(name, rank.toInt, suit)</span><span style=''>
+</span>115 <span style=''>      </span><span style='background: #F0ADAD'>model.players.find(playerName == _.name)</span><span style=''> match
+</span>116 <span style=''>        case Some(player) </span><span style='background: #F0ADAD'>=&gt; playCard(player, card)</span><span style=''>
+</span>117 <span style=''>        case None =&gt;
+</span>118 <span style=''>          </span><span style='background: #F0ADAD'>println(s&quot;Player $playerName not found.&quot;)
+</span>119 <span style=''></span><span style='background: #F0ADAD'>          unitState()</span><span style=''>
+</span>120 <span style=''>
+</span>121 <span style=''>    </span><span style='background: #F0ADAD'>private def resetTurn</span><span style=''>(): Unit =
+</span>122 <span style=''>      playerTurn = 0
+</span>123 <span style=''>      totalRounds += 1
+</span>124 <span style=''>
+</span>125 <span style=''>    </span><span style='background: #F0ADAD'>private def drawCards</span><span style=''>(): State[Window, Unit] =
+</span>126 <span style=''>      </span><span style='background: #F0ADAD'>model.giveCardsToPlayers(1)</span><span style=''>
+</span>127 <span style=''>      </span><span style='background: #F0ADAD'>for
+</span>128 <span style=''></span><span style='background: #F0ADAD'>        _ &lt;- model.players.foldLeft( unitState(): State[Window, Unit]):
+</span>129 <span style=''></span><span style='background: #F0ADAD'>          (state, player) =&gt;
+</span>130 <span style=''></span><span style='background: #F0ADAD'>            for
+</span>131 <span style=''></span><span style='background: #F0ADAD'>              _ &lt;- state
+</span>132 <span style=''></span><span style='background: #F0ADAD'>              _ &lt;- view.removeCardsFromPlayer(player.name)
+</span>133 <span style=''></span><span style='background: #F0ADAD'>              _ &lt;- renderHand(player)
+</span>134 <span style=''></span><span style='background: #F0ADAD'>            yield()
+</span>135 <span style=''></span><span style='background: #F0ADAD'>      yield()</span><span style=''>
+</span>136 <span style=''>
+</span>137 <span style=''>    </span><span style='background: #F0ADAD'>private def endTurn</span><span style=''>(): State[Window, Unit] =
+</span>138 <span style=''>      if playerTurn == </span><span style='background: #F0ADAD'>model.players.size</span><span style=''> then
+</span>139 <span style=''>        </span><span style='background: #F0ADAD'>model.computeTurn()
+</span>140 <span style=''></span><span style='background: #F0ADAD'>        resetTurn()
+</span>141 <span style=''></span><span style='background: #F0ADAD'>        println(s&quot;End of turn, ${model.activePlayer.name} is the winner of this turn.&quot;)
+</span>142 <span style=''></span><span style='background: #F0ADAD'>        for
+</span>143 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.clearTable()
+</span>144 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)
+</span>145 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- drawCards()
+</span>146 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- endGame()
+</span>147 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- checkBot()
+</span>148 <span style=''></span><span style='background: #F0ADAD'>        yield()</span><span style=''>
+</span>149 <span style=''>      else </span><span style='background: #F0ADAD'>{
+</span>150 <span style=''></span><span style='background: #F0ADAD'>        checkBot()
+</span>151 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>152 <span style=''>
+</span>153 <span style=''>    </span><span style='background: #F0ADAD'>private def endGame</span><span style=''>(): State[Window, Unit] =
+</span>154 <span style=''>      if </span><span style='background: #F0ADAD'>model.players.forall(_.hand.isEmpty)</span><span style=''> then
+</span>155 <span style=''>        </span><span style='background: #F0ADAD'>val winningPlayers = model.winningGamePlayers().head._1.reduce((a:String, b:String)=&gt;a + &quot; &quot; + b)
+</span>156 <span style=''></span><span style='background: #F0ADAD'>        println(&quot;THE WINNER IS: &quot; + winningPlayers)
+</span>157 <span style=''></span><span style='background: #F0ADAD'>        model.players.foreach(player =&gt;
+</span>158 <span style=''></span><span style='background: #F0ADAD'>          println(player.name + &quot;: &quot; + player.score + &quot; points&quot;))
+</span>159 <span style=''></span><span style='background: #F0ADAD'>        for
+</span>160 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.declareWinner(winningPlayers)
+</span>161 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.printPointsTeam(model.winningGamePlayers())
+</span>162 <span style=''></span><span style='background: #F0ADAD'>        yield()</span><span style=''>
+</span>163 <span style=''>      else
+</span>164 <span style=''>        </span><span style='background: #F0ADAD'>unitState()</span><span style=''>
+</span>165 <span style=''>
+</span>166 <span style=''>    </span><span style='background: #F0ADAD'>private def playCard</span><span style=''>(player: PlayerModel, card: CardModel): State[Window, Unit] =
+</span>167 <span style=''>      if </span><span style='background: #F0ADAD'>model.playCard(player, card)</span><span style=''> then
+</span>168 <span style=''>        </span><span style='background: #F0ADAD'>println(s&quot;${player.name} played ${card.name} of ${card.suit}&quot;)
+</span>169 <span style=''></span><span style='background: #F0ADAD'>        playerTurn += 1
+</span>170 <span style=''></span><span style='background: #F0ADAD'>        for
+</span>171 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.removeCardFromPlayer(player.name, card)
+</span>172 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.addCardToTable(player.name, card)
+</span>173 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- endTurn()
+</span>174 <span style=''></span><span style='background: #F0ADAD'>        yield()</span><span style=''>
+</span>175 <span style=''>      else
+</span>176 <span style=''>        </span><span style='background: #F0ADAD'>unitState()</span><span style=''>
+</span>177 <span style=''>
+</span>178 <span style=''>    </span><span style='background: #F0ADAD'>private def unitState</span><span style=''>(): State[Window, Unit] = State(s =&gt; (s, ()))
+</span>179 <span style=''>
+</span>180 <span style=''>    </span><span style='background: #F0ADAD'>private def renderHand</span><span style=''>(player: PlayerModel): State[Window, Unit] =
+</span>181 <span style=''>      </span><span style='background: #F0ADAD'>player.hand.view.foldLeft(unitState(): State[Window, Unit]):
+</span>182 <span style=''></span><span style='background: #F0ADAD'>        (nestedState, card) =&gt;
+</span>183 <span style=''></span><span style='background: #F0ADAD'>        for
+</span>184 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- nestedState
+</span>185 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- view.addCardToPlayer(player.name, card)
+</span>186 <span style=''></span><span style='background: #F0ADAD'>        yield ()</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          616
+        </td>
+        <td>
+          984
+          -
+          998
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          parseEvent
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def parseEvent
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          609
+        </td>
+        <td>
+          1048
+          -
+          1072
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          event.split(&quot;::&quot;).toList
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          608
+        </td>
+        <td>
+          1048
+          -
+          1065
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          split
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          event.split(&quot;::&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          607
+        </td>
+        <td>
+          1048
+          -
+          1065
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          wrapRefArray
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          event.split(&quot;::&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          612
+        </td>
+        <td>
+          1121
+          -
+          1199
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n        parseCard(cardInfo).map(card =&gt; CardPlayedEvent(playerName, card))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          611
+        </td>
+        <td>
+          1133
+          -
+          1152
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          parseCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          parseCard(cardInfo)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          610
+        </td>
+        <td>
+          1133
+          -
+          1199
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          parseCard(cardInfo).map(card =&gt; CardPlayedEvent(playerName, card))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          615
+        </td>
+        <td>
+          1214
+          -
+          1302
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n        Left(s&quot;Invalid event format: expected 'playerName::cardInfo', got '$event'&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          614
+        </td>
+        <td>
+          1231
+          -
+          1301
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          s&quot;Invalid event format: expected 'playerName::cardInfo', got '$event'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          613
+        </td>
+        <td>
+          1226
+          -
+          1230
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Left
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Left
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          632
+        </td>
+        <td>
+          1308
+          -
+          1329
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          parseCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def parseCard
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          618
+        </td>
+        <td>
+          1382
+          -
+          1401
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          split
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardInfo.split(&quot; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          617
+        </td>
+        <td>
+          1382
+          -
+          1401
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          wrapRefArray
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardInfo.split(&quot; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          619
+        </td>
+        <td>
+          1382
+          -
+          1408
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardInfo.split(&quot; &quot;).toList
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          628
+        </td>
+        <td>
+          1458
+          -
+          1616
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n        rankStr.toIntOption match\r\n          case Some(rank) =&gt; Right(CardModel(name, rank, suit))\r\n          case None =&gt; Left(s&quot;Invalid rank: $rankStr&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          621
+        </td>
+        <td>
+          1470
+          -
+          1489
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toIntOption
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rankStr.toIntOption
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          620
+        </td>
+        <td>
+          1470
+          -
+          1477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          augmentString
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rankStr
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          624
+        </td>
+        <td>
+          1523
+          -
+          1560
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; Right(CardModel(name, rank, suit))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          623
+        </td>
+        <td>
+          1532
+          -
+          1559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          CardModel(name, rank, suit)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          622
+        </td>
+        <td>
+          1526
+          -
+          1531
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Right
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Right
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          627
+        </td>
+        <td>
+          1582
+          -
+          1616
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; Left(s&quot;Invalid rank: $rankStr&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          626
+        </td>
+        <td>
+          1590
+          -
+          1615
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          s&quot;Invalid rank: $rankStr&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          625
+        </td>
+        <td>
+          1585
+          -
+          1589
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Left
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Left
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          631
+        </td>
+        <td>
+          1631
+          -
+          1715
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt;\r\n        Left(s&quot;Invalid card format: expected 'name rank suit', got '$cardInfo'&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          630
+        </td>
+        <td>
+          1648
+          -
+          1714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          s&quot;Invalid card format: expected 'name rank suit', got '$cardInfo'&quot;
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          629
+        </td>
+        <td>
+          1643
+          -
+          1647
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Left
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Left
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          633
+        </td>
+        <td>
+          1954
+          -
+          1995
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new EngineControllerImpl(\r\n    model\r\n  )
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          634
+        </td>
+        <td>
+          1900
+          -
+          1909
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          635
+        </td>
+        <td>
+          2150
+          -
+          2203
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          EngineView(model.gameName)(windowWidth, windowHeight)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          691
+        </td>
+        <td>
+          2288
+          -
+          2306
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          start
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          override def start
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          636
+        </td>
+        <td>
+          2352
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n          _ &lt;- view.addTurnHistory()\r\n          _ &lt;- view.addTable()\r\n          _ &lt;- model.players.foldLeft(unitState(): State[Window, Unit]):\r\n            (state, player) =&gt;\r\n              for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()\r\n          _ &lt;- checkBot()\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          638
+        </td>
+        <td>
+          2372
+          -
+          2393
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addTurnHistory
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addTurnHistory()
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          637
+        </td>
+        <td>
+          2372
+          -
+          2393
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addTurnHistory()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          639
+        </td>
+        <td>
+          2405
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addTable()\r\n          _ &lt;- model.players.foldLeft(unitState(): State[Window, Unit]):\r\n            (state, player) =&gt;\r\n              for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()\r\n          _ &lt;- checkBot()\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          641
+        </td>
+        <td>
+          2410
+          -
+          2425
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addTable
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addTable()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          664
+        </td>
+        <td>
+          2405
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addTable()\r\n          _ &lt;- model.players.foldLeft(unitState(): State[Window, Unit]):\r\n            (state, player) =&gt;\r\n              for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()\r\n          _ &lt;- checkBot()\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          640
+        </td>
+        <td>
+          2410
+          -
+          2425
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addTable()
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          645
+        </td>
+        <td>
+          2465
+          -
+          2476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          663
+        </td>
+        <td>
+          2437
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- model.players.foldLeft(unitState(): State[Window, Unit]):\r\n            (state, player) =&gt;\r\n              for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()\r\n          _ &lt;- checkBot()\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          642
+        </td>
+        <td>
+          2437
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- model.players.foldLeft(unitState(): State[Window, Unit]):\r\n            (state, player) =&gt;\r\n              for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()\r\n          _ &lt;- checkBot()\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          643
+        </td>
+        <td>
+          2442
+          -
+          2713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.foldLeft(unitState(): State[Window, Unit]):\r\n            (state, player) =&gt;\r\n              for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          644
+        </td>
+        <td>
+          2442
+          -
+          2713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foldLeft
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.foldLeft(unitState(): State[Window, Unit]):\r\n            (state, player) =&gt;\r\n              for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          646
+        </td>
+        <td>
+          2547
+          -
+          2713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n                _ &lt;- view.addPlayer(player.name, model.players.size)\r\n                _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          648
+        </td>
+        <td>
+          2573
+          -
+          2620
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addPlayer(player.name, model.players.size)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          647
+        </td>
+        <td>
+          2573
+          -
+          2620
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addPlayer(player.name, model.players.size)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          649
+        </td>
+        <td>
+          2601
+          -
+          2619
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.size
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          657
+        </td>
+        <td>
+          2638
+          -
+          2713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          651
+        </td>
+        <td>
+          2643
+          -
+          2648
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          state
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          650
+        </td>
+        <td>
+          2638
+          -
+          2713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- state\r\n                _ &lt;- renderHand(player)\r\n              yield ()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          654
+        </td>
+        <td>
+          2671
+          -
+          2689
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          renderHand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          renderHand(player)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          653
+        </td>
+        <td>
+          2671
+          -
+          2689
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          renderHand(player)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          656
+        </td>
+        <td>
+          2666
+          -
+          2713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- renderHand(player)\r\n              yield ()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          652
+        </td>
+        <td>
+          2666
+          -
+          2713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- renderHand(player)\r\n              yield ()
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          655
+        </td>
+        <td>
+          2711
+          -
+          2713
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          660
+        </td>
+        <td>
+          2730
+          -
+          2740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          checkBot
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          checkBot()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          659
+        </td>
+        <td>
+          2730
+          -
+          2740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          checkBot()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          662
+        </td>
+        <td>
+          2725
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- checkBot()\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          658
+        </td>
+        <td>
+          2725
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- checkBot()\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          661
+        </td>
+        <td>
+          2756
+          -
+          2758
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          666
+        </td>
+        <td>
+          2791
+          -
+          2811
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          initialState.flatMap
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          665
+        </td>
+        <td>
+          2791
+          -
+          2827
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          initialState.flatMap(_ =&gt; view.show)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          667
+        </td>
+        <td>
+          2817
+          -
+          2826
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          show
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.show
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          668
+        </td>
+        <td>
+          2884
+          -
+          3426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n        events &lt;- windowCreation\r\n        _ &lt;- seqN(events.map(event =&gt;\r\n          val parsedEvent = parseEvent(event)\r\n          parsedEvent match\r\n            case Left(error) =&gt;\r\n              println(s&quot;Error parsing event: $error&quot;)\r\n              unitState()\r\n            case Right(CardPlayedEvent(playerName, card)) =&gt;\r\n              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)\r\n            case _ =&gt;\r\n              println(&quot;Invalid event received&quot;)\r\n              unitState()\r\n        ))\r\n      yield ()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          669
+        </td>
+        <td>
+          2907
+          -
+          2921
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          windowCreation
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          672
+        </td>
+        <td>
+          2936
+          -
+          3410
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          seqN
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          seqN(events.map(event =&gt;\r\n          val parsedEvent = parseEvent(event)\r\n          parsedEvent match\r\n            case Left(error) =&gt;\r\n              println(s&quot;Error parsing event: $error&quot;)\r\n              unitState()\r\n            case Right(CardPlayedEvent(playerName, card)) =&gt;\r\n              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)\r\n            case _ =&gt;\r\n              println(&quot;Invalid event received&quot;)\r\n              unitState()\r\n        ))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          671
+        </td>
+        <td>
+          2936
+          -
+          3410
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          seqN(events.map(event =&gt;\r\n          val parsedEvent = parseEvent(event)\r\n          parsedEvent match\r\n            case Left(error) =&gt;\r\n              println(s&quot;Error parsing event: $error&quot;)\r\n              unitState()\r\n            case Right(CardPlayedEvent(playerName, card)) =&gt;\r\n              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)\r\n            case _ =&gt;\r\n              println(&quot;Invalid event received&quot;)\r\n              unitState()\r\n        ))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          674
+        </td>
+        <td>
+          2941
+          -
+          2951
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          events.map
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          673
+        </td>
+        <td>
+          2941
+          -
+          3409
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          events.map(event =&gt;\r\n          val parsedEvent = parseEvent(event)\r\n          parsedEvent match\r\n            case Left(error) =&gt;\r\n              println(s&quot;Error parsing event: $error&quot;)\r\n              unitState()\r\n            case Right(CardPlayedEvent(playerName, card)) =&gt;\r\n              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)\r\n            case _ =&gt;\r\n              println(&quot;Invalid event received&quot;)\r\n              unitState()\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          670
+        </td>
+        <td>
+          2931
+          -
+          3426
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- seqN(events.map(event =&gt;\r\n          val parsedEvent = parseEvent(event)\r\n          parsedEvent match\r\n            case Left(error) =&gt;\r\n              println(s&quot;Error parsing event: $error&quot;)\r\n              unitState()\r\n            case Right(CardPlayedEvent(playerName, card)) =&gt;\r\n              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)\r\n            case _ =&gt;\r\n              println(&quot;Invalid event received&quot;)\r\n              unitState()\r\n        ))\r\n      yield ()
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          675
+        </td>
+        <td>
+          2990
+          -
+          3007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          parseEvent
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          parseEvent(event)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          677
+        </td>
+        <td>
+          3093
+          -
+          3123
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          s&quot;Error parsing event: $error&quot;
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          676
+        </td>
+        <td>
+          3085
+          -
+          3124
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          println
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(s&quot;Error parsing event: $error&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          679
+        </td>
+        <td>
+          3085
+          -
+          3151
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(s&quot;Error parsing event: $error&quot;)\r\n              unitState()
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          678
+        </td>
+        <td>
+          3140
+          -
+          3151
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          684
+        </td>
+        <td>
+          3211
+          -
+          3299
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt;\r\n              handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          681
+        </td>
+        <td>
+          3258
+          -
+          3267
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          name
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.name
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          683
+        </td>
+        <td>
+          3289
+          -
+          3298
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.suit
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          680
+        </td>
+        <td>
+          3229
+          -
+          3299
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          handleCardPlayed
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          handleCardPlayed(playerName, card.name, card.rank.toString, card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          682
+        </td>
+        <td>
+          3269
+          -
+          3278
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.rank
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          687
+        </td>
+        <td>
+          3338
+          -
+          3398
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(&quot;Invalid event received&quot;)\r\n              unitState()
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          685
+        </td>
+        <td>
+          3338
+          -
+          3371
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          println
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(&quot;Invalid event received&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          686
+        </td>
+        <td>
+          3387
+          -
+          3398
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          688
+        </td>
+        <td>
+          3424
+          -
+          3426
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          690
+        </td>
+        <td>
+          3460
+          -
+          3473
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          initialWindow
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          initialWindow
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          689
+        </td>
+        <td>
+          3436
+          -
+          3474
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          windowEventsHandler.run(initialWindow)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          700
+        </td>
+        <td>
+          3482
+          -
+          3518
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          playCardProgrammatically
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def playCardProgrammatically
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          692
+        </td>
+        <td>
+          3592
+          -
+          3614
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          botPlayCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.botPlayCard(bot)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          693
+        </td>
+        <td>
+          3622
+          -
+          3723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n        _ &lt;- handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)\r\n      yield()
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          696
+        </td>
+        <td>
+          3667
+          -
+          3676
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          name
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.name
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          695
+        </td>
+        <td>
+          3640
+          -
+          3708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          handleCardPlayed
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          698
+        </td>
+        <td>
+          3698
+          -
+          3707
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.suit
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          697
+        </td>
+        <td>
+          3678
+          -
+          3687
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.rank
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          694
+        </td>
+        <td>
+          3640
+          -
+          3708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          699
+        </td>
+        <td>
+          3721
+          -
+          3723
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          707
+        </td>
+        <td>
+          3731
+          -
+          3751
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          checkBot
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def checkBot
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          702
+        </td>
+        <td>
+          3847
+          -
+          3869
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          nonEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          bot.hand.view.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          701
+        </td>
+        <td>
+          3847
+          -
+          3860
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          view
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          bot.hand.view
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          704
+        </td>
+        <td>
+          3870
+          -
+          3902
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; playCardProgrammatically(bot)
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          703
+        </td>
+        <td>
+          3873
+          -
+          3902
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          playCardProgrammatically
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          playCardProgrammatically(bot)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          705
+        </td>
+        <td>
+          3922
+          -
+          3933
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          706
+        </td>
+        <td>
+          3919
+          -
+          3933
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; unitState()
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          718
+        </td>
+        <td>
+          3950
+          -
+          3978
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          handleCardPlayed
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def handleCardPlayed
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          708
+        </td>
+        <td>
+          4083
+          -
+          4116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          CardModel(name, rank.toInt, suit)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          710
+        </td>
+        <td>
+          4099
+          -
+          4109
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toInt
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          rank.toInt
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          709
+        </td>
+        <td>
+          4099
+          -
+          4103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          augmentString
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          rank
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          711
+        </td>
+        <td>
+          4124
+          -
+          4164
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          find
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.find(playerName == _.name)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          713
+        </td>
+        <td>
+          4198
+          -
+          4223
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; playCard(player, card)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          712
+        </td>
+        <td>
+          4201
+          -
+          4223
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          playCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          playCard(player, card)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          714
+        </td>
+        <td>
+          4257
+          -
+          4298
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          println
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(s&quot;Player $playerName not found.&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          717
+        </td>
+        <td>
+          4257
+          -
+          4321
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(s&quot;Player $playerName not found.&quot;)\r\n          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          715
+        </td>
+        <td>
+          4265
+          -
+          4297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          s&quot;Player $playerName not found.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          716
+        </td>
+        <td>
+          4310
+          -
+          4321
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          719
+        </td>
+        <td>
+          4329
+          -
+          4350
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          resetTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def resetTurn
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          737
+        </td>
+        <td>
+          4414
+          -
+          4435
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          drawCards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def drawCards
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          720
+        </td>
+        <td>
+          4468
+          -
+          4495
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          giveCardsToPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.giveCardsToPlayers(1)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          721
+        </td>
+        <td>
+          4503
+          -
+          4787
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n        _ &lt;- model.players.foldLeft( unitState(): State[Window, Unit]):\r\n          (state, player) =&gt;\r\n            for\r\n              _ &lt;- state\r\n              _ &lt;- view.removeCardsFromPlayer(player.name)\r\n              _ &lt;- renderHand(player)\r\n            yield()\r\n      yield()
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          722
+        </td>
+        <td>
+          4521
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.foldLeft( unitState(): State[Window, Unit]):\r\n          (state, player) =&gt;\r\n            for\r\n              _ &lt;- state\r\n              _ &lt;- view.removeCardsFromPlayer(player.name)\r\n              _ &lt;- renderHand(player)\r\n            yield()
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          724
+        </td>
+        <td>
+          4545
+          -
+          4556
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          723
+        </td>
+        <td>
+          4521
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foldLeft
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.foldLeft( unitState(): State[Window, Unit]):\r\n          (state, player) =&gt;\r\n            for\r\n              _ &lt;- state\r\n              _ &lt;- view.removeCardsFromPlayer(player.name)\r\n              _ &lt;- renderHand(player)\r\n            yield()
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          725
+        </td>
+        <td>
+          4623
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n              _ &lt;- state\r\n              _ &lt;- view.removeCardsFromPlayer(player.name)\r\n              _ &lt;- renderHand(player)\r\n            yield()
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          726
+        </td>
+        <td>
+          4647
+          -
+          4652
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          state
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          729
+        </td>
+        <td>
+          4673
+          -
+          4712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          removeCardsFromPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.removeCardsFromPlayer(player.name)
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          735
+        </td>
+        <td>
+          4668
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.removeCardsFromPlayer(player.name)\r\n              _ &lt;- renderHand(player)\r\n            yield()
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          728
+        </td>
+        <td>
+          4673
+          -
+          4712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.removeCardsFromPlayer(player.name)
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          727
+        </td>
+        <td>
+          4668
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.removeCardsFromPlayer(player.name)\r\n              _ &lt;- renderHand(player)\r\n            yield()
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          732
+        </td>
+        <td>
+          4733
+          -
+          4751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          renderHand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          renderHand(player)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          731
+        </td>
+        <td>
+          4733
+          -
+          4751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          renderHand(player)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          734
+        </td>
+        <td>
+          4728
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- renderHand(player)\r\n            yield()
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          730
+        </td>
+        <td>
+          4728
+          -
+          4772
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- renderHand(player)\r\n            yield()
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          733
+        </td>
+        <td>
+          4770
+          -
+          4772
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          736
+        </td>
+        <td>
+          4785
+          -
+          4787
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          766
+        </td>
+        <td>
+          4795
+          -
+          4814
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          endTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def endTurn
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          738
+        </td>
+        <td>
+          4864
+          -
+          4882
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.size
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          763
+        </td>
+        <td>
+          4897
+          -
+          5253
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.computeTurn()\r\n        resetTurn()\r\n        println(s&quot;End of turn, ${model.activePlayer.name} is the winner of this turn.&quot;)\r\n        for\r\n          _ &lt;- view.clearTable()\r\n          _ &lt;- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)\r\n          _ &lt;- drawCards()\r\n          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          739
+        </td>
+        <td>
+          4897
+          -
+          4916
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          computeTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.computeTurn()
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          740
+        </td>
+        <td>
+          4926
+          -
+          4937
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          resetTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          resetTurn()
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          741
+        </td>
+        <td>
+          4947
+          -
+          5026
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          println
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(s&quot;End of turn, ${model.activePlayer.name} is the winner of this turn.&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          742
+        </td>
+        <td>
+          4955
+          -
+          5025
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          s&quot;End of turn, ${model.activePlayer.name} is the winner of this turn.&quot;
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          743
+        </td>
+        <td>
+          5036
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n          _ &lt;- view.clearTable()\r\n          _ &lt;- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)\r\n          _ &lt;- drawCards()\r\n          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          744
+        </td>
+        <td>
+          5056
+          -
+          5073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.clearTable()
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          745
+        </td>
+        <td>
+          5056
+          -
+          5073
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          clearTable
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.clearTable()
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          747
+        </td>
+        <td>
+          5090
+          -
+          5155
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addTurnWinner(model.activePlayer.name, totalRounds.toString)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          762
+        </td>
+        <td>
+          5085
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)\r\n          _ &lt;- drawCards()\r\n          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          746
+        </td>
+        <td>
+          5085
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)\r\n          _ &lt;- drawCards()\r\n          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          748
+        </td>
+        <td>
+          5090
+          -
+          5155
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addTurnWinner
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addTurnWinner(model.activePlayer.name, totalRounds.toString)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          750
+        </td>
+        <td>
+          5172
+          -
+          5183
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          drawCards()
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          761
+        </td>
+        <td>
+          5167
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- drawCards()\r\n          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          749
+        </td>
+        <td>
+          5167
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- drawCards()\r\n          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          751
+        </td>
+        <td>
+          5172
+          -
+          5183
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          drawCards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          drawCards()
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          753
+        </td>
+        <td>
+          5200
+          -
+          5209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          endGame()
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          752
+        </td>
+        <td>
+          5195
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          760
+        </td>
+        <td>
+          5195
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- endGame()\r\n          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          754
+        </td>
+        <td>
+          5200
+          -
+          5209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          endGame
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          endGame()
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          756
+        </td>
+        <td>
+          5226
+          -
+          5236
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          checkBot()
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          759
+        </td>
+        <td>
+          5221
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          755
+        </td>
+        <td>
+          5221
+          -
+          5253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- checkBot()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          757
+        </td>
+        <td>
+          5226
+          -
+          5236
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          checkBot
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          checkBot()
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          758
+        </td>
+        <td>
+          5251
+          -
+          5253
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          765
+        </td>
+        <td>
+          5266
+          -
+          5296
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          {\r\n        checkBot()\r\n      }
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          764
+        </td>
+        <td>
+          5277
+          -
+          5287
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          checkBot
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          checkBot()
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          794
+        </td>
+        <td>
+          5304
+          -
+          5323
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          endGame
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def endGame
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          768
+        </td>
+        <td>
+          5380
+          -
+          5394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _.hand.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          767
+        </td>
+        <td>
+          5359
+          -
+          5395
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          forall
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.forall(_.hand.isEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          774
+        </td>
+        <td>
+          5495
+          -
+          5502
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          a + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          771
+        </td>
+        <td>
+          5431
+          -
+          5462
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.winningGamePlayers().head
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          770
+        </td>
+        <td>
+          5431
+          -
+          5457
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          winningGamePlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.winningGamePlayers()
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          791
+        </td>
+        <td>
+          5410
+          -
+          5814
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          val winningPlayers = model.winningGamePlayers().head._1.reduce((a:String, b:String)=&gt;a + &quot; &quot; + b)\r\n        println(&quot;THE WINNER IS: &quot; + winningPlayers)\r\n        model.players.foreach(player =&gt;\r\n          println(player.name + &quot;: &quot; + player.score + &quot; points&quot;))\r\n        for\r\n          _ &lt;- view.declareWinner(winningPlayers)\r\n          _ &lt;- view.printPointsTeam(model.winningGamePlayers())\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          773
+        </td>
+        <td>
+          5495
+          -
+          5506
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          a + &quot; &quot; + b
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          769
+        </td>
+        <td>
+          5431
+          -
+          5507
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          reduce
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.winningGamePlayers().head._1.reduce((a:String, b:String)=&gt;a + &quot; &quot; + b)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          772
+        </td>
+        <td>
+          5431
+          -
+          5465
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.winningGamePlayers().head._1
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          776
+        </td>
+        <td>
+          5525
+          -
+          5559
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;THE WINNER IS: &quot; + winningPlayers
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          775
+        </td>
+        <td>
+          5517
+          -
+          5560
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          println
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(&quot;THE WINNER IS: &quot; + winningPlayers)
+        </td>
+      </tr><tr>
+        <td>
+          157
+        </td>
+        <td>
+          777
+        </td>
+        <td>
+          5570
+          -
+          5668
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.players.foreach(player =&gt;\r\n          println(player.name + &quot;: &quot; + player.score + &quot; points&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          779
+        </td>
+        <td>
+          5621
+          -
+          5666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          player.name + &quot;: &quot; + player.score + &quot; points&quot;
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          778
+        </td>
+        <td>
+          5613
+          -
+          5667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          println
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(player.name + &quot;: &quot; + player.score + &quot; points&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          781
+        </td>
+        <td>
+          5621
+          -
+          5639
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          player.name + &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          780
+        </td>
+        <td>
+          5621
+          -
+          5654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          player.name + &quot;: &quot; + player.score
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          782
+        </td>
+        <td>
+          5678
+          -
+          5814
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n          _ &lt;- view.declareWinner(winningPlayers)\r\n          _ &lt;- view.printPointsTeam(model.winningGamePlayers())\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          783
+        </td>
+        <td>
+          5698
+          -
+          5732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.declareWinner(winningPlayers)
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          784
+        </td>
+        <td>
+          5698
+          -
+          5732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          declareWinner
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.declareWinner(winningPlayers)
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          786
+        </td>
+        <td>
+          5749
+          -
+          5797
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.printPointsTeam(model.winningGamePlayers())
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          788
+        </td>
+        <td>
+          5770
+          -
+          5796
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          winningGamePlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.winningGamePlayers()
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          785
+        </td>
+        <td>
+          5744
+          -
+          5814
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.printPointsTeam(model.winningGamePlayers())\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          787
+        </td>
+        <td>
+          5749
+          -
+          5797
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          printPointsTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.printPointsTeam(model.winningGamePlayers())
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          790
+        </td>
+        <td>
+          5744
+          -
+          5814
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.printPointsTeam(model.winningGamePlayers())\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          789
+        </td>
+        <td>
+          5812
+          -
+          5814
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          792
+        </td>
+        <td>
+          5836
+          -
+          5847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          793
+        </td>
+        <td>
+          5836
+          -
+          5847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          815
+        </td>
+        <td>
+          5855
+          -
+          5875
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          playCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def playCard
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          795
+        </td>
+        <td>
+          5947
+          -
+          5975
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          playCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          model.playCard(player, card)
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          812
+        </td>
+        <td>
+          5990
+          -
+          6249
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(s&quot;${player.name} played ${card.name} of ${card.suit}&quot;)\r\n        playerTurn += 1\r\n        for\r\n          _ &lt;- view.removeCardFromPlayer(player.name, card)\r\n          _ &lt;- view.addCardToTable(player.name, card)\r\n          _ &lt;- endTurn()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          797
+        </td>
+        <td>
+          5998
+          -
+          6051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          s&quot;${player.name} played ${card.name} of ${card.suit}&quot;
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          796
+        </td>
+        <td>
+          5990
+          -
+          6052
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          println
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          println(s&quot;${player.name} played ${card.name} of ${card.suit}&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          799
+        </td>
+        <td>
+          6040
+          -
+          6049
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.suit
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          798
+        </td>
+        <td>
+          6024
+          -
+          6033
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          name
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          card.name
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          800
+        </td>
+        <td>
+          6087
+          -
+          6249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n          _ &lt;- view.removeCardFromPlayer(player.name, card)\r\n          _ &lt;- view.addCardToTable(player.name, card)\r\n          _ &lt;- endTurn()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          801
+        </td>
+        <td>
+          6107
+          -
+          6151
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.removeCardFromPlayer(player.name, card)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          802
+        </td>
+        <td>
+          6107
+          -
+          6151
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          removeCardFromPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.removeCardFromPlayer(player.name, card)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          804
+        </td>
+        <td>
+          6168
+          -
+          6206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addCardToTable(player.name, card)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          803
+        </td>
+        <td>
+          6163
+          -
+          6249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addCardToTable(player.name, card)\r\n          _ &lt;- endTurn()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          811
+        </td>
+        <td>
+          6163
+          -
+          6249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addCardToTable(player.name, card)\r\n          _ &lt;- endTurn()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          805
+        </td>
+        <td>
+          6168
+          -
+          6206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addCardToTable
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addCardToTable(player.name, card)
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          810
+        </td>
+        <td>
+          6218
+          -
+          6249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- endTurn()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          806
+        </td>
+        <td>
+          6218
+          -
+          6249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- endTurn()\r\n        yield()
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          808
+        </td>
+        <td>
+          6223
+          -
+          6232
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          endTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          endTurn()
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          807
+        </td>
+        <td>
+          6223
+          -
+          6232
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          endTurn()
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          809
+        </td>
+        <td>
+          6247
+          -
+          6249
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          813
+        </td>
+        <td>
+          6271
+          -
+          6282
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          814
+        </td>
+        <td>
+          6271
+          -
+          6282
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          816
+        </td>
+        <td>
+          6290
+          -
+          6311
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def unitState
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          827
+        </td>
+        <td>
+          6364
+          -
+          6386
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          renderHand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          private def renderHand
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          819
+        </td>
+        <td>
+          6464
+          -
+          6475
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          unitState
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          unitState()
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          818
+        </td>
+        <td>
+          6438
+          -
+          6454
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          view
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          player.hand.view
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          817
+        </td>
+        <td>
+          6438
+          -
+          6645
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foldLeft
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          player.hand.view.foldLeft(unitState(): State[Window, Unit]):\r\n        (nestedState, card) =&gt;\r\n        for\r\n          _ &lt;- nestedState\r\n          _ &lt;- view.addCardToPlayer(player.name, card)\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          820
+        </td>
+        <td>
+          6540
+          -
+          6645
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n          _ &lt;- nestedState\r\n          _ &lt;- view.addCardToPlayer(player.name, card)\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          821
+        </td>
+        <td>
+          6560
+          -
+          6571
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          nestedState
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          822
+        </td>
+        <td>
+          6583
+          -
+          6645
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addCardToPlayer(player.name, card)\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          824
+        </td>
+        <td>
+          6588
+          -
+          6627
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addCardToPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addCardToPlayer(player.name, card)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          826
+        </td>
+        <td>
+          6583
+          -
+          6645
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- view.addCardToPlayer(player.name, card)\r\n        yield ()
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          823
+        </td>
+        <td>
+          6588
+          -
+          6627
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          view.addCardToPlayer(player.name, card)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          825
+        </td>
+        <td>
+          6643
+          -
+          6645
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

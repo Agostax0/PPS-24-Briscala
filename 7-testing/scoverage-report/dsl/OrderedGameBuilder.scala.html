@@ -1,0 +1,2044 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          dsl\OrderedGameBuilder.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package dsl
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.BuilderStep.*
+</span>4 <span style=''>import dsl.types.HandRule.HandRule
+</span>5 <span style=''>import dsl.types.PlayRule.PlayRule
+</span>6 <span style=''>import dsl.types.PointsRule.PointsRule
+</span>7 <span style=''>import dsl.types.WinRule.WinRule
+</span>8 <span style=''>import engine.model.{BotType, FullEngineModel}
+</span>9 <span style=''>
+</span>10 <span style=''>enum BuilderStep:
+</span>11 <span style=''>  case Initial
+</span>12 <span style=''>  case Named
+</span>13 <span style=''>  case WithPlayerCount
+</span>14 <span style=''>  case WithPlayers
+</span>15 <span style=''>  case WithSuits
+</span>16 <span style=''>  case WithRanks
+</span>17 <span style=''>  case WithHandSizeSet
+</span>18 <span style=''>  case Ready
+</span>19 <span style=''>object BuilderStep:
+</span>20 <span style=''>  </span><span style='background: #AEF1AE'>def getNextStep</span><span style=''>(from: BuilderStep): BuilderStep = from match
+</span>21 <span style=''>    case Initial         </span><span style='background: #AEF1AE'>=&gt; Named</span><span style=''>
+</span>22 <span style=''>    case Named           </span><span style='background: #AEF1AE'>=&gt; WithPlayerCount</span><span style=''>
+</span>23 <span style=''>    case WithPlayerCount </span><span style='background: #AEF1AE'>=&gt; WithPlayers</span><span style=''>
+</span>24 <span style=''>    case WithPlayers     </span><span style='background: #AEF1AE'>=&gt; WithSuits</span><span style=''>
+</span>25 <span style=''>    case WithSuits       </span><span style='background: #AEF1AE'>=&gt; WithRanks</span><span style=''>
+</span>26 <span style=''>    case WithRanks       </span><span style='background: #AEF1AE'>=&gt; WithHandSizeSet</span><span style=''>
+</span>27 <span style=''>    case WithHandSizeSet </span><span style='background: #AEF1AE'>=&gt; Ready</span><span style=''>
+</span>28 <span style=''>    case Ready           </span><span style='background: #AEF1AE'>=&gt; Ready</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>trait OrderedGameBuilder extends GameBuilder
+</span>31 <span style=''>
+</span>32 <span style=''>object OrderedGameBuilder:
+</span>33 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(name: String, builder: GameBuilder): GameBuilder =
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>OrderedGameBuilderImpl(name, builder)</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>  private class OrderedGameBuilderImpl(
+</span>37 <span style=''>      override val gameName: String,
+</span>38 <span style=''>      private val builder: GameBuilder = </span><span style='background: #F0ADAD'>GameBuilder(&quot;&quot;)</span><span style=''>,
+</span>39 <span style=''>      var currentStep: BuilderStep = Initial
+</span>40 <span style=''>  ) extends OrderedGameBuilder:
+</span>41 <span style=''>    currentStep = if </span><span style='background: #AEF1AE'>gameName.isEmpty</span><span style=''> then </span><span style='background: #AEF1AE'>Initial</span><span style=''> else </span><span style='background: #AEF1AE'>Named</span><span style=''>
+</span>42 <span style=''>
+</span>43 <span style=''>    </span><span style='background: #AEF1AE'>private def validateStep</span><span style=''>(
+</span>44 <span style=''>        nextStep: BuilderStep,
+</span>45 <span style=''>        calledMethod: String
+</span>46 <span style=''>    ): Unit =
+</span>47 <span style=''>      if !</span><span style='background: #AEF1AE'>isStepValid(nextStep)</span><span style=''> then
+</span>48 <span style=''>        </span><span style='background: #AEF1AE'>throw new IllegalStateException(
+</span>49 <span style=''></span><span style='background: #AEF1AE'>          s&quot;$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}&quot;
+</span>50 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''>
+</span>51 <span style=''>
+</span>52 <span style=''>    </span><span style='background: #AEF1AE'>private def isStepValid</span><span style=''>(requiredStep: BuilderStep): Boolean =
+</span>53 <span style=''>      currentStep match
+</span>54 <span style=''>        case WithPlayers if requiredStep == WithPlayers </span><span style='background: #AEF1AE'>=&gt; true</span><span style=''>
+</span>55 <span style=''>        case _ </span><span style='background: #AEF1AE'>=&gt; getNextStep(currentStep) == requiredStep</span><span style=''>
+</span>56 <span style=''>
+</span>57 <span style=''>    </span><span style='background: #AEF1AE'>def simpleEquals</span><span style=''>(obj: Any): Boolean = </span><span style='background: #AEF1AE'>builder.simpleEquals(obj)</span><span style=''>
+</span>58 <span style=''>
+</span>59 <span style=''>    </span><span style='background: #AEF1AE'>def addPlayer</span><span style=''>(name: String): GameBuilder =
+</span>60 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(WithPlayers, &quot;addPlayer&quot;)</span><span style=''>
+</span>61 <span style=''>      currentStep = WithPlayers
+</span>62 <span style=''>      </span><span style='background: #AEF1AE'>builder.addPlayer(name)</span><span style=''>
+</span>63 <span style=''>
+</span>64 <span style=''>    </span><span style='background: #AEF1AE'>def addBotPlayer</span><span style=''>(name: String, botType: BotType): GameBuilder =
+</span>65 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(WithPlayers, &quot;addBotPlayer&quot;)</span><span style=''>
+</span>66 <span style=''>      currentStep = WithPlayers
+</span>67 <span style=''>      </span><span style='background: #AEF1AE'>builder.addBotPlayer(name, botType)</span><span style=''>
+</span>68 <span style=''>
+</span>69 <span style=''>    </span><span style='background: #AEF1AE'>def setPlayers</span><span style=''>(n: Int): GameBuilder =
+</span>70 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(WithPlayerCount, &quot;setPlayers&quot;)</span><span style=''>
+</span>71 <span style=''>      currentStep = WithPlayerCount
+</span>72 <span style=''>      </span><span style='background: #AEF1AE'>builder.setPlayers(n)</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>    </span><span style='background: #AEF1AE'>def setSuits</span><span style=''>(suits: List[String]): GameBuilder =
+</span>75 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(WithSuits, &quot;setSuits&quot;)</span><span style=''>
+</span>76 <span style=''>      currentStep = WithSuits
+</span>77 <span style=''>      </span><span style='background: #AEF1AE'>builder.setSuits(suits)</span><span style=''>
+</span>78 <span style=''>
+</span>79 <span style=''>    </span><span style='background: #AEF1AE'>def setRanks</span><span style=''>(ranks: List[String]): GameBuilder =
+</span>80 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(WithRanks, &quot;setRanks&quot;)</span><span style=''>
+</span>81 <span style=''>      currentStep = WithRanks
+</span>82 <span style=''>      </span><span style='background: #AEF1AE'>builder.setRanks(ranks)</span><span style=''>
+</span>83 <span style=''>
+</span>84 <span style=''>    </span><span style='background: #AEF1AE'>def setPlayersHands</span><span style=''>(handSize: Int): GameBuilder =
+</span>85 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(WithHandSizeSet, &quot;setPlayerHands&quot;)</span><span style=''>
+</span>86 <span style=''>      currentStep = WithHandSizeSet
+</span>87 <span style=''>      </span><span style='background: #AEF1AE'>builder.setPlayersHands(handSize)</span><span style=''>
+</span>88 <span style=''>
+</span>89 <span style=''>    </span><span style='background: #AEF1AE'>def setStartingPlayer</span><span style=''>(name: String): GameBuilder =
+</span>90 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(Ready, &quot;setStartingPlayer&quot;)</span><span style=''>
+</span>91 <span style=''>      currentStep = Ready
+</span>92 <span style=''>      </span><span style='background: #AEF1AE'>builder.setStartingPlayer(name)</span><span style=''>
+</span>93 <span style=''>
+</span>94 <span style=''>    </span><span style='background: #AEF1AE'>def setPointRule</span><span style=''>(rule: PointsRule): GameBuilder =
+</span>95 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(Ready, &quot;setPointRule&quot;)</span><span style=''>
+</span>96 <span style=''>      currentStep = Ready
+</span>97 <span style=''>      </span><span style='background: #AEF1AE'>builder.setPointRule(rule)</span><span style=''>
+</span>98 <span style=''>
+</span>99 <span style=''>    </span><span style='background: #AEF1AE'>def setPlayRule</span><span style=''>(rule: PlayRule): GameBuilder =
+</span>100 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(Ready, &quot;setPlayRule&quot;)</span><span style=''>
+</span>101 <span style=''>      currentStep = Ready
+</span>102 <span style=''>      </span><span style='background: #AEF1AE'>builder.setPlayRule(rule)</span><span style=''>
+</span>103 <span style=''>
+</span>104 <span style=''>    </span><span style='background: #AEF1AE'>def setHandRule</span><span style=''>(rule: HandRule): GameBuilder =
+</span>105 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(Ready, &quot;setHandRule&quot;)</span><span style=''>
+</span>106 <span style=''>      currentStep = Ready
+</span>107 <span style=''>      </span><span style='background: #AEF1AE'>builder.setHandRule(rule)</span><span style=''>
+</span>108 <span style=''>
+</span>109 <span style=''>    </span><span style='background: #AEF1AE'>def setWinRule</span><span style=''>(rule: WinRule): GameBuilder =
+</span>110 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(Ready, &quot;setWinRule&quot;)</span><span style=''>
+</span>111 <span style=''>      currentStep = Ready
+</span>112 <span style=''>      </span><span style='background: #AEF1AE'>builder.setWinRule(rule)</span><span style=''>
+</span>113 <span style=''>
+</span>114 <span style=''>    </span><span style='background: #AEF1AE'>def addTeam</span><span style=''>(names: List[String]): GameBuilder =
+</span>115 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(Ready, &quot;addTeam&quot;)</span><span style=''>
+</span>116 <span style=''>      currentStep = Ready
+</span>117 <span style=''>      </span><span style='background: #AEF1AE'>builder.addTeam(names)</span><span style=''>
+</span>118 <span style=''>
+</span>119 <span style=''>    </span><span style='background: #AEF1AE'>def setBriscolaSuit</span><span style=''>(suit: String): GameBuilder =
+</span>120 <span style=''>      </span><span style='background: #AEF1AE'>validateStep(Ready, &quot;setBriscolaSuit&quot;)</span><span style=''>
+</span>121 <span style=''>      currentStep = Ready
+</span>122 <span style=''>      </span><span style='background: #AEF1AE'>builder.setBriscolaSuit(suit)</span><span style=''>
+</span>123 <span style=''>
+</span>124 <span style=''>    </span><span style='background: #AEF1AE'>def build</span><span style=''>(): FullEngineModel =
+</span>125 <span style=''>      if currentStep == Ready | currentStep == WithHandSizeSet then
+</span>126 <span style=''>        </span><span style='background: #F0ADAD'>builder.build()</span><span style=''>
+</span>127 <span style=''>      else
+</span>128 <span style=''>        </span><span style='background: #AEF1AE'>throw new IllegalStateException(
+</span>129 <span style=''></span><span style='background: #AEF1AE'>          s&quot;Expected a completed builder but got a $currentStep one&quot;
+</span>130 <span style=''></span><span style='background: #AEF1AE'>        )</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          290
+        </td>
+        <td>
+          427
+          -
+          442
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          getNextStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def getNextStep
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          282
+        </td>
+        <td>
+          514
+          -
+          522
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; Named
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          283
+        </td>
+        <td>
+          549
+          -
+          567
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; WithPlayerCount
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          284
+        </td>
+        <td>
+          594
+          -
+          608
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; WithPlayers
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          285
+        </td>
+        <td>
+          635
+          -
+          647
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; WithSuits
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          286
+        </td>
+        <td>
+          674
+          -
+          686
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; WithRanks
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          287
+        </td>
+        <td>
+          713
+          -
+          731
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; WithHandSizeSet
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          288
+        </td>
+        <td>
+          758
+          -
+          766
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; Ready
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          289
+        </td>
+        <td>
+          793
+          -
+          801
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; Ready
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          293
+        </td>
+        <td>
+          883
+          -
+          892
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          292
+        </td>
+        <td>
+          949
+          -
+          971
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          $lessinit$greater$default$3
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          OrderedGameBuilderImpl
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          291
+        </td>
+        <td>
+          949
+          -
+          986
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          OrderedGameBuilderImpl(name, builder)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          358
+        </td>
+        <td>
+          1110
+          -
+          1110
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          $lessinit$greater$default$2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          357
+        </td>
+        <td>
+          1110
+          -
+          1125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          GameBuilder(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          359
+        </td>
+        <td>
+          1165
+          -
+          1165
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          $lessinit$greater$default$3
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          295
+        </td>
+        <td>
+          1250
+          -
+          1257
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Initial
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Initial
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          294
+        </td>
+        <td>
+          1228
+          -
+          1244
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameName.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          296
+        </td>
+        <td>
+          1263
+          -
+          1268
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Named
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Named
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          304
+        </td>
+        <td>
+          1276
+          -
+          1300
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def validateStep
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          297
+        </td>
+        <td>
+          1390
+          -
+          1411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          isStepValid
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          isStepValid(nextStep)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          298
+        </td>
+        <td>
+          1426
+          -
+          1578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalStateException(\r\n          s&quot;$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}&quot;\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          299
+        </td>
+        <td>
+          1432
+          -
+          1578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalStateException(\r\n          s&quot;$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}&quot;\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          302
+        </td>
+        <td>
+          1426
+          -
+          1578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalStateException(\r\n          s&quot;$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}&quot;\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          301
+        </td>
+        <td>
+          1541
+          -
+          1565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getNextStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          getNextStep(currentStep)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          300
+        </td>
+        <td>
+          1470
+          -
+          1567
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          s&quot;$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}&quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          303
+        </td>
+        <td>
+          1578
+          -
+          1578
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          308
+        </td>
+        <td>
+          1586
+          -
+          1609
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          isStepValid
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def isStepValid
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          305
+        </td>
+        <td>
+          1730
+          -
+          1737
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; true
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          307
+        </td>
+        <td>
+          1754
+          -
+          1797
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; getNextStep(currentStep) == requiredStep
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          306
+        </td>
+        <td>
+          1757
+          -
+          1781
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getNextStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          getNextStep(currentStep)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          310
+        </td>
+        <td>
+          1805
+          -
+          1821
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          simpleEquals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def simpleEquals
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          309
+        </td>
+        <td>
+          1843
+          -
+          1868
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          simpleEquals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.simpleEquals(obj)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          313
+        </td>
+        <td>
+          1876
+          -
+          1889
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addPlayer
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          311
+        </td>
+        <td>
+          1926
+          -
+          1964
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(WithPlayers, &quot;addPlayer&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          312
+        </td>
+        <td>
+          2005
+          -
+          2028
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.addPlayer(name)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          316
+        </td>
+        <td>
+          2036
+          -
+          2052
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addBotPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addBotPlayer
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          314
+        </td>
+        <td>
+          2107
+          -
+          2148
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(WithPlayers, &quot;addBotPlayer&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          315
+        </td>
+        <td>
+          2189
+          -
+          2224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addBotPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.addBotPlayer(name, botType)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          319
+        </td>
+        <td>
+          2232
+          -
+          2246
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setPlayers
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          317
+        </td>
+        <td>
+          2277
+          -
+          2320
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(WithPlayerCount, &quot;setPlayers&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          318
+        </td>
+        <td>
+          2365
+          -
+          2386
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPlayers
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setPlayers(n)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          322
+        </td>
+        <td>
+          2394
+          -
+          2406
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setSuits
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setSuits
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          320
+        </td>
+        <td>
+          2450
+          -
+          2485
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(WithSuits, &quot;setSuits&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          321
+        </td>
+        <td>
+          2524
+          -
+          2547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setSuits
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setSuits(suits)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          325
+        </td>
+        <td>
+          2555
+          -
+          2567
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setRanks
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setRanks
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          323
+        </td>
+        <td>
+          2611
+          -
+          2646
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(WithRanks, &quot;setRanks&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          324
+        </td>
+        <td>
+          2685
+          -
+          2708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setRanks
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setRanks(ranks)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          328
+        </td>
+        <td>
+          2716
+          -
+          2735
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayersHands
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setPlayersHands
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          326
+        </td>
+        <td>
+          2773
+          -
+          2820
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(WithHandSizeSet, &quot;setPlayerHands&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          327
+        </td>
+        <td>
+          2865
+          -
+          2898
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPlayersHands
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setPlayersHands(handSize)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          331
+        </td>
+        <td>
+          2906
+          -
+          2927
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setStartingPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setStartingPlayer
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          329
+        </td>
+        <td>
+          2964
+          -
+          3004
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(Ready, &quot;setStartingPlayer&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          330
+        </td>
+        <td>
+          3039
+          -
+          3070
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setStartingPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setStartingPlayer(name)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          334
+        </td>
+        <td>
+          3078
+          -
+          3094
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPointRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setPointRule
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          332
+        </td>
+        <td>
+          3135
+          -
+          3170
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(Ready, &quot;setPointRule&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          333
+        </td>
+        <td>
+          3205
+          -
+          3231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPointRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setPointRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          337
+        </td>
+        <td>
+          3239
+          -
+          3254
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setPlayRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setPlayRule
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          335
+        </td>
+        <td>
+          3293
+          -
+          3327
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(Ready, &quot;setPlayRule&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          336
+        </td>
+        <td>
+          3362
+          -
+          3387
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setPlayRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setPlayRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          340
+        </td>
+        <td>
+          3395
+          -
+          3410
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setHandRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setHandRule
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          338
+        </td>
+        <td>
+          3449
+          -
+          3483
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(Ready, &quot;setHandRule&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          339
+        </td>
+        <td>
+          3518
+          -
+          3543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setHandRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setHandRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          343
+        </td>
+        <td>
+          3551
+          -
+          3565
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setWinRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setWinRule
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          341
+        </td>
+        <td>
+          3603
+          -
+          3636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(Ready, &quot;setWinRule&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          342
+        </td>
+        <td>
+          3671
+          -
+          3695
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setWinRule
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setWinRule(rule)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          346
+        </td>
+        <td>
+          3703
+          -
+          3714
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addTeam
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          344
+        </td>
+        <td>
+          3758
+          -
+          3788
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(Ready, &quot;addTeam&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          345
+        </td>
+        <td>
+          3823
+          -
+          3845
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.addTeam(names)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          349
+        </td>
+        <td>
+          3853
+          -
+          3872
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setBriscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def setBriscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          347
+        </td>
+        <td>
+          3909
+          -
+          3947
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          validateStep
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validateStep(Ready, &quot;setBriscolaSuit&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          348
+        </td>
+        <td>
+          3982
+          -
+          4011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setBriscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          builder.setBriscolaSuit(suit)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          356
+        </td>
+        <td>
+          4019
+          -
+          4028
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          build
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def build
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          351
+        </td>
+        <td>
+          4128
+          -
+          4143
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          build
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          builder.build()
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          350
+        </td>
+        <td>
+          4128
+          -
+          4143
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          build
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          builder.build()
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          355
+        </td>
+        <td>
+          4165
+          -
+          4278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalStateException(\r\n          s&quot;Expected a completed builder but got a $currentStep one&quot;\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          352
+        </td>
+        <td>
+          4165
+          -
+          4278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          throw
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          throw new IllegalStateException(\r\n          s&quot;Expected a completed builder but got a $currentStep one&quot;\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          353
+        </td>
+        <td>
+          4171
+          -
+          4278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new IllegalStateException(\r\n          s&quot;Expected a completed builder but got a $currentStep one&quot;\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          354
+        </td>
+        <td>
+          4209
+          -
+          4267
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          s&quot;Expected a completed builder but got a $currentStep one&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

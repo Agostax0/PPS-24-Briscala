@@ -1,0 +1,777 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\model\PlayerModel.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.model
+</span>2 <span style=''>
+</span>3 <span style=''>import engine.model.BotType.{Random, Smart}
+</span>4 <span style=''>
+</span>5 <span style=''>/** Represents a player in the game. A player has a name, a hand of cards, and a
+</span>6 <span style=''>  * score. Players can play cards and draw from the deck.
+</span>7 <span style=''>  */
+</span>8 <span style=''>sealed trait PlayerModel:
+</span>9 <span style=''>  /** The name of the player. */
+</span>10 <span style=''>  val name: String
+</span>11 <span style=''>
+</span>12 <span style=''>  /** The hand of cards the player currently holds. */
+</span>13 <span style=''>  val hand: DeckModel
+</span>14 <span style=''>
+</span>15 <span style=''>  /** The score of the player. */
+</span>16 <span style=''>  var score: Int = 0
+</span>17 <span style=''>
+</span>18 <span style=''>  /** Plays a card from the player's hand. The card is removed from the hand.
+</span>19 <span style=''>    *
+</span>20 <span style=''>    * @param card
+</span>21 <span style=''>    *   the card to be played
+</span>22 <span style=''>    */
+</span>23 <span style=''>  def playCard(card: CardModel): Unit
+</span>24 <span style=''>
+</span>25 <span style=''>  /** Draws a specified number of cards from the deck and adds them to the
+</span>26 <span style=''>    * player's hand.
+</span>27 <span style=''>    *
+</span>28 <span style=''>    * @param deckModel
+</span>29 <span style=''>    *   the deck from which to draw cards
+</span>30 <span style=''>    * @param numCards
+</span>31 <span style=''>    *   the number of cards to draw
+</span>32 <span style=''>    */
+</span>33 <span style=''>  def drawFromDeck(deckModel: DeckModel, numCards: Int): Unit
+</span>34 <span style=''>
+</span>35 <span style=''>  /** Increases the player's score by a specified amount.
+</span>36 <span style=''>    *
+</span>37 <span style=''>    * @param score
+</span>38 <span style=''>    *   the amount to increase the score by
+</span>39 <span style=''>    */
+</span>40 <span style=''>  </span><span style='background: #AEF1AE'>def increaseScore</span><span style=''>(score: Int): Unit = this.score += score
+</span>41 <span style=''>
+</span>42 <span style=''>/** Represents a bot player in the game. It is an extension of a Player that
+</span>43 <span style=''>  * uses a specific decision-making strategy to decide its plays.
+</span>44 <span style=''>  */
+</span>45 <span style=''>sealed trait BotPlayerModel extends PlayerModel:
+</span>46 <span style=''>  /** The BotDecisionStrategy that the bot uses to make decisions.
+</span>47 <span style=''>    */
+</span>48 <span style=''>  val strategy: BotDecisionStrategy
+</span>49 <span style=''>
+</span>50 <span style=''>  /** Generates a card based on the bot's strategy and the current game context.
+</span>51 <span style=''>    *
+</span>52 <span style=''>    * @param gameContext
+</span>53 <span style=''>    *   the current game context, including cards on the table and rules
+</span>54 <span style=''>    * @return
+</span>55 <span style=''>    *   a CardModel that the bot has decided to play
+</span>56 <span style=''>    */
+</span>57 <span style=''>  def generateCard(gameContext: GameContext): CardModel
+</span>58 <span style=''>
+</span>59 <span style=''>object PlayerModel:
+</span>60 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(name: String): PlayerModel = </span><span style='background: #AEF1AE'>PlayerModelImpl(name)</span><span style=''>
+</span>61 <span style=''>
+</span>62 <span style=''>  private class PlayerModelImpl(val name: String) extends PlayerModel:
+</span>63 <span style=''>    val hand: DeckModel = </span><span style='background: #AEF1AE'>DeckModel()</span><span style=''>
+</span>64 <span style=''>
+</span>65 <span style=''>    </span><span style='background: #AEF1AE'>override def playCard</span><span style=''>(card: CardModel): Unit =
+</span>66 <span style=''>      </span><span style='background: #AEF1AE'>hand.removeCard(card)</span><span style=''>
+</span>67 <span style=''>
+</span>68 <span style=''>    </span><span style='background: #AEF1AE'>override def drawFromDeck</span><span style=''>(deckModel: DeckModel, numCards: Int): Unit =
+</span>69 <span style=''>      val cards = </span><span style='background: #AEF1AE'>deckModel.drawCards(numCards)</span><span style=''>
+</span>70 <span style=''>      </span><span style='background: #AEF1AE'>cards.foreach(card =&gt; hand.addCard(card))</span><span style=''>
+</span>71 <span style=''>      </span><span style='background: #AEF1AE'>hand.orderHand()</span><span style=''>
+</span>72 <span style=''>
+</span>73 <span style=''>object BotPlayerModel:
+</span>74 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(name: String, botType: BotType): BotPlayerModel =
+</span>75 <span style=''>    </span><span style='background: #AEF1AE'>BotPlayerModelImpl(PlayerModel(name), botType)</span><span style=''>
+</span>76 <span style=''>
+</span>77 <span style=''>  private class BotPlayerModelImpl(
+</span>78 <span style=''>      val player: PlayerModel,
+</span>79 <span style=''>      val botType: BotType
+</span>80 <span style=''>  ) extends BotPlayerModel:
+</span>81 <span style=''>    export </span><span style='background: #AEF1AE'>player</span><span style=''>.*
+</span>82 <span style=''>    override val strategy: BotDecisionStrategy = botType match
+</span>83 <span style=''>      case Random </span><span style='background: #AEF1AE'>=&gt; RandomDecisionStrategy()</span><span style=''>
+</span>84 <span style=''>      case Smart  </span><span style='background: #AEF1AE'>=&gt; RuleAwareDecisionStrategy(this)</span><span style=''>
+</span>85 <span style=''>
+</span>86 <span style=''>    </span><span style='background: #AEF1AE'>override def generateCard</span><span style=''>(gameContext: GameContext): CardModel =
+</span>87 <span style=''>      </span><span style='background: #AEF1AE'>strategy.selectCard(hand, gameContext.cardsOnTable, gameContext)</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1032
+        </td>
+        <td>
+          1072
+          -
+          1089
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          increaseScore
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def increaseScore
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          1034
+        </td>
+        <td>
+          1797
+          -
+          1806
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          1033
+        </td>
+        <td>
+          1836
+          -
+          1857
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerModelImpl(name)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1035
+        </td>
+        <td>
+          1959
+          -
+          1970
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          DeckModel()
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          1037
+        </td>
+        <td>
+          1978
+          -
+          1999
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          playCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def playCard
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          1036
+        </td>
+        <td>
+          2032
+          -
+          2053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          removeCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          hand.removeCard(card)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1042
+        </td>
+        <td>
+          2061
+          -
+          2086
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          drawFromDeck
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def drawFromDeck
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          1038
+        </td>
+        <td>
+          2151
+          -
+          2180
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          drawCards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          deckModel.drawCards(numCards)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1040
+        </td>
+        <td>
+          2210
+          -
+          2228
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          hand.addCard(card)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1039
+        </td>
+        <td>
+          2188
+          -
+          2229
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cards.foreach(card =&gt; hand.addCard(card))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1041
+        </td>
+        <td>
+          2237
+          -
+          2253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          orderHand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          hand.orderHand()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1045
+        </td>
+        <td>
+          2283
+          -
+          2292
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1043
+        </td>
+        <td>
+          2348
+          -
+          2394
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          BotPlayerModelImpl(PlayerModel(name), botType)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1044
+        </td>
+        <td>
+          2367
+          -
+          2384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerModel(name)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1046
+        </td>
+        <td>
+          2542
+          -
+          2542
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          name
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1049
+        </td>
+        <td>
+          2542
+          -
+          2542
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          hand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1051
+        </td>
+        <td>
+          2542
+          -
+          2542
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          playCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1048
+        </td>
+        <td>
+          2542
+          -
+          2542
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          drawFromDeck
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1047
+        </td>
+        <td>
+          2535
+          -
+          2541
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          drawFromDeck
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          player
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1050
+        </td>
+        <td>
+          2535
+          -
+          2541
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          playCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          player
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1052
+        </td>
+        <td>
+          2630
+          -
+          2654
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          RandomDecisionStrategy()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1053
+        </td>
+        <td>
+          2627
+          -
+          2654
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; RandomDecisionStrategy()
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1055
+        </td>
+        <td>
+          2674
+          -
+          2708
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; RuleAwareDecisionStrategy(this)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1054
+        </td>
+        <td>
+          2677
+          -
+          2708
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          RuleAwareDecisionStrategy(this)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1058
+        </td>
+        <td>
+          2716
+          -
+          2741
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          generateCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def generateCard
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1057
+        </td>
+        <td>
+          2808
+          -
+          2812
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          hand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          hand
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1056
+        </td>
+        <td>
+          2788
+          -
+          2852
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          selectCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          strategy.selectCard(hand, gameContext.cardsOnTable, gameContext)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

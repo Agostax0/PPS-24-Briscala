@@ -1,0 +1,305 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\view\monads\States.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.view.monads
+</span>2 <span style=''>
+</span>3 <span style=''>import Monads.*
+</span>4 <span style=''>import Streams.*, Stream.*
+</span>5 <span style=''>
+</span>6 <span style=''>object States:
+</span>7 <span style=''>
+</span>8 <span style=''>  case class State[S, A](run: S =&gt; (S, A))
+</span>9 <span style=''>
+</span>10 <span style=''>  object State:
+</span>11 <span style=''>    extension [S, A](m: State[S, A])
+</span>12 <span style=''>      </span><span style='background: #AEF1AE'>def apply</span><span style=''>(s: S): (S, A) = m match
+</span>13 <span style=''>        case State(run) </span><span style='background: #AEF1AE'>=&gt; run(s)</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  </span><span style='background: #AEF1AE'>given stateMonad</span><span style=''>[S]: Monad[[A] =&gt;&gt; State[S, A]] with
+</span>16 <span style=''>    </span><span style='background: #F0ADAD'>def unit</span><span style=''>[A](a: A): State[S, A] = State(s =&gt; (s, a))
+</span>17 <span style=''>
+</span>18 <span style=''>    extension [A](m: State[S, A])
+</span>19 <span style=''>      </span><span style='background: #AEF1AE'>override def flatMap</span><span style=''>[B](f: A =&gt; State[S, B]): State[S, B] =
+</span>20 <span style=''>        State(s =&gt; </span><span style='background: #AEF1AE'>m.apply(s)</span><span style=''> match
+</span>21 <span style=''>          case (s2, a) </span><span style='background: #AEF1AE'>=&gt; f(a).apply(s2)</span><span style=''>
+</span>22 <span style=''>        )
+</span>23 <span style=''>        
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          1373
+        </td>
+        <td>
+          202
+          -
+          211
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1372
+        </td>
+        <td>
+          261
+          -
+          270
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; run(s)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1371
+        </td>
+        <td>
+          264
+          -
+          270
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          run(s)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1380
+        </td>
+        <td>
+          276
+          -
+          292
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          stateMonad
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          given stateMonad
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1374
+        </td>
+        <td>
+          334
+          -
+          342
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          unit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def unit
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1379
+        </td>
+        <td>
+          430
+          -
+          450
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def flatMap
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1375
+        </td>
+        <td>
+          510
+          -
+          520
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          m.apply(s)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1378
+        </td>
+        <td>
+          551
+          -
+          568
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; f(a).apply(s2)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1377
+        </td>
+        <td>
+          554
+          -
+          558
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          f(a)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1376
+        </td>
+        <td>
+          554
+          -
+          568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          f(a).apply(s2)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,555 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\view\EngineView.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.view
+</span>2 <span style=''>
+</span>3 <span style=''>import engine.view.SwingFunctionalFacade.Frame
+</span>4 <span style=''>import engine.view.monads.States.State
+</span>5 <span style=''>import engine.view.monads.Streams.*
+</span>6 <span style=''>
+</span>7 <span style=''>sealed trait EngineView
+</span>8 <span style=''>    extends PlayerViewManager
+</span>9 <span style=''>    with CardViewManager
+</span>10 <span style=''>    with TableViewManager
+</span>11 <span style=''>    with TurnHistoryViewManager:
+</span>12 <span style=''>  def show: State[Frame, Stream[String]]
+</span>13 <span style=''>  def end(): State[Frame, Unit]
+</span>14 <span style=''>
+</span>15 <span style=''>object EngineView:
+</span>16 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(gameName: String)(width: Int, height: Int): EngineView =
+</span>17 <span style=''>    </span><span style='background: #AEF1AE'>new EngineViewImpl(gameName, width, height)</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  private class EngineViewImpl(
+</span>20 <span style=''>      val gameName: String,
+</span>21 <span style=''>      val width: Int,
+</span>22 <span style=''>      val height: Int
+</span>23 <span style=''>  ) extends EngineView:
+</span>24 <span style=''>    </span><span style='background: #F0ADAD'>def show</span><span style=''>: State[Frame, Stream[String]] =
+</span>25 <span style=''>      import WindowStateImpl.*
+</span>26 <span style=''>      </span><span style='background: #F0ADAD'>for
+</span>27 <span style=''></span><span style='background: #F0ADAD'>        _ &lt;- setSize(width, height)
+</span>28 <span style=''></span><span style='background: #F0ADAD'>        _ &lt;- addLabel(gameName, &quot;GameName&quot;)
+</span>29 <span style=''></span><span style='background: #F0ADAD'>        _ &lt;- WindowStateImpl.show()
+</span>30 <span style=''></span><span style='background: #F0ADAD'>        e &lt;- eventStream()
+</span>31 <span style=''></span><span style='background: #F0ADAD'>      yield e</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>    </span><span style='background: #F0ADAD'>def end</span><span style=''>(): State[Frame, Unit] = State(w =&gt; (w, </span><span style='background: #F0ADAD'>sys.exit()</span><span style=''>))
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1178
+        </td>
+        <td>
+          392
+          -
+          401
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1177
+        </td>
+        <td>
+          464
+          -
+          507
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          &lt;init&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          new EngineViewImpl(gameName, width, height)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1194
+        </td>
+        <td>
+          648
+          -
+          656
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          show
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def show
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1179
+        </td>
+        <td>
+          728
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n        _ &lt;- setSize(width, height)\r\n        _ &lt;- addLabel(gameName, &quot;GameName&quot;)\r\n        _ &lt;- WindowStateImpl.show()\r\n        e &lt;- eventStream()\r\n      yield e
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1180
+        </td>
+        <td>
+          746
+          -
+          768
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          setSize(width, height)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1181
+        </td>
+        <td>
+          746
+          -
+          768
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setSize
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          setSize(width, height)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1183
+        </td>
+        <td>
+          783
+          -
+          813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(gameName, &quot;GameName&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1182
+        </td>
+        <td>
+          778
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- addLabel(gameName, &quot;GameName&quot;)\r\n        _ &lt;- WindowStateImpl.show()\r\n        e &lt;- eventStream()\r\n      yield e
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1184
+        </td>
+        <td>
+          783
+          -
+          813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addLabel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(gameName, &quot;GameName&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1193
+        </td>
+        <td>
+          778
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- addLabel(gameName, &quot;GameName&quot;)\r\n        _ &lt;- WindowStateImpl.show()\r\n        e &lt;- eventStream()\r\n      yield e
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1187
+        </td>
+        <td>
+          828
+          -
+          850
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          show
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          WindowStateImpl.show()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1186
+        </td>
+        <td>
+          828
+          -
+          850
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          WindowStateImpl.show()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1192
+        </td>
+        <td>
+          823
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- WindowStateImpl.show()\r\n        e &lt;- eventStream()\r\n      yield e
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1185
+        </td>
+        <td>
+          823
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- WindowStateImpl.show()\r\n        e &lt;- eventStream()\r\n      yield e
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1189
+        </td>
+        <td>
+          865
+          -
+          878
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          eventStream()
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1188
+        </td>
+        <td>
+          860
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          e &lt;- eventStream()\r\n      yield e
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1191
+        </td>
+        <td>
+          860
+          -
+          893
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          e &lt;- eventStream()\r\n      yield e
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1190
+        </td>
+        <td>
+          865
+          -
+          878
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          eventStream
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          eventStream()
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1196
+        </td>
+        <td>
+          901
+          -
+          908
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          end
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def end
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1195
+        </td>
+        <td>
+          948
+          -
+          958
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          exit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          sys.exit()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

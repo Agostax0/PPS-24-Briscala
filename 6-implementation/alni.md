@@ -27,7 +27,7 @@ The user can create their own custom hand rules by defining a lambda that matche
 ```scala
 (List[CardModel], DeckModel, CardModel) => Boolean
 ``` 
-To make their use easier in the DSL, some basic rules have been created that can be used by specifying the context with *using* in the following way:
+To make their use easier in the DSL, some basic rules have been created that can be used by specifying the context with *given/using* in the following way:
 ```scala
 (cardsOnTable, playerHand, playedCard) =>
     given List[CardModel] = cardsOnTable
@@ -36,4 +36,14 @@ To make their use easier in the DSL, some basic rules have been created that can
 
     freeStart or followFirstSuit
 ```
-These prefabricated rules, along with more readable logical operators that can be used to combine them, are defined as static methods in the *HandRule* object.
+These prefabricated rules, along with more readable logical operators that can be used to combine them, are defined as static methods in the *HandRule* object:
+```scala
+ def followFirstSuit(using
+      cardsOnTable: List[CardModel],
+      playerHand: DeckModel,
+      playedCard: CardModel
+  ): Boolean =
+    cardsOnTable.nonEmpty &&
+      (cardsOnTable.head.suit == playedCard.suit ||
+        !playerHand.view.exists(_.suit == cardsOnTable.head.suit))
+```

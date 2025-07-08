@@ -7,8 +7,12 @@ We tried to follow a Test-Driven Development (TDD) approach, where tests are wri
 After the implementation of a feature, we also checked the coverage of the tests using Scoverage, possibly improving the coverage by adding more tests.
 
 ## Coverage
-Scoverage reported a coverage of ..% for the project which was our aim since the start.
-The main culprits for lowering the coverage are some elements of the GUI, which are not easily testable, and some parts of *EngineController* which are not accessible for tests due to the way the code is structured.
+Scoverage reported a coverage of 75.68% for the project which is a bit lower than 80%, that was our aim since the start.
+
+![Test_Coverage](../res/scoverage.png "Test Coverage")
+
+The main culprits for lowering the coverage are some elements of the GUI, which are not easily testable, and most parts of *EngineController* which are not accessible for tests due to the way the code is structured.
+We are satisfied with the coverage of the other packages as it is solidly above 90%.
 
 ## Example
 We wrote an implementation of the *GameBuilder* trait called *SimpleGameBuilder*.

@@ -44,7 +44,7 @@ In order to keep consistent code-formatting standards, the team chose to use Sca
 Our project's ScalaFTM configuration can be found [here](https://github.com/Agostax0/PPS-24-Briscala/blob/master/.scalafmt.conf).
 
 ## Build Automation
-A build automation tool was chose to ease the development process, [SBT](https://www.scala-sbt.org) (Simple Build Tool) was chose for its ease-of-use and its ample plugin library.
+A build automation tool was chose to ease the development process, [SBT](https://www.scala-sbt.org) (Simple Build Tool) was chosen for its ease-of-use and its ample plugin library.
 
 ## Continuous Integration
 Continuous Integration was implemented using GitHub-native workflows, which are tasked with continuous testing at every change/commit on clean machines with varying operative systems.

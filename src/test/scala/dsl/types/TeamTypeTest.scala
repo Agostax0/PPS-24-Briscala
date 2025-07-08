@@ -20,31 +20,30 @@ class TeamTypeTest
   val p3 = "Merk"
   val p4 = "Clark"
 
-  val players = List(p1, p2, p3, p4)
+  val players: List[String] = List(p1, p2, p3, p4)
 
-  private def createTeam(): Unit =
+  override def beforeEach(): Unit =
     team = Team(List(p1, p2, p3, p4))
 
   "Team" should "be correctly instantiated" in:
     team = Team(List("Alice", "Bob","Merk", "Clark"))
 
   it should "have the correct size" in:
-      createTeam()
-
       team.size should be(4)
 
   it should "convert to a set of players correctly" in:
-    createTeam()
-
     team.toSet should be(players.toSet)
 
   it should "zip with index correctly" in:
-    createTeam()
-
     team.zipWithIndex should be(players.zipWithIndex)
 
   it should "reduce correctly" in:
-    createTeam()
-
     team.reduce((a, b) => a + b) should be(p1+p2+p3+p4)
 
+  it should "be able to check if it contains a player" in:
+    (team.contains(p1), team.contains("Unknown")) shouldBe (true, false)
+
+  it should "recognize another team as equal if they have the same players" in:
+    val team2: Team = Team(List(p1, p2, p3, p4))
+
+    team.equals(other = team2) should be(true)

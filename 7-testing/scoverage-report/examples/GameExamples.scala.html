@@ -1,0 +1,4746 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          examples\GameExamples.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package examples
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.{GameBuilder, GameDSL}
+</span>4 <span style=''>import dsl.GameDSL.{game, is, *}
+</span>5 <span style=''>import dsl.syntax.SyntacticSugar.*
+</span>6 <span style=''>import dsl.syntax.SyntacticSugarBuilder.highest
+</span>7 <span style=''>import dsl.types.HandRule.*
+</span>8 <span style=''>import dsl.types.PlayRule.prevailsOn
+</span>9 <span style=''>import dsl.types.Team
+</span>10 <span style=''>import dsl.types.Team.Team
+</span>11 <span style=''>import dsl.types.WinRule.highest as highestPointTeam
+</span>12 <span style=''>import engine.model.{CardModel, DeckModel, PlayerModel}
+</span>13 <span style=''>
+</span>14 <span style=''>import scala.language.{implicitConversions, postfixOps}
+</span>15 <span style=''>object GameExamples:
+</span>16 <span style=''>
+</span>17 <span style=''>  /** Creates a game builder for the game &quot;Briscola&quot;.
+</span>18 <span style=''>   * The game is set up with 2 players, Alice and Bob, and includes two bots: Albert (smart) and Josh (random).
+</span>19 <span style=''>   * The game uses the standard deck and rules of &quot;Briscola&quot;. The set briscola suit is &quot;Cups&quot;.
+</span>20 <span style=''>   *
+</span>21 <span style=''>   * @return the GameBuilder for the game
+</span>22 <span style=''>   */
+</span>23 <span style=''>  </span><span style='background: #AEF1AE'>def briscola</span><span style=''>(): GameBuilder =
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>game is &quot;Briscola&quot;</span><span style=''>
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>game has 4 players</span><span style=''>
+</span>26 <span style=''>
+</span>27 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Alice&quot;</span><span style=''>
+</span>28 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Bob&quot;</span><span style=''>
+</span>29 <span style=''>    </span><span style='background: #AEF1AE'>game has smartBot called &quot;Albert&quot;</span><span style=''>
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>game has randomBot called &quot;Josh&quot;</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>game suitsAre(&quot;Cups&quot;, &quot;Coins&quot;, &quot;Swords&quot;, &quot;Batons&quot;)</span><span style=''>
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>game ranksAre(&quot;2&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;Knave&quot;, &quot;Knight&quot;, &quot;King&quot;, &quot;3&quot;, &quot;Ace&quot;)</span><span style=''>
+</span>34 <span style=''>    </span><span style='background: #AEF1AE'>game gives 3 cards to every player</span><span style=''>
+</span>35 <span style=''>
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>game firstTurn starts from &quot;Alice&quot;</span><span style=''>
+</span>37 <span style=''>
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>game briscolaIs &quot;Cups&quot;</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>game card points are :
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      (name, suit) =&gt;
+</span>42 <span style=''></span><span style='background: #AEF1AE'>        name match
+</span>43 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Ace&quot; =&gt; 11
+</span>44 <span style=''></span><span style='background: #AEF1AE'>          case &quot;3&quot; </span><span style='background: #F0ADAD'>=&gt; 10</span><span style='background: #AEF1AE'>
+</span>45 <span style=''></span><span style='background: #AEF1AE'>          case &quot;King&quot; </span><span style='background: #F0ADAD'>=&gt; 4</span><span style='background: #AEF1AE'>
+</span>46 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Knight&quot; </span><span style='background: #F0ADAD'>=&gt; 3</span><span style='background: #AEF1AE'>
+</span>47 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Knave&quot; </span><span style='background: #F0ADAD'>=&gt; 2</span><span style='background: #AEF1AE'>
+</span>48 <span style=''></span><span style='background: #AEF1AE'>          case _ </span><span style='background: #F0ADAD'>=&gt; 0</span><span style=''>
+</span>49 <span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>game play rules are :
+</span>51 <span style=''></span><span style='background: #AEF1AE'>      val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;
+</span>52 <span style=''></span><span style='background: #AEF1AE'>        given List[(PlayerModel, CardModel)] = cards
+</span>53 <span style=''></span><span style='background: #AEF1AE'>  
+</span>54 <span style=''></span><span style='background: #AEF1AE'>        highest(suit) that takes is briscolaSuit
+</span>55 <span style=''></span><span style='background: #AEF1AE'>  
+</span>56 <span style=''></span><span style='background: #AEF1AE'>      val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;
+</span>57 <span style=''></span><span style='background: #AEF1AE'>        given List[(PlayerModel, CardModel)] = cards
+</span>58 <span style=''></span><span style='background: #AEF1AE'>  
+</span>59 <span style=''></span><span style='background: #AEF1AE'>        highest(rank) that takes follows first card suit
+</span>60 <span style=''></span><span style='background: #AEF1AE'>  
+</span>61 <span style=''></span><span style='background: #AEF1AE'>      highestBriscolaTakesRule prevailsOn highestCardTakesRule</span><span style=''>
+</span>62 <span style=''>
+</span>63 <span style=''>    </span><span style='background: #AEF1AE'>game win rules is :
+</span>64 <span style=''></span><span style='background: #AEF1AE'>      (teams, listOfPlayers) =&gt;
+</span>65 <span style=''></span><span style='background: #AEF1AE'>        given List[Team] = teams
+</span>66 <span style=''></span><span style='background: #AEF1AE'>  
+</span>67 <span style=''></span><span style='background: #AEF1AE'>        given List[PlayerModel] = listOfPlayers
+</span>68 <span style=''></span><span style='background: #AEF1AE'>  
+</span>69 <span style=''></span><span style='background: #AEF1AE'>        highestPointTeam</span><span style=''>
+</span>70 <span style=''>
+</span>71 <span style=''>    </span><span style='background: #AEF1AE'>game</span><span style=''>
+</span>72 <span style=''>
+</span>73 <span style=''>  /** Creates a game builder for the game &quot;Marafone&quot;.
+</span>74 <span style=''>   * The game is set up with 4 players: Alice, Bob, Bob1, and Bob2.
+</span>75 <span style=''>   * It includes two teams: Alice and Bob on one team, and Bob1 and Bob2 on the other.
+</span>76 <span style=''>   * The set briscola suit is &quot;Cups&quot;.
+</span>77 <span style=''>   * The game is a variation of &quot;Briscola&quot; with specific rules and card points, most
+</span>78 <span style=''>   * notably the rule that a player must follow the first suit played if possible.
+</span>79 <span style=''>   *
+</span>80 <span style=''>   * @return
+</span>81 <span style=''>   */
+</span>82 <span style=''>  </span><span style='background: #AEF1AE'>def marafone</span><span style=''>(): GameBuilder =
+</span>83 <span style=''>    </span><span style='background: #AEF1AE'>game is &quot;Marafone&quot;</span><span style=''>
+</span>84 <span style=''>    </span><span style='background: #AEF1AE'>game has 4 players</span><span style=''>
+</span>85 <span style=''>
+</span>86 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Alice&quot;</span><span style=''>
+</span>87 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Bob&quot;</span><span style=''>
+</span>88 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Bob1&quot;</span><span style=''>
+</span>89 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Bob2&quot;</span><span style=''>
+</span>90 <span style=''>
+</span>91 <span style=''>    </span><span style='background: #AEF1AE'>game suitsAre(&quot;Cups&quot;, &quot;Coins&quot;, &quot;Swords&quot;, &quot;Batons&quot;)</span><span style=''>
+</span>92 <span style=''>    </span><span style='background: #AEF1AE'>game ranksAre(&quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;Knave&quot;, &quot;Knight&quot;, &quot;King&quot;, &quot;Ace&quot;, &quot;2&quot;, &quot;3&quot;)</span><span style=''>
+</span>93 <span style=''>    </span><span style='background: #AEF1AE'>game gives 10 cards to every player</span><span style=''>
+</span>94 <span style=''>
+</span>95 <span style=''>    </span><span style='background: #AEF1AE'>game firstTurn starts from &quot;Alice&quot;</span><span style=''>
+</span>96 <span style=''>
+</span>97 <span style=''>    </span><span style='background: #AEF1AE'>game briscolaIs &quot;Cups&quot;</span><span style=''>
+</span>98 <span style=''>
+</span>99 <span style=''>    </span><span style='background: #AEF1AE'>game card points are:
+</span>100 <span style=''></span><span style='background: #AEF1AE'>      (name, suit) =&gt;
+</span>101 <span style=''></span><span style='background: #AEF1AE'>        name match
+</span>102 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Ace&quot; =&gt; 10
+</span>103 <span style=''></span><span style='background: #AEF1AE'>          case &quot;3&quot; | &quot;2&quot;| &quot;King&quot; | &quot;Knight&quot; | &quot;Knave&quot; </span><span style='background: #F0ADAD'>=&gt; 3</span><span style='background: #AEF1AE'>
+</span>104 <span style=''></span><span style='background: #AEF1AE'>          case _ </span><span style='background: #F0ADAD'>=&gt; 0</span><span style=''>
+</span>105 <span style=''>
+</span>106 <span style=''>    </span><span style='background: #AEF1AE'>game hand rules are:
+</span>107 <span style=''></span><span style='background: #AEF1AE'>      (cardsOnTable, playerHand, playedCard) =&gt;
+</span>108 <span style=''></span><span style='background: #AEF1AE'>        given List[CardModel] = cardsOnTable
+</span>109 <span style=''></span><span style='background: #AEF1AE'>        given DeckModel = playerHand
+</span>110 <span style=''></span><span style='background: #AEF1AE'>        given CardModel = playedCard
+</span>111 <span style=''></span><span style='background: #AEF1AE'>  
+</span>112 <span style=''></span><span style='background: #AEF1AE'>        freeStart or followFirstSuit</span><span style=''>
+</span>113 <span style=''>        //marafoneRuleset
+</span>114 <span style=''>
+</span>115 <span style=''>    </span><span style='background: #AEF1AE'>game play rules are:
+</span>116 <span style=''></span><span style='background: #AEF1AE'>      val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;
+</span>117 <span style=''></span><span style='background: #AEF1AE'>        given List[(PlayerModel, CardModel)] = cards
+</span>118 <span style=''></span><span style='background: #AEF1AE'>  
+</span>119 <span style=''></span><span style='background: #AEF1AE'>        highest(suit) that takes is briscolaSuit
+</span>120 <span style=''></span><span style='background: #AEF1AE'>  
+</span>121 <span style=''></span><span style='background: #AEF1AE'>      val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;
+</span>122 <span style=''></span><span style='background: #AEF1AE'>        given List[(PlayerModel, CardModel)] = cards
+</span>123 <span style=''></span><span style='background: #AEF1AE'>  
+</span>124 <span style=''></span><span style='background: #AEF1AE'>        highest(rank) that takes follows first card suit
+</span>125 <span style=''></span><span style='background: #AEF1AE'>  
+</span>126 <span style=''></span><span style='background: #AEF1AE'>      highestBriscolaTakesRule prevailsOn highestCardTakesRule</span><span style=''>
+</span>127 <span style=''>
+</span>128 <span style=''>    </span><span style='background: #AEF1AE'>game has team composedOf(&quot;Alice&quot;, &quot;Bob&quot;)</span><span style=''>
+</span>129 <span style=''>    </span><span style='background: #AEF1AE'>game has team composedOf(&quot;Bob1&quot;, &quot;Bob2&quot;)</span><span style=''>
+</span>130 <span style=''>
+</span>131 <span style=''>    </span><span style='background: #AEF1AE'>game win rules is:
+</span>132 <span style=''></span><span style='background: #AEF1AE'>      (teams, listOfPlayers) =&gt;
+</span>133 <span style=''></span><span style='background: #AEF1AE'>        given List[Team] = teams
+</span>134 <span style=''></span><span style='background: #AEF1AE'>        given List[PlayerModel] = listOfPlayers
+</span>135 <span style=''></span><span style='background: #AEF1AE'>  
+</span>136 <span style=''></span><span style='background: #AEF1AE'>        highestPointTeam</span><span style=''>
+</span>137 <span style=''>
+</span>138 <span style=''>    </span><span style='background: #AEF1AE'>game</span><span style=''>
+</span>139 <span style=''>
+</span>140 <span style=''>  /** Creates a custom game called &quot;Briscala&quot;.
+</span>141 <span style=''>   * This game is set up with 3 players: Alice, Bob, and Josh and a smart bot named SmartBot.
+</span>142 <span style=''>   * It uses the same deck of briscola and the set briscola suit is &quot;Cups&quot;.
+</span>143 <span style=''>   * The specific rules are:
+</span>144 <span style=''>   *  - The starting player must play its highest rank card
+</span>145 <span style=''>   *  - Players must follow the previous suit if possible
+</span>146 <span style=''>   *  - The ace is the most valuable card with 5 points, followed by King, Knight, and Knave with 2 points each.
+</span>147 <span style=''>   *  - Cards of suit &quot;Coins&quot; are worth 1 extra point.
+</span>148 <span style=''>   *  - The card ranks follow the numerical order from Ace to 7, followed by Knave, Knight, and King.
+</span>149 <span style=''>   *  - The winning turn is determined by the highest card of the last suit played, unless a briscola is played.
+</span>150 <span style=''>   *  - The player with the highest points at the end of the game wins.
+</span>151 <span style=''>   *
+</span>152 <span style=''>   * @return
+</span>153 <span style=''>   */
+</span>154 <span style=''>  </span><span style='background: #AEF1AE'>def custom</span><span style=''>(): GameBuilder =
+</span>155 <span style=''>    </span><span style='background: #AEF1AE'>game is &quot;Briscala&quot;</span><span style=''>
+</span>156 <span style=''>    </span><span style='background: #AEF1AE'>game has 4 players</span><span style=''>
+</span>157 <span style=''>  
+</span>158 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Alice&quot;</span><span style=''>
+</span>159 <span style=''>    </span><span style='background: #AEF1AE'>game has smartBot called &quot;SmartBot&quot;</span><span style=''>
+</span>160 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Bob&quot;</span><span style=''>
+</span>161 <span style=''>    </span><span style='background: #AEF1AE'>game has player called &quot;Josh&quot;</span><span style=''>
+</span>162 <span style=''>  
+</span>163 <span style=''>    </span><span style='background: #AEF1AE'>game suitsAre(&quot;Cups&quot;, &quot;Coins&quot;, &quot;Swords&quot;, &quot;Batons&quot;)</span><span style=''>
+</span>164 <span style=''>    </span><span style='background: #AEF1AE'>game ranksAre(&quot;Ace&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;Knave&quot;, &quot;Knight&quot;, &quot;King&quot;)</span><span style=''>
+</span>165 <span style=''>    </span><span style='background: #AEF1AE'>game gives 7 cards to every player</span><span style=''>
+</span>166 <span style=''>  
+</span>167 <span style=''>    </span><span style='background: #AEF1AE'>game firstTurn starts from &quot;Alice&quot;</span><span style=''>
+</span>168 <span style=''>  
+</span>169 <span style=''>    </span><span style='background: #AEF1AE'>game briscolaIs &quot;Cups&quot;</span><span style=''>
+</span>170 <span style=''>  
+</span>171 <span style=''>    </span><span style='background: #AEF1AE'>game hand rules are :
+</span>172 <span style=''></span><span style='background: #AEF1AE'>      (cardsOnTable, playerHand, playedCard) =&gt;
+</span>173 <span style=''></span><span style='background: #AEF1AE'>        given List[CardModel] = cardsOnTable
+</span>174 <span style=''></span><span style='background: #AEF1AE'>  
+</span>175 <span style=''></span><span style='background: #AEF1AE'>        given DeckModel = playerHand
+</span>176 <span style=''></span><span style='background: #AEF1AE'>  
+</span>177 <span style=''></span><span style='background: #AEF1AE'>        given CardModel = playedCard
+</span>178 <span style=''></span><span style='background: #AEF1AE'>  
+</span>179 <span style=''></span><span style='background: #AEF1AE'>        startWithHigherCard or followPreviousSuit</span><span style=''>
+</span>180 <span style=''>  
+</span>181 <span style=''>    </span><span style='background: #AEF1AE'>game card points are :
+</span>182 <span style=''></span><span style='background: #AEF1AE'>      ((name, suit) =&gt;
+</span>183 <span style=''></span><span style='background: #AEF1AE'>        name match
+</span>184 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Ace&quot; =&gt; 5
+</span>185 <span style=''></span><span style='background: #AEF1AE'>          case &quot;King&quot; </span><span style='background: #F0ADAD'>=&gt; 2</span><span style='background: #AEF1AE'>
+</span>186 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Knight&quot; </span><span style='background: #F0ADAD'>=&gt; 2</span><span style='background: #AEF1AE'>
+</span>187 <span style=''></span><span style='background: #AEF1AE'>          case &quot;Knave&quot; </span><span style='background: #F0ADAD'>=&gt; 2</span><span style='background: #AEF1AE'>
+</span>188 <span style=''></span><span style='background: #AEF1AE'>          case _ </span><span style='background: #F0ADAD'>=&gt; 0</span><span style='background: #AEF1AE'>
+</span>189 <span style=''></span><span style='background: #AEF1AE'>        , (name, suit) =&gt;
+</span>190 <span style=''></span><span style='background: #AEF1AE'>          suit match
+</span>191 <span style=''></span><span style='background: #AEF1AE'>            case &quot;Coins&quot; </span><span style='background: #F0ADAD'>=&gt; 1</span><span style='background: #AEF1AE'>
+</span>192 <span style=''></span><span style='background: #AEF1AE'>            case _ </span><span style='background: #F0ADAD'>=&gt; 0</span><span style='background: #AEF1AE'>
+</span>193 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span>194 <span style=''>  
+</span>195 <span style=''>    </span><span style='background: #AEF1AE'>game play rules are :
+</span>196 <span style=''></span><span style='background: #AEF1AE'>      val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;
+</span>197 <span style=''></span><span style='background: #AEF1AE'>        given List[(PlayerModel, CardModel)] = cards
+</span>198 <span style=''></span><span style='background: #AEF1AE'>  
+</span>199 <span style=''></span><span style='background: #AEF1AE'>        highest(suit) that takes is briscolaSuit
+</span>200 <span style=''></span><span style='background: #AEF1AE'>  
+</span>201 <span style=''></span><span style='background: #AEF1AE'>      val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;
+</span>202 <span style=''></span><span style='background: #AEF1AE'>        given List[(PlayerModel, CardModel)] = cards
+</span>203 <span style=''></span><span style='background: #AEF1AE'>  
+</span>204 <span style=''></span><span style='background: #AEF1AE'>        highest(rank) that takes follows last card suit
+</span>205 <span style=''></span><span style='background: #AEF1AE'>  
+</span>206 <span style=''></span><span style='background: #AEF1AE'>      highestBriscolaTakesRule prevailsOn highestCardTakesRule</span><span style=''>
+</span>207 <span style=''>  
+</span>208 <span style=''>    </span><span style='background: #AEF1AE'>game win rules is :
+</span>209 <span style=''></span><span style='background: #AEF1AE'>      (teams, listOfPlayers) =&gt;
+</span>210 <span style=''></span><span style='background: #AEF1AE'>        given List[Team] = teams
+</span>211 <span style=''></span><span style='background: #AEF1AE'>  
+</span>212 <span style=''></span><span style='background: #AEF1AE'>        given List[PlayerModel] = listOfPlayers
+</span>213 <span style=''></span><span style='background: #AEF1AE'>  
+</span>214 <span style=''></span><span style='background: #AEF1AE'>        highestPointTeam</span><span style=''>
+</span>215 <span style=''>  
+</span>216 <span style=''>    </span><span style='background: #AEF1AE'>game</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1481
+        </td>
+        <td>
+          808
+          -
+          820
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          briscola
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def briscola
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1425
+        </td>
+        <td>
+          843
+          -
+          861
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game is &quot;Briscola&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1426
+        </td>
+        <td>
+          843
+          -
+          847
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1428
+        </td>
+        <td>
+          867
+          -
+          871
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1427
+        </td>
+        <td>
+          867
+          -
+          877
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has 4
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1429
+        </td>
+        <td>
+          867
+          -
+          885
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          players
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has 4 players
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1432
+        </td>
+        <td>
+          893
+          -
+          897
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1431
+        </td>
+        <td>
+          893
+          -
+          908
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1430
+        </td>
+        <td>
+          893
+          -
+          923
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Alice&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1434
+        </td>
+        <td>
+          929
+          -
+          944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1433
+        </td>
+        <td>
+          929
+          -
+          957
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Bob&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1435
+        </td>
+        <td>
+          929
+          -
+          933
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1438
+        </td>
+        <td>
+          963
+          -
+          967
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1437
+        </td>
+        <td>
+          963
+          -
+          980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has smartBot
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1436
+        </td>
+        <td>
+          963
+          -
+          996
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has smartBot called &quot;Albert&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1441
+        </td>
+        <td>
+          1002
+          -
+          1006
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1440
+        </td>
+        <td>
+          1002
+          -
+          1020
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has randomBot
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1439
+        </td>
+        <td>
+          1002
+          -
+          1034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has randomBot called &quot;Josh&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1443
+        </td>
+        <td>
+          1042
+          -
+          1046
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1442
+        </td>
+        <td>
+          1042
+          -
+          1092
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          suitsAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game suitsAre(&quot;Cups&quot;, &quot;Coins&quot;, &quot;Swords&quot;, &quot;Batons&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1445
+        </td>
+        <td>
+          1098
+          -
+          1102
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1444
+        </td>
+        <td>
+          1098
+          -
+          1175
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          ranksAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game ranksAre(&quot;2&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;Knave&quot;, &quot;Knight&quot;, &quot;King&quot;, &quot;3&quot;, &quot;Ace&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1447
+        </td>
+        <td>
+          1181
+          -
+          1202
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          cards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 3 cards to
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1449
+        </td>
+        <td>
+          1181
+          -
+          1185
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1446
+        </td>
+        <td>
+          1181
+          -
+          1215
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          every
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 3 cards to every player
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1448
+        </td>
+        <td>
+          1181
+          -
+          1193
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gives
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 3
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1450
+        </td>
+        <td>
+          1223
+          -
+          1257
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          from
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game firstTurn starts from &quot;Alice&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1452
+        </td>
+        <td>
+          1223
+          -
+          1227
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1451
+        </td>
+        <td>
+          1223
+          -
+          1244
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          firstTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game firstTurn starts
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1454
+        </td>
+        <td>
+          1265
+          -
+          1269
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1453
+        </td>
+        <td>
+          1265
+          -
+          1287
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          briscolaIs
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game briscolaIs &quot;Cups&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1456
+        </td>
+        <td>
+          1295
+          -
+          1311
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game card points
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1455
+        </td>
+        <td>
+          1295
+          -
+          1524
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game card points are :\r\n      (name, suit) =&gt;\r\n        name match\r\n          case &quot;Ace&quot; =&gt; 11\r\n          case &quot;3&quot; =&gt; 10\r\n          case &quot;King&quot; =&gt; 4\r\n          case &quot;Knight&quot; =&gt; 3\r\n          case &quot;Knave&quot; =&gt; 2\r\n          case _ =&gt; 0
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1457
+        </td>
+        <td>
+          1295
+          -
+          1299
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1458
+        </td>
+        <td>
+          1383
+          -
+          1388
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; 11
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1459
+        </td>
+        <td>
+          1409
+          -
+          1414
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 10
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1460
+        </td>
+        <td>
+          1438
+          -
+          1442
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 4
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1461
+        </td>
+        <td>
+          1468
+          -
+          1472
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 3
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1462
+        </td>
+        <td>
+          1497
+          -
+          1501
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 2
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1463
+        </td>
+        <td>
+          1520
+          -
+          1524
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 0
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1465
+        </td>
+        <td>
+          1532
+          -
+          1547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game play rules
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1464
+        </td>
+        <td>
+          1532
+          -
+          2007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game play rules are :\r\n      val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;\r\n        given List[(PlayerModel, CardModel)] = cards\r\n  \r\n        highest(suit) that takes is briscolaSuit\r\n  \r\n      val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;\r\n        given List[(PlayerModel, CardModel)] = cards\r\n  \r\n        highest(rank) that takes follows first card suit\r\n  \r\n      highestBriscolaTakesRule prevailsOn highestCardTakesRule
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1466
+        </td>
+        <td>
+          1532
+          -
+          1536
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1468
+        </td>
+        <td>
+          1702
+          -
+          1726
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          that
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit) that takes
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1467
+        </td>
+        <td>
+          1702
+          -
+          1742
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit) that takes is briscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1470
+        </td>
+        <td>
+          1730
+          -
+          1742
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          briscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          briscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1469
+        </td>
+        <td>
+          1702
+          -
+          1715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1474
+        </td>
+        <td>
+          1891
+          -
+          1904
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1473
+        </td>
+        <td>
+          1891
+          -
+          1915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          that
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1472
+        </td>
+        <td>
+          1891
+          -
+          1929
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          follows
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes follows first
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1471
+        </td>
+        <td>
+          1891
+          -
+          1939
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes follows first card suit
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          1475
+        </td>
+        <td>
+          1951
+          -
+          2007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          prevailsOn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highestBriscolaTakesRule prevailsOn highestCardTakesRule
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1476
+        </td>
+        <td>
+          2015
+          -
+          2184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game win rules is :\r\n      (teams, listOfPlayers) =&gt;\r\n        given List[Team] = teams\r\n  \r\n        given List[PlayerModel] = listOfPlayers\r\n  \r\n        highestPointTeam
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1478
+        </td>
+        <td>
+          2015
+          -
+          2019
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1477
+        </td>
+        <td>
+          2015
+          -
+          2029
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          win
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game win rules
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          1479
+        </td>
+        <td>
+          2168
+          -
+          2184
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highestPointTeam
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1480
+        </td>
+        <td>
+          2192
+          -
+          2196
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1547
+        </td>
+        <td>
+          2650
+          -
+          2662
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          marafone
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def marafone
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1483
+        </td>
+        <td>
+          2685
+          -
+          2689
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1482
+        </td>
+        <td>
+          2685
+          -
+          2703
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game is &quot;Marafone&quot;
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1485
+        </td>
+        <td>
+          2709
+          -
+          2713
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1484
+        </td>
+        <td>
+          2709
+          -
+          2719
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has 4
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1488
+        </td>
+        <td>
+          2735
+          -
+          2750
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1487
+        </td>
+        <td>
+          2735
+          -
+          2765
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Alice&quot;
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1486
+        </td>
+        <td>
+          2709
+          -
+          2727
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          players
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has 4 players
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1489
+        </td>
+        <td>
+          2735
+          -
+          2739
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1492
+        </td>
+        <td>
+          2771
+          -
+          2775
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1491
+        </td>
+        <td>
+          2771
+          -
+          2786
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1490
+        </td>
+        <td>
+          2771
+          -
+          2799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Bob&quot;
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1494
+        </td>
+        <td>
+          2805
+          -
+          2820
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1493
+        </td>
+        <td>
+          2805
+          -
+          2834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Bob1&quot;
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1495
+        </td>
+        <td>
+          2805
+          -
+          2809
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1497
+        </td>
+        <td>
+          2840
+          -
+          2855
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1496
+        </td>
+        <td>
+          2840
+          -
+          2869
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Bob2&quot;
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1498
+        </td>
+        <td>
+          2840
+          -
+          2844
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1500
+        </td>
+        <td>
+          2877
+          -
+          2881
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1499
+        </td>
+        <td>
+          2877
+          -
+          2927
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          suitsAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game suitsAre(&quot;Cups&quot;, &quot;Coins&quot;, &quot;Swords&quot;, &quot;Batons&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          1501
+        </td>
+        <td>
+          2933
+          -
+          3010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          ranksAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game ranksAre(&quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;Knave&quot;, &quot;Knight&quot;, &quot;King&quot;, &quot;Ace&quot;, &quot;2&quot;, &quot;3&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          1502
+        </td>
+        <td>
+          2933
+          -
+          2937
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1503
+        </td>
+        <td>
+          3016
+          -
+          3051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          every
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 10 cards to every player
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1506
+        </td>
+        <td>
+          3016
+          -
+          3020
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1505
+        </td>
+        <td>
+          3016
+          -
+          3029
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gives
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 10
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1504
+        </td>
+        <td>
+          3016
+          -
+          3038
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          cards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 10 cards to
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1509
+        </td>
+        <td>
+          3059
+          -
+          3063
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1508
+        </td>
+        <td>
+          3059
+          -
+          3080
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          firstTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game firstTurn starts
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1507
+        </td>
+        <td>
+          3059
+          -
+          3093
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          from
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game firstTurn starts from &quot;Alice&quot;
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          1510
+        </td>
+        <td>
+          3101
+          -
+          3123
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          briscolaIs
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game briscolaIs &quot;Cups&quot;
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          1511
+        </td>
+        <td>
+          3101
+          -
+          3105
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1512
+        </td>
+        <td>
+          3131
+          -
+          3306
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game card points are:\r\n      (name, suit) =&gt;\r\n        name match\r\n          case &quot;Ace&quot; =&gt; 10\r\n          case &quot;3&quot; | &quot;2&quot;| &quot;King&quot; | &quot;Knight&quot; | &quot;Knave&quot; =&gt; 3\r\n          case _ =&gt; 0
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1514
+        </td>
+        <td>
+          3131
+          -
+          3135
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1513
+        </td>
+        <td>
+          3131
+          -
+          3147
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game card points
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1515
+        </td>
+        <td>
+          3218
+          -
+          3223
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; 10
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1516
+        </td>
+        <td>
+          3279
+          -
+          3283
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 3
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          1517
+        </td>
+        <td>
+          3302
+          -
+          3306
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 0
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1519
+        </td>
+        <td>
+          3314
+          -
+          3329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          hand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game hand rules
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1518
+        </td>
+        <td>
+          3314
+          -
+          3547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game hand rules are:\r\n      (cardsOnTable, playerHand, playedCard) =&gt;\r\n        given List[CardModel] = cardsOnTable\r\n        given DeckModel = playerHand\r\n        given CardModel = playedCard\r\n  \r\n        freeStart or followFirstSuit
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1520
+        </td>
+        <td>
+          3314
+          -
+          3318
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1521
+        </td>
+        <td>
+          3519
+          -
+          3547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          or
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          freeStart or followFirstSuit
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1523
+        </td>
+        <td>
+          3532
+          -
+          3547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          followFirstSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          followFirstSuit
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1522
+        </td>
+        <td>
+          3519
+          -
+          3528
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          freeStart
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          freeStart
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          1524
+        </td>
+        <td>
+          3582
+          -
+          4056
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game play rules are:\r\n      val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;\r\n        given List[(PlayerModel, CardModel)] = cards\r\n  \r\n        highest(suit) that takes is briscolaSuit\r\n  \r\n      val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;\r\n        given List[(PlayerModel, CardModel)] = cards\r\n  \r\n        highest(rank) that takes follows first card suit\r\n  \r\n      highestBriscolaTakesRule prevailsOn highestCardTakesRule
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          1526
+        </td>
+        <td>
+          3582
+          -
+          3586
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          1525
+        </td>
+        <td>
+          3582
+          -
+          3597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game play rules
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1528
+        </td>
+        <td>
+          3751
+          -
+          3775
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          that
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit) that takes
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1527
+        </td>
+        <td>
+          3751
+          -
+          3791
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit) that takes is briscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1530
+        </td>
+        <td>
+          3779
+          -
+          3791
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          briscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          briscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1529
+        </td>
+        <td>
+          3751
+          -
+          3764
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1533
+        </td>
+        <td>
+          3940
+          -
+          3964
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          that
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1532
+        </td>
+        <td>
+          3940
+          -
+          3978
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          follows
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes follows first
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1531
+        </td>
+        <td>
+          3940
+          -
+          3988
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes follows first card suit
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1534
+        </td>
+        <td>
+          3940
+          -
+          3953
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          1535
+        </td>
+        <td>
+          4000
+          -
+          4056
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          prevailsOn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highestBriscolaTakesRule prevailsOn highestCardTakesRule
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          1536
+        </td>
+        <td>
+          4064
+          -
+          4104
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          composedOf
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has team composedOf(&quot;Alice&quot;, &quot;Bob&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          1538
+        </td>
+        <td>
+          4064
+          -
+          4068
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          1537
+        </td>
+        <td>
+          4064
+          -
+          4077
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has team
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          1539
+        </td>
+        <td>
+          4110
+          -
+          4150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          composedOf
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has team composedOf(&quot;Bob1&quot;, &quot;Bob2&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          1541
+        </td>
+        <td>
+          4110
+          -
+          4114
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          1540
+        </td>
+        <td>
+          4110
+          -
+          4123
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has team
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1542
+        </td>
+        <td>
+          4158
+          -
+          4322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game win rules is:\r\n      (teams, listOfPlayers) =&gt;\r\n        given List[Team] = teams\r\n        given List[PlayerModel] = listOfPlayers\r\n  \r\n        highestPointTeam
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1544
+        </td>
+        <td>
+          4158
+          -
+          4162
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1543
+        </td>
+        <td>
+          4158
+          -
+          4172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          win
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game win rules
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          1545
+        </td>
+        <td>
+          4306
+          -
+          4322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highestPointTeam
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1546
+        </td>
+        <td>
+          4330
+          -
+          4334
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          1611
+        </td>
+        <td>
+          5197
+          -
+          5207
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          custom
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def custom
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          1548
+        </td>
+        <td>
+          5230
+          -
+          5248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game is &quot;Briscala&quot;
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          1549
+        </td>
+        <td>
+          5230
+          -
+          5234
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          1551
+        </td>
+        <td>
+          5254
+          -
+          5258
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          1550
+        </td>
+        <td>
+          5254
+          -
+          5264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has 4
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          1554
+        </td>
+        <td>
+          5282
+          -
+          5297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          1553
+        </td>
+        <td>
+          5282
+          -
+          5312
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Alice&quot;
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          1555
+        </td>
+        <td>
+          5282
+          -
+          5286
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          158
+        </td>
+        <td>
+          1552
+        </td>
+        <td>
+          5254
+          -
+          5272
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          players
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has 4 players
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          1557
+        </td>
+        <td>
+          5318
+          -
+          5335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has smartBot
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          1556
+        </td>
+        <td>
+          5318
+          -
+          5353
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has smartBot called &quot;SmartBot&quot;
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          1558
+        </td>
+        <td>
+          5318
+          -
+          5322
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          1560
+        </td>
+        <td>
+          5359
+          -
+          5374
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          1559
+        </td>
+        <td>
+          5359
+          -
+          5387
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Bob&quot;
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          1561
+        </td>
+        <td>
+          5359
+          -
+          5363
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          1563
+        </td>
+        <td>
+          5393
+          -
+          5408
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          has
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          1562
+        </td>
+        <td>
+          5393
+          -
+          5422
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          called
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game has player called &quot;Josh&quot;
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          1564
+        </td>
+        <td>
+          5393
+          -
+          5397
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          1566
+        </td>
+        <td>
+          5432
+          -
+          5436
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          1565
+        </td>
+        <td>
+          5432
+          -
+          5482
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          suitsAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game suitsAre(&quot;Cups&quot;, &quot;Coins&quot;, &quot;Swords&quot;, &quot;Batons&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          1568
+        </td>
+        <td>
+          5488
+          -
+          5492
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          1567
+        </td>
+        <td>
+          5488
+          -
+          5565
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          ranksAre
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game ranksAre(&quot;Ace&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;Knave&quot;, &quot;Knight&quot;, &quot;King&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          1569
+        </td>
+        <td>
+          5571
+          -
+          5605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          every
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 7 cards to every player
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          1572
+        </td>
+        <td>
+          5571
+          -
+          5575
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          1571
+        </td>
+        <td>
+          5571
+          -
+          5583
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          gives
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 7
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          1570
+        </td>
+        <td>
+          5571
+          -
+          5592
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          cards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game gives 7 cards to
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1575
+        </td>
+        <td>
+          5615
+          -
+          5619
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1574
+        </td>
+        <td>
+          5615
+          -
+          5636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          firstTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game firstTurn starts
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1573
+        </td>
+        <td>
+          5615
+          -
+          5649
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          from
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game firstTurn starts from &quot;Alice&quot;
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1577
+        </td>
+        <td>
+          5659
+          -
+          5663
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1576
+        </td>
+        <td>
+          5659
+          -
+          5681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          briscolaIs
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game briscolaIs &quot;Cups&quot;
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1578
+        </td>
+        <td>
+          5691
+          -
+          5946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game hand rules are :\r\n      (cardsOnTable, playerHand, playedCard) =&gt;\r\n        given List[CardModel] = cardsOnTable\r\n  \r\n        given DeckModel = playerHand\r\n  \r\n        given CardModel = playedCard\r\n  \r\n        startWithHigherCard or followPreviousSuit
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1580
+        </td>
+        <td>
+          5691
+          -
+          5695
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1579
+        </td>
+        <td>
+          5691
+          -
+          5706
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          hand
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game hand rules
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          1581
+        </td>
+        <td>
+          5905
+          -
+          5946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          or
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          startWithHigherCard or followPreviousSuit
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          1583
+        </td>
+        <td>
+          5928
+          -
+          5946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          followPreviousSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          followPreviousSuit
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          1582
+        </td>
+        <td>
+          5905
+          -
+          5924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          startWithHigherCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          startWithHigherCard
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1584
+        </td>
+        <td>
+          5956
+          -
+          6273
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game card points are :\r\n      ((name, suit) =&gt;\r\n        name match\r\n          case &quot;Ace&quot; =&gt; 5\r\n          case &quot;King&quot; =&gt; 2\r\n          case &quot;Knight&quot; =&gt; 2\r\n          case &quot;Knave&quot; =&gt; 2\r\n          case _ =&gt; 0\r\n        , (name, suit) =&gt;\r\n          suit match\r\n            case &quot;Coins&quot; =&gt; 1\r\n            case _ =&gt; 0\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1586
+        </td>
+        <td>
+          5956
+          -
+          5960
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1585
+        </td>
+        <td>
+          5956
+          -
+          5972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game card points
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1587
+        </td>
+        <td>
+          6045
+          -
+          6049
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          =&gt; 5
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          1588
+        </td>
+        <td>
+          6073
+          -
+          6077
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 2
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          1589
+        </td>
+        <td>
+          6103
+          -
+          6107
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 2
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          1590
+        </td>
+        <td>
+          6132
+          -
+          6136
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 2
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1591
+        </td>
+        <td>
+          6155
+          -
+          6159
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 0
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          1592
+        </td>
+        <td>
+          6235
+          -
+          6239
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 1
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          1593
+        </td>
+        <td>
+          6260
+          -
+          6264
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          =&gt; 0
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1596
+        </td>
+        <td>
+          6283
+          -
+          6287
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1595
+        </td>
+        <td>
+          6283
+          -
+          6298
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          play
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game play rules
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1594
+        </td>
+        <td>
+          6283
+          -
+          6757
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          are
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game play rules are :\r\n      val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;\r\n        given List[(PlayerModel, CardModel)] = cards\r\n  \r\n        highest(suit) that takes is briscolaSuit\r\n  \r\n      val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =&gt;\r\n        given List[(PlayerModel, CardModel)] = cards\r\n  \r\n        highest(rank) that takes follows last card suit\r\n  \r\n      highestBriscolaTakesRule prevailsOn highestCardTakesRule
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1599
+        </td>
+        <td>
+          6453
+          -
+          6466
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1598
+        </td>
+        <td>
+          6453
+          -
+          6477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          that
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit) that takes
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1597
+        </td>
+        <td>
+          6453
+          -
+          6493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(suit) that takes is briscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1600
+        </td>
+        <td>
+          6481
+          -
+          6493
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          briscolaSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          briscolaSuit
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          1602
+        </td>
+        <td>
+          6642
+          -
+          6679
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          follows
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes follows last
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          1601
+        </td>
+        <td>
+          6642
+          -
+          6689
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          card
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes follows last card suit
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          1604
+        </td>
+        <td>
+          6642
+          -
+          6655
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank)
+        </td>
+      </tr><tr>
+        <td>
+          204
+        </td>
+        <td>
+          1603
+        </td>
+        <td>
+          6642
+          -
+          6666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          that
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highest(rank) that takes
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          1605
+        </td>
+        <td>
+          6701
+          -
+          6757
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          prevailsOn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highestBriscolaTakesRule prevailsOn highestCardTakesRule
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          1608
+        </td>
+        <td>
+          6767
+          -
+          6771
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          1607
+        </td>
+        <td>
+          6767
+          -
+          6781
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          win
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game win rules
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          1606
+        </td>
+        <td>
+          6767
+          -
+          6936
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          is
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game win rules is :\r\n      (teams, listOfPlayers) =&gt;\r\n        given List[Team] = teams\r\n  \r\n        given List[PlayerModel] = listOfPlayers\r\n  \r\n        highestPointTeam
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          1609
+        </td>
+        <td>
+          6920
+          -
+          6936
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          highestPointTeam
+        </td>
+      </tr><tr>
+        <td>
+          216
+        </td>
+        <td>
+          1610
+        </td>
+        <td>
+          6946
+          -
+          6950
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          game
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          game
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

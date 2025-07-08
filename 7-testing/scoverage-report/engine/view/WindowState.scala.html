@@ -1,0 +1,1154 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\view\WindowState.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.view
+</span>2 <span style=''>
+</span>3 <span style=''>import engine.view.monads.States.State
+</span>4 <span style=''>import engine.view.monads.Streams.*
+</span>5 <span style=''>
+</span>6 <span style=''>trait WindowState:
+</span>7 <span style=''>  type Window
+</span>8 <span style=''>  def initialWindow: Window
+</span>9 <span style=''>  def setSize(width: Int, height: Int): State[Window, Unit]
+</span>10 <span style=''>  def addPanel(panelName: String)(pos: (Int, Int))(
+</span>11 <span style=''>      dims: (Int, Int)
+</span>12 <span style=''>  ): State[Window, Unit]
+</span>13 <span style=''>  def addScrollablePanel(panelName: String)(pos: (Int, Int))(
+</span>14 <span style=''>      dims: (Int, Int)
+</span>15 <span style=''>  ): State[Window, Unit]
+</span>16 <span style=''>  def setGridLayout(
+</span>17 <span style=''>      panelName: String,
+</span>18 <span style=''>      layoutOrientation: GridLayoutOrientation
+</span>19 <span style=''>  ): State[Window, Unit]
+</span>20 <span style=''>  def addButton(text: String, name: String): State[Window, Unit]
+</span>21 <span style=''>  def addLabel(text: String, name: String): State[Window, Unit]
+</span>22 <span style=''>  def moveComponentIntoPanel(
+</span>23 <span style=''>      componentName: String,
+</span>24 <span style=''>      panelName: String
+</span>25 <span style=''>  ): State[Window, Unit]
+</span>26 <span style=''>  def removeComponentFromPanel(
+</span>27 <span style=''>      componentName: String,
+</span>28 <span style=''>      panelName: String
+</span>29 <span style=''>  ): State[Window, Unit]
+</span>30 <span style=''>  def show(): State[Window, Unit]
+</span>31 <span style=''>  def exec(cmd: =&gt; Unit): State[Window, Unit]
+</span>32 <span style=''>  def eventStream(): State[Window, Stream[String]]
+</span>33 <span style=''>
+</span>34 <span style=''>trait GridLayoutOrientation:
+</span>35 <span style=''>  def rows: Int
+</span>36 <span style=''>  def cols: Int
+</span>37 <span style=''>object GridLayoutOrientation:
+</span>38 <span style=''>  case object Vertical extends GridLayoutOrientation:
+</span>39 <span style=''>    </span><span style='background: #AEF1AE'>override def rows</span><span style=''>: Int = 1
+</span>40 <span style=''>    </span><span style='background: #AEF1AE'>override def cols</span><span style=''>: Int = 0
+</span>41 <span style=''>  case object Horizontal extends GridLayoutOrientation:
+</span>42 <span style=''>    </span><span style='background: #AEF1AE'>override def rows</span><span style=''>: Int = 0
+</span>43 <span style=''>    </span><span style='background: #AEF1AE'>override def cols</span><span style=''>: Int = 1
+</span>44 <span style=''>//  case object Table extends GridLayoutOrientation:
+</span>45 <span style=''>//    override def rows: Int = 4
+</span>46 <span style=''>//    override def cols: Int = 1
+</span>47 <span style=''>
+</span>48 <span style=''>object WindowStateImpl extends WindowState:
+</span>49 <span style=''>  import SwingFunctionalFacade.*
+</span>50 <span style=''>
+</span>51 <span style=''>  type Window = Frame
+</span>52 <span style=''>
+</span>53 <span style=''>  </span><span style='background: #F0ADAD'>def initialWindow</span><span style=''>: Window = </span><span style='background: #F0ADAD'>createFrame</span><span style=''>
+</span>54 <span style=''>
+</span>55 <span style=''>  /** Sets the UI sizes
+</span>56 <span style=''>    * @param width
+</span>57 <span style=''>    *   the width the UI will take
+</span>58 <span style=''>    * @param height
+</span>59 <span style=''>    *   the height the UI will take
+</span>60 <span style=''>    * @return
+</span>61 <span style=''>    */
+</span>62 <span style=''>  </span><span style='background: #F0ADAD'>def setSize</span><span style=''>(width: Int, height: Int): State[Window, Unit] =
+</span>63 <span style=''>    State(w =&gt; ((</span><span style='background: #F0ADAD'>w.setSize(width, height)</span><span style=''>), {}))
+</span>64 <span style=''>
+</span>65 <span style=''>  /** Adds a panel to the UI
+</span>66 <span style=''>    * @param panelName
+</span>67 <span style=''>    *   the panel's name for querying purposes
+</span>68 <span style=''>    * @param pos
+</span>69 <span style=''>    *   the position where to put this new panel
+</span>70 <span style=''>    * @param dims
+</span>71 <span style=''>    *   the dimensions that this new panel takes
+</span>72 <span style=''>    * @return
+</span>73 <span style=''>    */
+</span>74 <span style=''>  </span><span style='background: #AEF1AE'>def addPanel</span><span style=''>(
+</span>75 <span style=''>      panelName: String
+</span>76 <span style=''>  )(pos: (Int, Int))(dims: (Int, Int)): State[Window, Unit] =
+</span>77 <span style=''>    State(w =&gt; (</span><span style='background: #F0ADAD'>w.addPanel(panelName, pos._1, pos._2, dims._1, dims._2)</span><span style=''>, {}))
+</span>78 <span style=''>
+</span>79 <span style=''>  /** Adds a scrollbale panel to the UI the panel's name for querying purposes
+</span>80 <span style=''>    * @param panelName
+</span>81 <span style=''>    *   the position where to put this new panel
+</span>82 <span style=''>    * @param pos
+</span>83 <span style=''>    *   the dimensions that this new panel takes
+</span>84 <span style=''>    * @param dims
+</span>85 <span style=''>    * @return
+</span>86 <span style=''>    */
+</span>87 <span style=''>  </span><span style='background: #F0ADAD'>def addScrollablePanel</span><span style=''>(
+</span>88 <span style=''>      panelName: String
+</span>89 <span style=''>  )(pos: (Int, Int))(dims: (Int, Int)): State[Window, Unit] =
+</span>90 <span style=''>    State(w =&gt;
+</span>91 <span style=''>      (</span><span style='background: #F0ADAD'>w.addScrollablePanel(panelName, pos._1, pos._2, dims._1, dims._2)</span><span style=''>, {})
+</span>92 <span style=''>    )
+</span>93 <span style=''>
+</span>94 <span style=''>  /** Sets a Grid Layout to a specific panel
+</span>95 <span style=''>    * @param panelName
+</span>96 <span style=''>    *   the panel's name for querying purposes
+</span>97 <span style=''>    * @param layout
+</span>98 <span style=''>    *   the panel's configuration
+</span>99 <span style=''>    * @return
+</span>100 <span style=''>    */
+</span>101 <span style=''>  </span><span style='background: #F0ADAD'>def setGridLayout</span><span style=''>(
+</span>102 <span style=''>      panelName: String,
+</span>103 <span style=''>      layout: GridLayoutOrientation
+</span>104 <span style=''>  ): State[Window, Unit] =
+</span>105 <span style=''>    State(w =&gt; (</span><span style='background: #F0ADAD'>w.setGridLayout(panelName, layout.rows, layout.cols)</span><span style=''>, {}))
+</span>106 <span style=''>
+</span>107 <span style=''>  /** Adds a button to the available components
+</span>108 <span style=''>    * @param text
+</span>109 <span style=''>    *   the text displayed by the button
+</span>110 <span style=''>    * @param name
+</span>111 <span style=''>    *   the button's name for querying purposes
+</span>112 <span style=''>    * @return
+</span>113 <span style=''>    */
+</span>114 <span style=''>  </span><span style='background: #AEF1AE'>def addButton</span><span style=''>(text: String, name: String): State[Window, Unit] =
+</span>115 <span style=''>    State(w =&gt; ((</span><span style='background: #F0ADAD'>w.addButton(text, name)</span><span style=''>), {}))
+</span>116 <span style=''>
+</span>117 <span style=''>  /** Adds a label in the UI
+</span>118 <span style=''>    *
+</span>119 <span style=''>    * @param text
+</span>120 <span style=''>    *   the text displayed by the label
+</span>121 <span style=''>    * @param name
+</span>122 <span style=''>    *   the name of the label element for querying purposes
+</span>123 <span style=''>    * @return
+</span>124 <span style=''>    */
+</span>125 <span style=''>  </span><span style='background: #AEF1AE'>def addLabel</span><span style=''>(text: String, name: String): State[Window, Unit] =
+</span>126 <span style=''>    State(w =&gt; ((</span><span style='background: #F0ADAD'>w.addLabel(text, name)</span><span style=''>), {}))
+</span>127 <span style=''>
+</span>128 <span style=''>  /** Moves a component inside a panel
+</span>129 <span style=''>    * @param componentName
+</span>130 <span style=''>    *   the component's name
+</span>131 <span style=''>    * @param panelName
+</span>132 <span style=''>    *   the panel's name
+</span>133 <span style=''>    * @return
+</span>134 <span style=''>    */
+</span>135 <span style=''>  </span><span style='background: #F0ADAD'>def moveComponentIntoPanel</span><span style=''>(
+</span>136 <span style=''>      componentName: String,
+</span>137 <span style=''>      panelName: String
+</span>138 <span style=''>  ): State[Frame, Unit] =
+</span>139 <span style=''>    State(w =&gt; (</span><span style='background: #F0ADAD'>w.moveComponentIntoPanel(componentName, panelName)</span><span style=''>, {}))
+</span>140 <span style=''>  </span><span style='background: #AEF1AE'>def removeComponentFromPanel</span><span style=''>(
+</span>141 <span style=''>      componentName: String,
+</span>142 <span style=''>      panelName: String
+</span>143 <span style=''>  ): State[Frame, Unit] =
+</span>144 <span style=''>    State(w =&gt; (</span><span style='background: #F0ADAD'>w.removeComponentFromPanel(componentName, panelName)</span><span style=''>, {}))
+</span>145 <span style=''>  </span><span style='background: #F0ADAD'>def show</span><span style=''>(): State[Window, Unit] =
+</span>146 <span style=''>    State(w =&gt; (</span><span style='background: #F0ADAD'>w.show</span><span style=''>, {}))
+</span>147 <span style=''>  </span><span style='background: #F0ADAD'>def exec</span><span style=''>(cmd: =&gt; Unit): State[Window, Unit] =
+</span>148 <span style=''>    State(w =&gt; (w, cmd))
+</span>149 <span style=''>  </span><span style='background: #F0ADAD'>def eventStream</span><span style=''>(): State[Window, Stream[String]] =
+</span>150 <span style=''>    State(w =&gt; (w, </span><span style='background: #F0ADAD'>Stream.generate(() =&gt; w.events().get)</span><span style=''>))
+</span>151 <span style=''>
+</span>152 <span style=''>//@main def windowStateExample =
+</span>153 <span style=''>//  import WindowStateImpl.*
+</span>154 <span style=''>//  import u04.*
+</span>155 <span style=''>//
+</span>156 <span style=''>//  val windowCreation = for
+</span>157 <span style=''>//    _ &lt;- setSize(300, 300)
+</span>158 <span style=''>//    _ &lt;- addButton(text = &quot;inc&quot;, name = &quot;IncButton&quot;)
+</span>159 <span style=''>//    _ &lt;- addButton(text = &quot;dec&quot;, name = &quot;DecButton&quot;)
+</span>160 <span style=''>//    _ &lt;- addButton(text = &quot;quit&quot;, name = &quot;QuitButton&quot;)
+</span>161 <span style=''>//    _ &lt;- addLabel(text = &quot;-&quot;, name = &quot;Label1&quot;)
+</span>162 <span style=''>//    _ &lt;- show()
+</span>163 <span style=''>//    e &lt;- eventStream()
+</span>164 <span style=''>//  yield e
+</span>165 <span style=''>//
+</span>166 <span style=''>//  val windowEventsHandling = for
+</span>167 <span style=''>//    _ &lt;- windowCreation
+</span>168 <span style=''>//    e &lt;- eventStream()
+</span>169 <span style=''>//    _ &lt;- seqN(e.map(_ match
+</span>170 <span style=''>//      case &quot;IncButton&quot;  =&gt; toLabel(&quot;i&quot;, &quot;Label1&quot;)
+</span>171 <span style=''>//      case &quot;DecButton&quot;  =&gt; toLabel(&quot;d&quot;, &quot;Label1&quot;)
+</span>172 <span style=''>//      case &quot;QuitButton&quot; =&gt; exec(sys.exit())
+</span>173 <span style=''>//    ))
+</span>174 <span style=''>//  yield ()
+</span>175 <span style=''>//
+</span>176 <span style=''>//  windowEventsHandling.run(initialWindow)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1308
+        </td>
+        <td>
+          1212
+          -
+          1229
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          rows
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def rows
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1309
+        </td>
+        <td>
+          1244
+          -
+          1261
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          cols
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def cols
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1310
+        </td>
+        <td>
+          1333
+          -
+          1350
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          rows
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def rows
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1311
+        </td>
+        <td>
+          1365
+          -
+          1382
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          cols
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def cols
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1312
+        </td>
+        <td>
+          1653
+          -
+          1664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          createFrame
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          createFrame
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1313
+        </td>
+        <td>
+          1625
+          -
+          1642
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          initialWindow
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def initialWindow
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1315
+        </td>
+        <td>
+          1832
+          -
+          1843
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setSize
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def setSize
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1314
+        </td>
+        <td>
+          1910
+          -
+          1934
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setSize
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.setSize(width, height)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1321
+        </td>
+        <td>
+          2209
+          -
+          2221
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addPanel
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1318
+        </td>
+        <td>
+          2358
+          -
+          2364
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          pos._2
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1320
+        </td>
+        <td>
+          2375
+          -
+          2382
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          dims._2
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1317
+        </td>
+        <td>
+          2350
+          -
+          2356
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          pos._1
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1319
+        </td>
+        <td>
+          2366
+          -
+          2373
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          dims._1
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1316
+        </td>
+        <td>
+          2328
+          -
+          2383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.addPanel(panelName, pos._1, pos._2, dims._1, dims._2)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1327
+        </td>
+        <td>
+          2659
+          -
+          2681
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addScrollablePanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def addScrollablePanel
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1324
+        </td>
+        <td>
+          2835
+          -
+          2841
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          pos._2
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1323
+        </td>
+        <td>
+          2827
+          -
+          2833
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          pos._1
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1326
+        </td>
+        <td>
+          2852
+          -
+          2859
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          dims._2
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1322
+        </td>
+        <td>
+          2795
+          -
+          2860
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addScrollablePanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.addScrollablePanel(panelName, pos._1, pos._2, dims._1, dims._2)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1325
+        </td>
+        <td>
+          2843
+          -
+          2850
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          dims._1
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          1331
+        </td>
+        <td>
+          3075
+          -
+          3092
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          setGridLayout
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def setGridLayout
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1330
+        </td>
+        <td>
+          3242
+          -
+          3253
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          cols
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          layout.cols
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1329
+        </td>
+        <td>
+          3229
+          -
+          3240
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rows
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          layout.rows
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1328
+        </td>
+        <td>
+          3202
+          -
+          3254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setGridLayout
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.setGridLayout(panelName, layout.rows, layout.cols)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1333
+        </td>
+        <td>
+          3467
+          -
+          3480
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addButton
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addButton
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          1332
+        </td>
+        <td>
+          3550
+          -
+          3573
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addButton
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.addButton(text, name)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          1335
+        </td>
+        <td>
+          3786
+          -
+          3798
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addLabel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addLabel
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          1334
+        </td>
+        <td>
+          3868
+          -
+          3890
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addLabel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.addLabel(text, name)
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          1337
+        </td>
+        <td>
+          4074
+          -
+          4100
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          moveComponentIntoPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def moveComponentIntoPanel
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          1336
+        </td>
+        <td>
+          4201
+          -
+          4251
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          moveComponentIntoPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.moveComponentIntoPanel(componentName, panelName)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1339
+        </td>
+        <td>
+          4261
+          -
+          4289
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          removeComponentFromPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def removeComponentFromPanel
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          1338
+        </td>
+        <td>
+          4390
+          -
+          4442
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          removeComponentFromPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.removeComponentFromPanel(componentName, panelName)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1341
+        </td>
+        <td>
+          4452
+          -
+          4460
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          show
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def show
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1340
+        </td>
+        <td>
+          4503
+          -
+          4509
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          show
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.show
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          1342
+        </td>
+        <td>
+          4519
+          -
+          4527
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          exec
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def exec
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          1346
+        </td>
+        <td>
+          4594
+          -
+          4609
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          eventStream
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def eventStream
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          1345
+        </td>
+        <td>
+          4687
+          -
+          4697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          events
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.events()
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          1344
+        </td>
+        <td>
+          4687
+          -
+          4701
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          w.events().get
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          1343
+        </td>
+        <td>
+          4665
+          -
+          4702
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          generate
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          Stream.generate(() =&gt; w.events().get)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

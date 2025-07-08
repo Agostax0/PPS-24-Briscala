@@ -1,0 +1,3390 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          dsl\types\GameElements.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package dsl.types
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.syntax.SyntacticSugar.{SuitSyntacticSugar, TakesSyntacticSugar}
+</span>4 <span style=''>import dsl.types.Team.Team
+</span>5 <span style=''>import engine.model.{CardModel, DeckModel, PlayerModel}
+</span>6 <span style=''>
+</span>7 <span style=''>object PlayerCount:
+</span>8 <span style=''>  /** Represents the number of players in a game.
+</span>9 <span style=''>    *
+</span>10 <span style=''>    * It can be between 2 and 4, inclusive.
+</span>11 <span style=''>    */
+</span>12 <span style=''>  opaque type PlayerCount = Int
+</span>13 <span style=''>
+</span>14 <span style=''>  /** Creates a PlayerCount value, ensuring it is between 2 and 4.
+</span>15 <span style=''>    *
+</span>16 <span style=''>    * @param count
+</span>17 <span style=''>    *   the number of players
+</span>18 <span style=''>    * @return
+</span>19 <span style=''>    *   a PlayerCount value
+</span>20 <span style=''>    * @throws IllegalArgumentException
+</span>21 <span style=''>    *   if count is not between 2 and 4
+</span>22 <span style=''>    */
+</span>23 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(count: Int): PlayerCount =
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>require(count &gt;= 2 &amp;&amp; count &lt;= 4, &quot;player count should be between 2 and 4&quot;)</span><span style=''>
+</span>25 <span style=''>    count
+</span>26 <span style=''>
+</span>27 <span style=''>object Team:
+</span>28 <span style=''>  /** Represents a team of players.
+</span>29 <span style=''>    *
+</span>30 <span style=''>    * A team can have at most 4 players.
+</span>31 <span style=''>    */
+</span>32 <span style=''>  opaque type Team = List[String]
+</span>33 <span style=''>
+</span>34 <span style=''>  /** Creates a Team value, ensuring it has at most 4 players.
+</span>35 <span style=''>    *
+</span>36 <span style=''>    * @param team
+</span>37 <span style=''>    *   the list of player names in the team
+</span>38 <span style=''>    * @return
+</span>39 <span style=''>    *   a Team value
+</span>40 <span style=''>    * @throws IllegalArgumentException
+</span>41 <span style=''>    *   if the team size is greater than 4
+</span>42 <span style=''>    */
+</span>43 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(team: List[String]): Team =
+</span>44 <span style=''>    </span><span style='background: #AEF1AE'>require(team.size &lt;= 4)</span><span style=''>
+</span>45 <span style=''>    team
+</span>46 <span style=''>
+</span>47 <span style=''>  extension (team: Team)
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>def map</span><span style=''>[B](f: String =&gt; B): List[B] = </span><span style='background: #AEF1AE'>for t &lt;- team yield f(t)</span><span style=''>
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>def size</span><span style=''>: Int = </span><span style='background: #AEF1AE'>team.size</span><span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>def toSet</span><span style=''>: Set[String] = </span><span style='background: #AEF1AE'>team.toSet</span><span style=''>
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>def zipWithIndex</span><span style=''>: List[(String, Int)] = </span><span style='background: #AEF1AE'>team.zipWithIndex</span><span style=''>
+</span>52 <span style=''>    </span><span style='background: #AEF1AE'>def toList</span><span style=''>: List[String] = </span><span style='background: #AEF1AE'>team.toList</span><span style=''>
+</span>53 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(n: Int): String = </span><span style='background: #AEF1AE'>team.apply(n)</span><span style=''>
+</span>54 <span style=''>    </span><span style='background: #AEF1AE'>def reduce</span><span style=''>(f: (String, String) =&gt; String): String = </span><span style='background: #AEF1AE'>team.reduce(f)</span><span style=''>
+</span>55 <span style=''>    </span><span style='background: #AEF1AE'>def equals</span><span style=''>(other: Team): Boolean =
+</span>56 <span style=''>      </span><span style='background: #AEF1AE'>team.size</span><span style=''> == </span><span style='background: #AEF1AE'>other.size</span><span style=''> &amp;&amp; </span><span style='background: #AEF1AE'>team.forall(player =&gt; other.contains(player))</span><span style=''>
+</span>57 <span style=''>    </span><span style='background: #AEF1AE'>def contains</span><span style=''>(player: String): Boolean = </span><span style='background: #AEF1AE'>team.contains(player)</span><span style=''>
+</span>58 <span style=''>
+</span>59 <span style=''>object HandSize:
+</span>60 <span style=''>  /** Represents the size of a player's hand in a card game.
+</span>61 <span style=''>    *
+</span>62 <span style=''>    * A hand can have between 3 and 10 cards, inclusive.
+</span>63 <span style=''>    */
+</span>64 <span style=''>  opaque type HandSize = Int
+</span>65 <span style=''>
+</span>66 <span style=''>  /** Creates a HandSize value, ensuring it is between 3 and 10.
+</span>67 <span style=''>    *
+</span>68 <span style=''>    * @param size
+</span>69 <span style=''>    *   the number of cards in hand
+</span>70 <span style=''>    * @return
+</span>71 <span style=''>    *   a HandSize value
+</span>72 <span style=''>    * @throws IllegalArgumentException
+</span>73 <span style=''>    *   if size is not between 3 and 10
+</span>74 <span style=''>    */
+</span>75 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(size: Int): HandSize =
+</span>76 <span style=''>    </span><span style='background: #AEF1AE'>require(size &gt;= 3 &amp;&amp; size &lt;= 10, &quot;hand size should be between 3 and 10&quot;)</span><span style=''>
+</span>77 <span style=''>    size
+</span>78 <span style=''>
+</span>79 <span style=''>  extension (handSize: HandSize) </span><span style='background: #AEF1AE'>def value</span><span style=''>: Int = handSize
+</span>80 <span style=''>
+</span>81 <span style=''>object Suits:
+</span>82 <span style=''>  /** Represents a collection of 4 distinct suits.
+</span>83 <span style=''>    */
+</span>84 <span style=''>  opaque type Suits = List[String]
+</span>85 <span style=''>
+</span>86 <span style=''>  /** Creates a Suits value, ensuring it contains exactly 4 distinct suits.
+</span>87 <span style=''>    *
+</span>88 <span style=''>    * @param suits
+</span>89 <span style=''>    *   the list of suits
+</span>90 <span style=''>    * @return
+</span>91 <span style=''>    *   a Suits value
+</span>92 <span style=''>    * @throws IllegalArgumentException
+</span>93 <span style=''>    *   if the number of suits is not 4 or if they are not distinct
+</span>94 <span style=''>    */
+</span>95 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(suits: List[String]): Suits =
+</span>96 <span style=''>    </span><span style='background: #AEF1AE'>require(suits.size == 4, &quot;only 4 suits are allowed&quot;)</span><span style=''>
+</span>97 <span style=''>    </span><span style='background: #AEF1AE'>require(suits.distinct.size == 4, &quot;suits must be distinct&quot;)</span><span style=''>
+</span>98 <span style=''>    suits
+</span>99 <span style=''>
+</span>100 <span style=''>  extension (suits: Suits)
+</span>101 <span style=''>    </span><span style='background: #AEF1AE'>def size</span><span style=''>: Int = </span><span style='background: #AEF1AE'>suits.size</span><span style=''>
+</span>102 <span style=''>    </span><span style='background: #AEF1AE'>def distinct</span><span style=''>: List[String] = </span><span style='background: #AEF1AE'>suits.distinct</span><span style=''>
+</span>103 <span style=''>    </span><span style='background: #AEF1AE'>def map</span><span style=''>[B](f: String =&gt; B): List[B] = </span><span style='background: #AEF1AE'>suits.map(f)</span><span style=''>
+</span>104 <span style=''>    </span><span style='background: #AEF1AE'>def flatMap</span><span style=''>[B](f: String =&gt; List[B]): List[B] = </span><span style='background: #AEF1AE'>suits.flatMap(f)</span><span style=''>
+</span>105 <span style=''>    </span><span style='background: #AEF1AE'>def foreach</span><span style=''>(f: String =&gt; Unit): Unit = </span><span style='background: #AEF1AE'>suits.foreach(f)</span><span style=''>
+</span>106 <span style=''>    </span><span style='background: #AEF1AE'>def contains</span><span style=''>(suit: String): Boolean = </span><span style='background: #AEF1AE'>suits.contains(suit)</span><span style=''>
+</span>107 <span style=''>
+</span>108 <span style=''>object PointsRule:
+</span>109 <span style=''>  /** Represents a rule for calculating points based on card name and suit. The
+</span>110 <span style=''>    * rule is a function that takes the cards' name and suit, and returns the
+</span>111 <span style=''>    * points associated with that card.
+</span>112 <span style=''>    *
+</span>113 <span style=''>    * The function should return an Int value representing the points.
+</span>114 <span style=''>    *
+</span>115 <span style=''>    * Example: `(&quot;King&quot;, &quot;Hearts&quot;) =&gt; 10`
+</span>116 <span style=''>    */
+</span>117 <span style=''>  opaque type PointsRule = (String, String) =&gt; Int
+</span>118 <span style=''>
+</span>119 <span style=''>  /** Creates a PointsRule value.
+</span>120 <span style=''>    *
+</span>121 <span style=''>    * @param rule
+</span>122 <span style=''>    *   the function that calculates points based on player name and suit
+</span>123 <span style=''>    * @return
+</span>124 <span style=''>    *   a PointsRule value
+</span>125 <span style=''>    */
+</span>126 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(rule: (String, String) =&gt; Int): PointsRule = rule
+</span>127 <span style=''>  extension (rule: PointsRule)
+</span>128 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(name: String, suit: String): Int = </span><span style='background: #AEF1AE'>rule(name, suit)</span><span style=''>
+</span>129 <span style=''>
+</span>130 <span style=''>object HandRule:
+</span>131 <span style=''>  /** Represents a rule for playing a card from a player's hand.
+</span>132 <span style=''>    *
+</span>133 <span style=''>    * The rule is a function that takes the current cards on the table, the
+</span>134 <span style=''>    * player's hand, and the card being played, and returns a Boolean indicating
+</span>135 <span style=''>    * whether the play is valid according to the rule.
+</span>136 <span style=''>    */
+</span>137 <span style=''>  opaque type HandRule = (List[CardModel], DeckModel, CardModel) =&gt; Boolean
+</span>138 <span style=''>
+</span>139 <span style=''>  /** If the player starts the turn, they can play any card from their hand.
+</span>140 <span style=''>    * @param cardsOnTable
+</span>141 <span style=''>    *   the current cards on the table
+</span>142 <span style=''>    * @return
+</span>143 <span style=''>    *   true if the table is empty, false otherwise
+</span>144 <span style=''>    */
+</span>145 <span style=''>  </span><span style='background: #AEF1AE'>def freeStart</span><span style=''>(using cardsOnTable: List[CardModel]): Boolean =
+</span>146 <span style=''>    </span><span style='background: #AEF1AE'>cardsOnTable.isEmpty</span><span style=''>
+</span>147 <span style=''>
+</span>148 <span style=''>  /** If the player starts the turn, they can only play the higher rank card in
+</span>149 <span style=''>    * their hand
+</span>150 <span style=''>    *
+</span>151 <span style=''>    * @param cardsOnTable
+</span>152 <span style=''>    *   the current cards on the table
+</span>153 <span style=''>    * @param playerHand
+</span>154 <span style=''>    *   the player's hand
+</span>155 <span style=''>    * @param playedCard
+</span>156 <span style=''>    *   the card being played
+</span>157 <span style=''>    * @return
+</span>158 <span style=''>    *   true if the player played their highest card, false otherwise
+</span>159 <span style=''>    */
+</span>160 <span style=''>  </span><span style='background: #AEF1AE'>def startWithHigherCard</span><span style=''>(using
+</span>161 <span style=''>      cardsOnTable: List[CardModel],
+</span>162 <span style=''>      playerHand: DeckModel,
+</span>163 <span style=''>      playedCard: CardModel
+</span>164 <span style=''>  ): Boolean =
+</span>165 <span style=''>    </span><span style='background: #AEF1AE'>cardsOnTable.isEmpty</span><span style=''> &amp;&amp;
+</span>166 <span style=''>      !</span><span style='background: #AEF1AE'>playerHand.view.exists(_.rank &gt; playedCard.rank)</span><span style=''>
+</span>167 <span style=''>
+</span>168 <span style=''>  /** The player must follow the first suit played on the table.
+</span>169 <span style=''>    *
+</span>170 <span style=''>    * @param cardsOnTable
+</span>171 <span style=''>    *   the current cards on the table
+</span>172 <span style=''>    * @param playerHand
+</span>173 <span style=''>    *   the player's hand
+</span>174 <span style=''>    * @param playedCard
+</span>175 <span style=''>    *   the card being played
+</span>176 <span style=''>    * @return
+</span>177 <span style=''>    *   true if the card played matches the first suit on the table or if the
+</span>178 <span style=''>    *   player has no cards of that suit
+</span>179 <span style=''>    */
+</span>180 <span style=''>  </span><span style='background: #AEF1AE'>def followFirstSuit</span><span style=''>(using
+</span>181 <span style=''>      cardsOnTable: List[CardModel],
+</span>182 <span style=''>      playerHand: DeckModel,
+</span>183 <span style=''>      playedCard: CardModel
+</span>184 <span style=''>  ): Boolean =
+</span>185 <span style=''>    </span><span style='background: #AEF1AE'>cardsOnTable.nonEmpty</span><span style=''> &amp;&amp;
+</span>186 <span style=''>      (</span><span style='background: #AEF1AE'>cardsOnTable.head.suit</span><span style=''> == </span><span style='background: #AEF1AE'>playedCard.suit</span><span style=''> ||
+</span>187 <span style=''>        !</span><span style='background: #AEF1AE'>playerHand.view.exists(_.suit == cardsOnTable.head.suit)</span><span style=''>)
+</span>188 <span style=''>
+</span>189 <span style=''>  /** The player must follow the previous suit played on the table.
+</span>190 <span style=''>    *
+</span>191 <span style=''>    * @param cardsOnTable
+</span>192 <span style=''>    *   the current cards on the table
+</span>193 <span style=''>    * @param playerHand
+</span>194 <span style=''>    *   the player's hand
+</span>195 <span style=''>    * @param playedCard
+</span>196 <span style=''>    *   the card being played
+</span>197 <span style=''>    * @return
+</span>198 <span style=''>    *   true if the card played matches the previous suit on the table or if the
+</span>199 <span style=''>    *   player has no cards of that suit
+</span>200 <span style=''>    */
+</span>201 <span style=''>  </span><span style='background: #AEF1AE'>def followPreviousSuit</span><span style=''>(using
+</span>202 <span style=''>      cardsOnTable: List[CardModel],
+</span>203 <span style=''>      playerHand: DeckModel,
+</span>204 <span style=''>      playedCard: CardModel
+</span>205 <span style=''>  ): Boolean =
+</span>206 <span style=''>    val previousSuit = </span><span style='background: #AEF1AE'>cardsOnTable.lastOption.map(_.suit)</span><span style=''>
+</span>207 <span style=''>    </span><span style='background: #AEF1AE'>cardsOnTable.nonEmpty</span><span style=''> &amp;&amp;
+</span>208 <span style=''>    (</span><span style='background: #AEF1AE'>previousSuit.get</span><span style=''> == </span><span style='background: #AEF1AE'>playedCard.suit</span><span style=''> ||
+</span>209 <span style=''>      !</span><span style='background: #AEF1AE'>playerHand.view.exists(_.suit == cardsOnTable.head.suit)</span><span style=''>)
+</span>210 <span style=''>
+</span>211 <span style=''>  /** Marafone ruleset for playing a card. The starting player can play any
+</span>212 <span style=''>    * card, and subsequent players must follow the first suit played in the
+</span>213 <span style=''>    * turn.
+</span>214 <span style=''>    *
+</span>215 <span style=''>    * @param cardsOnTable
+</span>216 <span style=''>    *   the current cards on the table
+</span>217 <span style=''>    * @param playerHand
+</span>218 <span style=''>    *   the player's hand
+</span>219 <span style=''>    * @param playedCard
+</span>220 <span style=''>    *   the card being played
+</span>221 <span style=''>    * @return
+</span>222 <span style=''>    *   true if the player can play according to Marafone rules, false otherwise
+</span>223 <span style=''>    */
+</span>224 <span style=''>  </span><span style='background: #AEF1AE'>def marafoneRuleset</span><span style=''>(using
+</span>225 <span style=''>      cardsOnTable: List[CardModel],
+</span>226 <span style=''>      playerHand: DeckModel,
+</span>227 <span style=''>      playedCard: CardModel
+</span>228 <span style=''>  ): Boolean =
+</span>229 <span style=''>    </span><span style='background: #AEF1AE'>freeStart</span><span style=''> ||
+</span>230 <span style=''>      </span><span style='background: #AEF1AE'>followFirstSuit</span><span style=''>
+</span>231 <span style=''>
+</span>232 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>233 <span style=''>      rule: (List[CardModel], DeckModel, CardModel) =&gt; Boolean
+</span>234 <span style=''>  ): HandRule = rule
+</span>235 <span style=''>
+</span>236 <span style=''>  extension (rule: HandRule)
+</span>237 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>238 <span style=''>        cardsOnTable: List[CardModel],
+</span>239 <span style=''>        playerHand: DeckModel,
+</span>240 <span style=''>        playedCard: CardModel
+</span>241 <span style=''>    ): Boolean =
+</span>242 <span style=''>      </span><span style='background: #AEF1AE'>rule(cardsOnTable, playerHand, playedCard)</span><span style=''>
+</span>243 <span style=''>
+</span>244 <span style=''>  extension (rule: Boolean)
+</span>245 <span style=''>    </span><span style='background: #AEF1AE'>def or</span><span style=''>(other: Boolean): Boolean =
+</span>246 <span style=''>      rule || other
+</span>247 <span style=''>    </span><span style='background: #AEF1AE'>def and</span><span style=''>(other: Boolean): Boolean =
+</span>248 <span style=''>      rule &amp;&amp; other
+</span>249 <span style=''>
+</span>250 <span style=''>object PlayRule:
+</span>251 <span style=''>  /** Represents a rule for deciding who won the turn.
+</span>252 <span style=''>    *
+</span>253 <span style=''>    * The rule is a function that takes the current cards on the table and
+</span>254 <span style=''>    * returns an optional PlayerModel indicating who has won the turn.
+</span>255 <span style=''>    */
+</span>256 <span style=''>  opaque type PlayRule = List[(PlayerModel, CardModel)] =&gt; Option[PlayerModel]
+</span>257 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>258 <span style=''>      rule: List[(PlayerModel, CardModel)] =&gt; Option[PlayerModel]
+</span>259 <span style=''>  ): PlayRule =
+</span>260 <span style=''>    rule
+</span>261 <span style=''>  extension (rule: PlayRule)
+</span>262 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>263 <span style=''>        cardsOnTable: List[(PlayerModel, CardModel)]
+</span>264 <span style=''>    ): Option[PlayerModel] =
+</span>265 <span style=''>      </span><span style='background: #AEF1AE'>rule(cardsOnTable)</span><span style=''>
+</span>266 <span style=''>  extension (rule: List[(PlayerModel, CardModel)] =&gt; Option[PlayerModel])
+</span>267 <span style=''>    /** Combines two PlayRules, where the first rule takes precedence.
+</span>268 <span style=''>      *
+</span>269 <span style=''>      * @param other
+</span>270 <span style=''>      *   the second rule to apply after the first one
+</span>271 <span style=''>      * @return
+</span>272 <span style=''>      *   a new PlayRule that applies sequentially the first rule and then the
+</span>273 <span style=''>      *   second one
+</span>274 <span style=''>      */
+</span>275 <span style=''>    </span><span style='background: #AEF1AE'>infix def prevailsOn</span><span style=''>(
+</span>276 <span style=''>        other: List[(PlayerModel, CardModel)] =&gt; Option[PlayerModel]
+</span>277 <span style=''>    ): List[(PlayerModel, CardModel)] =&gt; Option[PlayerModel] =
+</span>278 <span style=''>      (cardsOnTable: List[(PlayerModel, CardModel)]) =&gt;
+</span>279 <span style=''>        </span><span style='background: #AEF1AE'>rule(cardsOnTable) orElse other(cardsOnTable)</span><span style=''>
+</span>280 <span style=''>
+</span>281 <span style=''>object WinRule:
+</span>282 <span style=''>  /** Represents a rule for determining the winning team based on player scores.
+</span>283 <span style=''>    *
+</span>284 <span style=''>    * The rule is a function that takes a list of teams and a list of players,
+</span>285 <span style=''>    * and returns the ordered list of teams based on their total scores.
+</span>286 <span style=''>    */
+</span>287 <span style=''>  opaque type WinRule = (List[Team], List[PlayerModel]) =&gt; List[Team]
+</span>288 <span style=''>
+</span>289 <span style=''>  /** Orders the teams based on the highest total score of their players.
+</span>290 <span style=''>    *
+</span>291 <span style=''>    * @param teams
+</span>292 <span style=''>    *   the list of teams to order
+</span>293 <span style=''>    * @param players
+</span>294 <span style=''>    *   the list of players with their scores
+</span>295 <span style=''>    * @return
+</span>296 <span style=''>    *   a list of teams ordered by their total scores in descending order
+</span>297 <span style=''>    */
+</span>298 <span style=''>  </span><span style='background: #AEF1AE'>def highest</span><span style=''>(using
+</span>299 <span style=''>      teams: List[Team],
+</span>300 <span style=''>      players: List[PlayerModel]
+</span>301 <span style=''>  ): List[Team] =
+</span>302 <span style=''>    val playerScores = </span><span style='background: #AEF1AE'>players.map(player =&gt; player.name -&gt; player.score).toMap</span><span style=''>
+</span>303 <span style=''>
+</span>304 <span style=''>    // Calculate the total score for each team
+</span>305 <span style=''>    val teamsWithScores = </span><span style='background: #AEF1AE'>teams.map(team =&gt;
+</span>306 <span style=''></span><span style='background: #AEF1AE'>      val totalScore =
+</span>307 <span style=''></span><span style='background: #AEF1AE'>        team.map(playerName =&gt; playerScores.getOrElse(playerName, 0)).sum
+</span>308 <span style=''></span><span style='background: #AEF1AE'>      (team, totalScore)
+</span>309 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>310 <span style=''>
+</span>311 <span style=''>    val orderedTeams = </span><span style='background: #AEF1AE'>teamsWithScores.sortBy(-_._2).map(_._1)</span><span style=''>
+</span>312 <span style=''>    orderedTeams
+</span>313 <span style=''>
+</span>314 <span style=''>  /** Orders the teams based on the lowest total score of their players.
+</span>315 <span style=''>    *
+</span>316 <span style=''>    * @param teams
+</span>317 <span style=''>    *   the list of teams to order
+</span>318 <span style=''>    * @param players
+</span>319 <span style=''>    *   the list of players with their scores
+</span>320 <span style=''>    * @return
+</span>321 <span style=''>    *   a list of teams ordered by their total scores in ascending order
+</span>322 <span style=''>    */
+</span>323 <span style=''>  </span><span style='background: #AEF1AE'>def lowest</span><span style=''>(using
+</span>324 <span style=''>      teams: List[Team],
+</span>325 <span style=''>      players: List[PlayerModel]
+</span>326 <span style=''>  ): List[Team] =
+</span>327 <span style=''>    val playerScores = </span><span style='background: #AEF1AE'>players.map(player =&gt; player.name -&gt; player.score).toMap</span><span style=''>
+</span>328 <span style=''>
+</span>329 <span style=''>    val teamsWithScores = </span><span style='background: #AEF1AE'>teams.map(team =&gt;
+</span>330 <span style=''></span><span style='background: #AEF1AE'>      val totalScore =
+</span>331 <span style=''></span><span style='background: #AEF1AE'>        team.map(playerName =&gt; playerScores.getOrElse(playerName, 0)).sum
+</span>332 <span style=''></span><span style='background: #AEF1AE'>      (team, totalScore)
+</span>333 <span style=''></span><span style='background: #AEF1AE'>    )</span><span style=''>
+</span>334 <span style=''>
+</span>335 <span style=''>    val orderedTeams = </span><span style='background: #AEF1AE'>teamsWithScores.sortBy(_._2).map(_._1)</span><span style=''>
+</span>336 <span style=''>    orderedTeams
+</span>337 <span style=''>
+</span>338 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>339 <span style=''>      rule: (List[Team], List[PlayerModel]) =&gt; List[Team]
+</span>340 <span style=''>  ): WinRule =
+</span>341 <span style=''>    rule
+</span>342 <span style=''>
+</span>343 <span style=''>  extension (rule: WinRule)
+</span>344 <span style=''>    </span><span style='background: #AEF1AE'>def apply</span><span style=''>(
+</span>345 <span style=''>        teams: List[Team],
+</span>346 <span style=''>        players: List[PlayerModel]
+</span>347 <span style=''>    ): List[Team] =
+</span>348 <span style=''>      </span><span style='background: #AEF1AE'>rule(teams, players)</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          483
+        </td>
+        <td>
+          612
+          -
+          621
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          482
+        </td>
+        <td>
+          654
+          -
+          729
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          require
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          require(count &gt;= 2 &amp;&amp; count &lt;= 4, &quot;player count should be between 2 and 4&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          486
+        </td>
+        <td>
+          1156
+          -
+          1165
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          485
+        </td>
+        <td>
+          1207
+          -
+          1216
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.size
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          484
+        </td>
+        <td>
+          1199
+          -
+          1222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          require
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          require(team.size &lt;= 4)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          487
+        </td>
+        <td>
+          1304
+          -
+          1328
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for t &lt;- team yield f(t)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          489
+        </td>
+        <td>
+          1266
+          -
+          1273
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def map
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          488
+        </td>
+        <td>
+          1324
+          -
+          1328
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          f(t)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          490
+        </td>
+        <td>
+          1350
+          -
+          1359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.size
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          491
+        </td>
+        <td>
+          1334
+          -
+          1342
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def size
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          492
+        </td>
+        <td>
+          1390
+          -
+          1400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toSet
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.toSet
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          493
+        </td>
+        <td>
+          1365
+          -
+          1374
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          toSet
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def toSet
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          495
+        </td>
+        <td>
+          1406
+          -
+          1422
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          zipWithIndex
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def zipWithIndex
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          494
+        </td>
+        <td>
+          1446
+          -
+          1463
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          zipWithIndex
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.zipWithIndex
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          496
+        </td>
+        <td>
+          1496
+          -
+          1507
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.toList
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          497
+        </td>
+        <td>
+          1469
+          -
+          1479
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          toList
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def toList
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          499
+        </td>
+        <td>
+          1513
+          -
+          1522
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          498
+        </td>
+        <td>
+          1541
+          -
+          1554
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.apply(n)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          501
+        </td>
+        <td>
+          1560
+          -
+          1570
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          reduce
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def reduce
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          500
+        </td>
+        <td>
+          1612
+          -
+          1626
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          reduce
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.reduce(f)
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          506
+        </td>
+        <td>
+          1632
+          -
+          1642
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          equals
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def equals
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          505
+        </td>
+        <td>
+          1723
+          -
+          1745
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          other.contains(player)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          504
+        </td>
+        <td>
+          1701
+          -
+          1746
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          forall
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.forall(player =&gt; other.contains(player))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          503
+        </td>
+        <td>
+          1687
+          -
+          1697
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          other.size
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          502
+        </td>
+        <td>
+          1674
+          -
+          1683
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.size
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          508
+        </td>
+        <td>
+          1752
+          -
+          1764
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def contains
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          507
+        </td>
+        <td>
+          1792
+          -
+          1813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.contains(player)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          510
+        </td>
+        <td>
+          2263
+          -
+          2272
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          509
+        </td>
+        <td>
+          2301
+          -
+          2373
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          require
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          require(size &gt;= 3 &amp;&amp; size &lt;= 10, &quot;hand size should be between 3 and 10&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          511
+        </td>
+        <td>
+          2420
+          -
+          2429
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          value
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def value
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          517
+        </td>
+        <td>
+          2850
+          -
+          2859
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          513
+        </td>
+        <td>
+          2903
+          -
+          2913
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.size
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          512
+        </td>
+        <td>
+          2895
+          -
+          2947
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          require
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          require(suits.size == 4, &quot;only 4 suits are allowed&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          514
+        </td>
+        <td>
+          2953
+          -
+          3012
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          require
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          require(suits.distinct.size == 4, &quot;suits must be distinct&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          516
+        </td>
+        <td>
+          2961
+          -
+          2980
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.distinct.size
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          515
+        </td>
+        <td>
+          2961
+          -
+          2975
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          distinct
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.distinct
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          519
+        </td>
+        <td>
+          3059
+          -
+          3067
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def size
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          518
+        </td>
+        <td>
+          3075
+          -
+          3085
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.size
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          521
+        </td>
+        <td>
+          3091
+          -
+          3103
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          distinct
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def distinct
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          520
+        </td>
+        <td>
+          3120
+          -
+          3134
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          distinct
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.distinct
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          523
+        </td>
+        <td>
+          3140
+          -
+          3147
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def map
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          522
+        </td>
+        <td>
+          3178
+          -
+          3190
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.map(f)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          525
+        </td>
+        <td>
+          3196
+          -
+          3207
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def flatMap
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          524
+        </td>
+        <td>
+          3244
+          -
+          3260
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.flatMap(f)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          527
+        </td>
+        <td>
+          3266
+          -
+          3277
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def foreach
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          526
+        </td>
+        <td>
+          3305
+          -
+          3321
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.foreach(f)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          528
+        </td>
+        <td>
+          3365
+          -
+          3385
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suits.contains(suit)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          529
+        </td>
+        <td>
+          3327
+          -
+          3339
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          contains
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def contains
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          530
+        </td>
+        <td>
+          3990
+          -
+          3999
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          532
+        </td>
+        <td>
+          4087
+          -
+          4096
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          531
+        </td>
+        <td>
+          4132
+          -
+          4148
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(name, suit)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          534
+        </td>
+        <td>
+          4768
+          -
+          4781
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          freeStart
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def freeStart
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          533
+        </td>
+        <td>
+          4835
+          -
+          4855
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          160
+        </td>
+        <td>
+          540
+        </td>
+        <td>
+          5236
+          -
+          5259
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          startWithHigherCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def startWithHigherCard
+        </td>
+      </tr><tr>
+        <td>
+          165
+        </td>
+        <td>
+          535
+        </td>
+        <td>
+          5384
+          -
+          5404
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          537
+        </td>
+        <td>
+          5416
+          -
+          5431
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          view
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.view
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          539
+        </td>
+        <td>
+          5448
+          -
+          5463
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playedCard.rank
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          536
+        </td>
+        <td>
+          5416
+          -
+          5464
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          exists
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.view.exists(_.rank &gt; playedCard.rank)
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          538
+        </td>
+        <td>
+          5439
+          -
+          5445
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.rank
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          550
+        </td>
+        <td>
+          5862
+          -
+          5881
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          followFirstSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def followFirstSuit
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          541
+        </td>
+        <td>
+          6006
+          -
+          6027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          nonEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          543
+        </td>
+        <td>
+          6039
+          -
+          6061
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head.suit
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          542
+        </td>
+        <td>
+          6039
+          -
+          6056
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          544
+        </td>
+        <td>
+          6065
+          -
+          6080
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playedCard.suit
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          549
+        </td>
+        <td>
+          6127
+          -
+          6149
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head.suit
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          546
+        </td>
+        <td>
+          6094
+          -
+          6109
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          view
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.view
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          548
+        </td>
+        <td>
+          6127
+          -
+          6144
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          545
+        </td>
+        <td>
+          6094
+          -
+          6150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          exists
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          547
+        </td>
+        <td>
+          6117
+          -
+          6123
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.suit
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          562
+        </td>
+        <td>
+          6555
+          -
+          6577
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          followPreviousSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def followPreviousSuit
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          552
+        </td>
+        <td>
+          6721
+          -
+          6744
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          lastOption
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.lastOption
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          551
+        </td>
+        <td>
+          6721
+          -
+          6756
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.lastOption.map(_.suit)
+        </td>
+      </tr><tr>
+        <td>
+          206
+        </td>
+        <td>
+          553
+        </td>
+        <td>
+          6749
+          -
+          6755
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.suit
+        </td>
+      </tr><tr>
+        <td>
+          207
+        </td>
+        <td>
+          554
+        </td>
+        <td>
+          6762
+          -
+          6783
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          nonEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.nonEmpty
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          555
+        </td>
+        <td>
+          6793
+          -
+          6809
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          previousSuit.get
+        </td>
+      </tr><tr>
+        <td>
+          208
+        </td>
+        <td>
+          556
+        </td>
+        <td>
+          6813
+          -
+          6828
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playedCard.suit
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          559
+        </td>
+        <td>
+          6863
+          -
+          6869
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.suit
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          558
+        </td>
+        <td>
+          6840
+          -
+          6855
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          view
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.view
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          561
+        </td>
+        <td>
+          6873
+          -
+          6895
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head.suit
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          557
+        </td>
+        <td>
+          6840
+          -
+          6896
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          exists
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.view.exists(_.suit == cardsOnTable.head.suit)
+        </td>
+      </tr><tr>
+        <td>
+          209
+        </td>
+        <td>
+          560
+        </td>
+        <td>
+          6873
+          -
+          6890
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.head
+        </td>
+      </tr><tr>
+        <td>
+          224
+        </td>
+        <td>
+          565
+        </td>
+        <td>
+          7357
+          -
+          7376
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          marafoneRuleset
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def marafoneRuleset
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          563
+        </td>
+        <td>
+          7501
+          -
+          7510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          freeStart
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          freeStart
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          564
+        </td>
+        <td>
+          7521
+          -
+          7536
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          followFirstSuit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          followFirstSuit
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          566
+        </td>
+        <td>
+          7542
+          -
+          7551
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          568
+        </td>
+        <td>
+          7676
+          -
+          7685
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          567
+        </td>
+        <td>
+          7815
+          -
+          7857
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(cardsOnTable, playerHand, playedCard)
+        </td>
+      </tr><tr>
+        <td>
+          245
+        </td>
+        <td>
+          569
+        </td>
+        <td>
+          7894
+          -
+          7900
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          or
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def or
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          570
+        </td>
+        <td>
+          7954
+          -
+          7961
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          and
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def and
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          571
+        </td>
+        <td>
+          8332
+          -
+          8341
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          262
+        </td>
+        <td>
+          573
+        </td>
+        <td>
+          8472
+          -
+          8481
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          265
+        </td>
+        <td>
+          572
+        </td>
+        <td>
+          8574
+          -
+          8592
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(cardsOnTable)
+        </td>
+      </tr><tr>
+        <td>
+          275
+        </td>
+        <td>
+          577
+        </td>
+        <td>
+          8961
+          -
+          8981
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          prevailsOn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          infix def prevailsOn
+        </td>
+      </tr><tr>
+        <td>
+          279
+        </td>
+        <td>
+          576
+        </td>
+        <td>
+          9209
+          -
+          9228
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          other(cardsOnTable)
+        </td>
+      </tr><tr>
+        <td>
+          279
+        </td>
+        <td>
+          575
+        </td>
+        <td>
+          9183
+          -
+          9201
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(cardsOnTable)
+        </td>
+      </tr><tr>
+        <td>
+          279
+        </td>
+        <td>
+          574
+        </td>
+        <td>
+          9183
+          -
+          9228
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          orElse
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(cardsOnTable) orElse other(cardsOnTable)
+        </td>
+      </tr><tr>
+        <td>
+          298
+        </td>
+        <td>
+          590
+        </td>
+        <td>
+          9880
+          -
+          9891
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def highest
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          579
+        </td>
+        <td>
+          10001
+          -
+          10051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(player =&gt; player.name -&gt; player.score)
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          578
+        </td>
+        <td>
+          10001
+          -
+          10057
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          toMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(player =&gt; player.name -&gt; player.score).toMap
+        </td>
+      </tr><tr>
+        <td>
+          302
+        </td>
+        <td>
+          580
+        </td>
+        <td>
+          10023
+          -
+          10050
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          -&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          player.name -&gt; player.score
+        </td>
+      </tr><tr>
+        <td>
+          305
+        </td>
+        <td>
+          581
+        </td>
+        <td>
+          10135
+          -
+          10284
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teams.map(team =&gt;\r\n      val totalScore =\r\n        team.map(playerName =&gt; playerScores.getOrElse(playerName, 0)).sum\r\n      (team, totalScore)\r\n    )
+        </td>
+      </tr><tr>
+        <td>
+          307
+        </td>
+        <td>
+          585
+        </td>
+        <td>
+          10209
+          -
+          10246
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getOrElse
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerScores.getOrElse(playerName, 0)
+        </td>
+      </tr><tr>
+        <td>
+          307
+        </td>
+        <td>
+          582
+        </td>
+        <td>
+          10186
+          -
+          10251
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sum
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.map(playerName =&gt; playerScores.getOrElse(playerName, 0)).sum
+        </td>
+      </tr><tr>
+        <td>
+          307
+        </td>
+        <td>
+          584
+        </td>
+        <td>
+          10186
+          -
+          10194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.map
+        </td>
+      </tr><tr>
+        <td>
+          307
+        </td>
+        <td>
+          583
+        </td>
+        <td>
+          10186
+          -
+          10247
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.map(playerName =&gt; playerScores.getOrElse(playerName, 0))
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          588
+        </td>
+        <td>
+          10335
+          -
+          10339
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          587
+        </td>
+        <td>
+          10311
+          -
+          10340
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sortBy
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teamsWithScores.sortBy(-_._2)
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          586
+        </td>
+        <td>
+          10311
+          -
+          10350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teamsWithScores.sortBy(-_._2).map(_._1)
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          589
+        </td>
+        <td>
+          10345
+          -
+          10349
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._1
+        </td>
+      </tr><tr>
+        <td>
+          323
+        </td>
+        <td>
+          603
+        </td>
+        <td>
+          10677
+          -
+          10687
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          lowest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def lowest
+        </td>
+      </tr><tr>
+        <td>
+          327
+        </td>
+        <td>
+          591
+        </td>
+        <td>
+          10797
+          -
+          10853
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          toMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(player =&gt; player.name -&gt; player.score).toMap
+        </td>
+      </tr><tr>
+        <td>
+          327
+        </td>
+        <td>
+          593
+        </td>
+        <td>
+          10819
+          -
+          10846
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          -&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          player.name -&gt; player.score
+        </td>
+      </tr><tr>
+        <td>
+          327
+        </td>
+        <td>
+          592
+        </td>
+        <td>
+          10797
+          -
+          10847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.map(player =&gt; player.name -&gt; player.score)
+        </td>
+      </tr><tr>
+        <td>
+          329
+        </td>
+        <td>
+          594
+        </td>
+        <td>
+          10883
+          -
+          11032
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teams.map(team =&gt;\r\n      val totalScore =\r\n        team.map(playerName =&gt; playerScores.getOrElse(playerName, 0)).sum\r\n      (team, totalScore)\r\n    )
+        </td>
+      </tr><tr>
+        <td>
+          331
+        </td>
+        <td>
+          597
+        </td>
+        <td>
+          10934
+          -
+          10942
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.map
+        </td>
+      </tr><tr>
+        <td>
+          331
+        </td>
+        <td>
+          596
+        </td>
+        <td>
+          10934
+          -
+          10995
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.map(playerName =&gt; playerScores.getOrElse(playerName, 0))
+        </td>
+      </tr><tr>
+        <td>
+          331
+        </td>
+        <td>
+          595
+        </td>
+        <td>
+          10934
+          -
+          10999
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sum
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          team.map(playerName =&gt; playerScores.getOrElse(playerName, 0)).sum
+        </td>
+      </tr><tr>
+        <td>
+          331
+        </td>
+        <td>
+          598
+        </td>
+        <td>
+          10957
+          -
+          10994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getOrElse
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerScores.getOrElse(playerName, 0)
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          600
+        </td>
+        <td>
+          11059
+          -
+          11087
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sortBy
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teamsWithScores.sortBy(_._2)
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          599
+        </td>
+        <td>
+          11059
+          -
+          11097
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          teamsWithScores.sortBy(_._2).map(_._1)
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          602
+        </td>
+        <td>
+          11092
+          -
+          11096
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._1
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          601
+        </td>
+        <td>
+          11082
+          -
+          11086
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          338
+        </td>
+        <td>
+          604
+        </td>
+        <td>
+          11121
+          -
+          11130
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          344
+        </td>
+        <td>
+          606
+        </td>
+        <td>
+          11253
+          -
+          11262
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          348
+        </td>
+        <td>
+          605
+        </td>
+        <td>
+          11356
+          -
+          11376
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(teams, players)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

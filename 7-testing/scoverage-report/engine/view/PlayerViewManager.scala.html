@@ -1,0 +1,546 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\view\PlayerViewManager.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.view
+</span>2 <span style=''>
+</span>3 <span style=''>import engine.view.ElementsPositionManager.*
+</span>4 <span style=''>import engine.view.SwingFunctionalFacade.Frame
+</span>5 <span style=''>import engine.view.monads.States.State
+</span>6 <span style=''>
+</span>7 <span style=''>trait PlayerViewManager:
+</span>8 <span style=''>  var players: List[String] = </span><span style='background: #AEF1AE'>List.empty</span><span style=''>
+</span>9 <span style=''>
+</span>10 <span style=''>  </span><span style='background: #AEF1AE'>def addPlayer</span><span style=''>(name: String, numberOfPlayers: Int): State[Frame, Unit] =
+</span>11 <span style=''>    players = </span><span style='background: #AEF1AE'>players :+ name</span><span style=''>
+</span>12 <span style=''>    import WindowStateImpl.*
+</span>13 <span style=''>    val playerInfo = </span><span style='background: #AEF1AE'>getPlayerInfo(numberOfPlayers)</span><span style=''>
+</span>14 <span style=''>    </span><span style='background: #AEF1AE'>for
+</span>15 <span style=''></span><span style='background: #AEF1AE'>      _ &lt;- addPanel(name)(playerInfo._1)(playerInfo._2)
+</span>16 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>_ &lt;- setGridLayout(name, playerInfo._3)
+</span>17 <span style=''></span><span style='background: #F0ADAD'>    yield ()</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  </span><span style='background: #AEF1AE'>private def getPlayerInfo</span><span style=''>(
+</span>20 <span style=''>      numberOfPlayers: Int
+</span>21 <span style=''>  ): ((Int, Int), (Int, Int), GridLayoutOrientation) =
+</span>22 <span style=''>    val config = </span><span style='background: #AEF1AE'>playerPositionConfigurations(numberOfPlayers)(players.size - 1)</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>    config
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          1198
+        </td>
+        <td>
+          215
+          -
+          225
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          empty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List.empty
+        </td>
+      </tr><tr>
+        <td>
+          8
+        </td>
+        <td>
+          1197
+        </td>
+        <td>
+          215
+          -
+          219
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          List
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          List
+        </td>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          1212
+        </td>
+        <td>
+          231
+          -
+          244
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def addPlayer
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          1199
+        </td>
+        <td>
+          318
+          -
+          333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players :+ name
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1200
+        </td>
+        <td>
+          386
+          -
+          416
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getPlayerInfo
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          getPlayerInfo(numberOfPlayers)
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1201
+        </td>
+        <td>
+          422
+          -
+          543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for\r\n      _ &lt;- addPanel(name)(playerInfo._1)(playerInfo._2)\r\n      _ &lt;- setGridLayout(name, playerInfo._3)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1205
+        </td>
+        <td>
+          468
+          -
+          481
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerInfo._2
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1204
+        </td>
+        <td>
+          453
+          -
+          466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerInfo._1
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1203
+        </td>
+        <td>
+          438
+          -
+          482
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          addPanel(name)(playerInfo._1)(playerInfo._2)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1202
+        </td>
+        <td>
+          438
+          -
+          482
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          addPanel(name)(playerInfo._1)(playerInfo._2)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1207
+        </td>
+        <td>
+          495
+          -
+          529
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          setGridLayout(name, playerInfo._3)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1209
+        </td>
+        <td>
+          515
+          -
+          528
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _3
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          playerInfo._3
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1206
+        </td>
+        <td>
+          490
+          -
+          543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- setGridLayout(name, playerInfo._3)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1208
+        </td>
+        <td>
+          495
+          -
+          529
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          setGridLayout
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          setGridLayout(name, playerInfo._3)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1211
+        </td>
+        <td>
+          490
+          -
+          543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- setGridLayout(name, playerInfo._3)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1210
+        </td>
+        <td>
+          541
+          -
+          543
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1216
+        </td>
+        <td>
+          549
+          -
+          574
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          getPlayerInfo
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def getPlayerInfo
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1214
+        </td>
+        <td>
+          678
+          -
+          723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerPositionConfigurations(numberOfPlayers)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1213
+        </td>
+        <td>
+          678
+          -
+          741
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerPositionConfigurations(numberOfPlayers)(players.size - 1)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1215
+        </td>
+        <td>
+          724
+          -
+          736
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          players.size
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

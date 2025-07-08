@@ -1,0 +1,963 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\model\BotStrategies.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.model
+</span>2 <span style=''>import engine.model.BotDecisionStrategy.getValidCards
+</span>3 <span style=''>
+</span>4 <span style=''>/** * BotType represents the type of bot that can be used in the game. It can be
+</span>5 <span style=''>  * either a Random bot or a Smart bot.
+</span>6 <span style=''>  */
+</span>7 <span style=''>enum BotType:
+</span>8 <span style=''>  case Random
+</span>9 <span style=''>  case Smart
+</span>10 <span style=''>
+</span>11 <span style=''>/** * BotDecisionStrategy is a trait that defines the strategy for selecting a
+</span>12 <span style=''>  * card from the bot's hand based on the current game context and cards on the
+</span>13 <span style=''>  * table.
+</span>14 <span style=''>  */
+</span>15 <span style=''>trait BotDecisionStrategy:
+</span>16 <span style=''>
+</span>17 <span style=''>  /** The bot selects a card to play from its hand based on the current game
+</span>18 <span style=''>    * context
+</span>19 <span style=''>    *
+</span>20 <span style=''>    * @param playerHand
+</span>21 <span style=''>    *   The hand of the bot.
+</span>22 <span style=''>    * @param cardsOnTable
+</span>23 <span style=''>    *   The current cards on the table.
+</span>24 <span style=''>    * @param gameContext
+</span>25 <span style=''>    *   The context of the game, including rules and state.
+</span>26 <span style=''>    * @return
+</span>27 <span style=''>    *   The CardModel selected by the bot.
+</span>28 <span style=''>    */
+</span>29 <span style=''>  def selectCard(
+</span>30 <span style=''>      playerHand: DeckModel,
+</span>31 <span style=''>      cardsOnTable: List[(PlayerModel, CardModel)],
+</span>32 <span style=''>      gameContext: GameContext
+</span>33 <span style=''>  ): CardModel
+</span>34 <span style=''>object BotDecisionStrategy:
+</span>35 <span style=''>  /** Filters the bot's hand to return only the cards that can be played
+</span>36 <span style=''>    * according to the game context.
+</span>37 <span style=''>    *
+</span>38 <span style=''>    * @param playerHand
+</span>39 <span style=''>    *   The hand of the bot.
+</span>40 <span style=''>    * @param cardsOnTable
+</span>41 <span style=''>    *   The current cards on the table.
+</span>42 <span style=''>    * @param gameContext
+</span>43 <span style=''>    *   The context of the game, including rules and state.
+</span>44 <span style=''>    * @return
+</span>45 <span style=''>    *   A list of valid CardModel that can be played.
+</span>46 <span style=''>    */
+</span>47 <span style=''>  </span><span style='background: #AEF1AE'>def getValidCards</span><span style=''>(
+</span>48 <span style=''>      playerHand: DeckModel,
+</span>49 <span style=''>      cardsOnTable: List[(PlayerModel, CardModel)],
+</span>50 <span style=''>      gameContext: GameContext
+</span>51 <span style=''>  ): List[CardModel] =
+</span>52 <span style=''>    </span><span style='background: #AEF1AE'>for card &lt;- playerHand.view if gameContext.canPlayCard(playerHand, card)
+</span>53 <span style=''></span><span style='background: #AEF1AE'>    yield card</span><span style=''>
+</span>54 <span style=''>
+</span>55 <span style=''>/** Selects a card randomly from the valid cards in the bot's hand.
+</span>56 <span style=''>  */
+</span>57 <span style=''>class RandomDecisionStrategy extends BotDecisionStrategy:
+</span>58 <span style=''>  </span><span style='background: #AEF1AE'>override def selectCard</span><span style=''>(
+</span>59 <span style=''>      playerHand: DeckModel,
+</span>60 <span style=''>      cardsOnTable: List[(PlayerModel, CardModel)],
+</span>61 <span style=''>      gameContext: GameContext
+</span>62 <span style=''>  ): CardModel =
+</span>63 <span style=''>    val validCards = </span><span style='background: #AEF1AE'>getValidCards(playerHand, cardsOnTable, gameContext)</span><span style=''>
+</span>64 <span style=''>    </span><span style='background: #AEF1AE'>validCards(scala.util.Random.nextInt(validCards.size))</span><span style=''>
+</span>65 <span style=''>
+</span>66 <span style=''>/** Selects a card based on the play rules of the game, aiming to win the current
+</span>67 <span style=''> * turn if possible. If no winning card is available, it selects the card
+</span>68 <span style=''> * with the lowest point.
+</span>69 <span style=''> * @param self the PlayerModel representing the bot itself
+</span>70 <span style=''> */
+</span>71 <span style=''>class RuleAwareDecisionStrategy(private val self: PlayerModel)
+</span>72 <span style=''>    extends BotDecisionStrategy:
+</span>73 <span style=''>  </span><span style='background: #AEF1AE'>override def selectCard</span><span style=''>(
+</span>74 <span style=''>      playerHand: DeckModel,
+</span>75 <span style=''>      cardsOnTable: List[(PlayerModel, CardModel)],
+</span>76 <span style=''>      gameContext: GameContext
+</span>77 <span style=''>  ): CardModel =
+</span>78 <span style=''>    val validCards = </span><span style='background: #AEF1AE'>getValidCards(playerHand, cardsOnTable, gameContext)</span><span style=''>
+</span>79 <span style=''>
+</span>80 <span style=''>    if </span><span style='background: #AEF1AE'>cardsOnTable.isEmpty</span><span style=''> then </span><span style='background: #AEF1AE'>selectOpeningCard(validCards, gameContext)</span><span style=''>
+</span>81 <span style=''>    else </span><span style='background: #AEF1AE'>selectWinningCard(validCards, cardsOnTable, gameContext)</span><span style=''>
+</span>82 <span style=''>
+</span>83 <span style=''>  </span><span style='background: #AEF1AE'>private def selectOpeningCard</span><span style=''>(
+</span>84 <span style=''>      playerHand: List[CardModel],
+</span>85 <span style=''>      context: GameContext
+</span>86 <span style=''>  ): CardModel = </span><span style='background: #AEF1AE'>playerHand.minBy(_.rank)</span><span style=''>
+</span>87 <span style=''>
+</span>88 <span style=''>  </span><span style='background: #AEF1AE'>private def selectWinningCard</span><span style=''>(
+</span>89 <span style=''>      validCards: List[CardModel],
+</span>90 <span style=''>      cardsOnTable: List[(PlayerModel, CardModel)],
+</span>91 <span style=''>      context: GameContext
+</span>92 <span style=''>  ): CardModel =
+</span>93 <span style=''>    val expectedWinner = (card: CardModel) =&gt;
+</span>94 <span style=''>      </span><span style='background: #AEF1AE'>context.calculateTurn(cardsOnTable :+ (self, card))</span><span style=''>
+</span>95 <span style=''>    </span><span style='background: #AEF1AE'>(
+</span>96 <span style=''></span><span style='background: #AEF1AE'>      for
+</span>97 <span style=''></span><span style='background: #AEF1AE'>        playableCard &lt;- validCards
+</span>98 <span style=''></span><span style='background: #AEF1AE'>        if expectedWinner(playableCard).get == self
+</span>99 <span style=''></span><span style='background: #AEF1AE'>      yield playableCard
+</span>100 <span style=''></span><span style='background: #AEF1AE'>    ).minByOption(card =&gt; context.calculatePoints(cardsOnTable :+ (self, card)))
+</span>101 <span style=''></span><span style='background: #AEF1AE'>      .getOrElse(
+</span>102 <span style=''></span><span style='background: #AEF1AE'>        validCards.minBy(card =&gt;
+</span>103 <span style=''></span><span style='background: #AEF1AE'>          context.calculatePoints(cardsOnTable :+ (self, card))
+</span>104 <span style=''></span><span style='background: #AEF1AE'>        )
+</span>105 <span style=''></span><span style='background: #AEF1AE'>      )</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          832
+        </td>
+        <td>
+          1428
+          -
+          1445
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          getValidCards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def getValidCards
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          828
+        </td>
+        <td>
+          1591
+          -
+          1679
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for card &lt;- playerHand.view if gameContext.canPlayCard(playerHand, card)\r\n    yield card
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          831
+        </td>
+        <td>
+          1622
+          -
+          1663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          canPlayCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          gameContext.canPlayCard(playerHand, card)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          830
+        </td>
+        <td>
+          1603
+          -
+          1618
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          view
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.view
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          829
+        </td>
+        <td>
+          1595
+          -
+          1663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          withFilter
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card &lt;- playerHand.view if gameContext.canPlayCard(playerHand, card)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          837
+        </td>
+        <td>
+          1819
+          -
+          1842
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          selectCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def selectCard
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          833
+        </td>
+        <td>
+          1999
+          -
+          2051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getValidCards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          getValidCards(playerHand, cardsOnTable, gameContext)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          836
+        </td>
+        <td>
+          2094
+          -
+          2109
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validCards.size
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          835
+        </td>
+        <td>
+          2068
+          -
+          2110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          nextInt
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Random.nextInt(validCards.size)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          834
+        </td>
+        <td>
+          2057
+          -
+          2111
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validCards(scala.util.Random.nextInt(validCards.size))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          844
+        </td>
+        <td>
+          2465
+          -
+          2488
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          selectCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def selectCard
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          838
+        </td>
+        <td>
+          2645
+          -
+          2697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getValidCards
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          getValidCards(playerHand, cardsOnTable, gameContext)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          839
+        </td>
+        <td>
+          2708
+          -
+          2728
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isEmpty
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          841
+        </td>
+        <td>
+          2734
+          -
+          2776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          selectOpeningCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          selectOpeningCard(validCards, gameContext)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          840
+        </td>
+        <td>
+          2734
+          -
+          2776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          selectOpeningCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          selectOpeningCard(validCards, gameContext)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          842
+        </td>
+        <td>
+          2787
+          -
+          2843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          selectWinningCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          selectWinningCard(validCards, cardsOnTable, gameContext)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          843
+        </td>
+        <td>
+          2787
+          -
+          2843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          selectWinningCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          selectWinningCard(validCards, cardsOnTable, gameContext)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          847
+        </td>
+        <td>
+          2849
+          -
+          2878
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          selectOpeningCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def selectOpeningCard
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          846
+        </td>
+        <td>
+          2979
+          -
+          2985
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.rank
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          845
+        </td>
+        <td>
+          2962
+          -
+          2986
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          minBy
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playerHand.minBy(_.rank)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          861
+        </td>
+        <td>
+          2992
+          -
+          3021
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          selectWinningCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          private def selectWinningCard
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          848
+        </td>
+        <td>
+          3212
+          -
+          3263
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          calculateTurn
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          context.calculateTurn(cardsOnTable :+ (self, card))
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          849
+        </td>
+        <td>
+          3234
+          -
+          3262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable :+ (self, card)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          851
+        </td>
+        <td>
+          3269
+          -
+          3478
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          minByOption
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          (\r\n      for\r\n        playableCard &lt;- validCards\r\n        if expectedWinner(playableCard).get == self\r\n      yield playableCard\r\n    ).minByOption(card =&gt; context.calculatePoints(cardsOnTable :+ (self, card)))
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          852
+        </td>
+        <td>
+          3278
+          -
+          3396
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for\r\n        playableCard &lt;- validCards\r\n        if expectedWinner(playableCard).get == self\r\n      yield playableCard
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          853
+        </td>
+        <td>
+          3291
+          -
+          3370
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          withFilter
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playableCard &lt;- validCards\r\n        if expectedWinner(playableCard).get == self
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          855
+        </td>
+        <td>
+          3330
+          -
+          3362
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          expectedWinner(playableCard).get
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          854
+        </td>
+        <td>
+          3330
+          -
+          3358
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          expectedWinner(playableCard)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          857
+        </td>
+        <td>
+          3448
+          -
+          3476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable :+ (self, card)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          856
+        </td>
+        <td>
+          3424
+          -
+          3477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          calculatePoints
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          context.calculatePoints(cardsOnTable :+ (self, card))
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          850
+        </td>
+        <td>
+          3269
+          -
+          3616
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          getOrElse
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          (\r\n      for\r\n        playableCard &lt;- validCards\r\n        if expectedWinner(playableCard).get == self\r\n      yield playableCard\r\n    ).minByOption(card =&gt; context.calculatePoints(cardsOnTable :+ (self, card)))\r\n      .getOrElse(\r\n        validCards.minBy(card =&gt;\r\n          context.calculatePoints(cardsOnTable :+ (self, card))\r\n        )\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          858
+        </td>
+        <td>
+          3507
+          -
+          3607
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          minBy
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          validCards.minBy(card =&gt;\r\n          context.calculatePoints(cardsOnTable :+ (self, card))\r\n        )
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          860
+        </td>
+        <td>
+          3567
+          -
+          3595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          :+
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTable :+ (self, card)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          859
+        </td>
+        <td>
+          3543
+          -
+          3596
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          calculatePoints
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          context.calculatePoints(cardsOnTable :+ (self, card))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

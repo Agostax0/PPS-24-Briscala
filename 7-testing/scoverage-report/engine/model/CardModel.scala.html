@@ -1,0 +1,222 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\model\CardModel.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.model
+</span>2 <span style=''>
+</span>3 <span style=''>/** Represents a playing card with a name, rank, and suit.
+</span>4 <span style=''>  */
+</span>5 <span style=''>trait CardModel:
+</span>6 <span style=''>  /** The name of the card (e.g., &quot;Ace&quot;, &quot;King&quot;, &quot;Queen&quot;, etc.).
+</span>7 <span style=''>    */
+</span>8 <span style=''>  def name: String
+</span>9 <span style=''>
+</span>10 <span style=''>  /** The rank of the card (e.g., 1 for Ace, 11 for Jack, 12 for Queen, 13 for
+</span>11 <span style=''>    * King).
+</span>12 <span style=''>    */
+</span>13 <span style=''>  def rank: Int
+</span>14 <span style=''>
+</span>15 <span style=''>  /** The suit of the card (e.g., &quot;Hearts&quot;, &quot;Diamonds&quot;, &quot;Clubs&quot;, &quot;Spades&quot;).
+</span>16 <span style=''>    */
+</span>17 <span style=''>  def suit: String
+</span>18 <span style=''>
+</span>19 <span style=''>object CardModel:
+</span>20 <span style=''>  /** Factory method to create a CardModel instance.
+</span>21 <span style=''>    *
+</span>22 <span style=''>    * @param name
+</span>23 <span style=''>    *   The name of the card.
+</span>24 <span style=''>    * @param rank
+</span>25 <span style=''>    *   The rank of the card.
+</span>26 <span style=''>    * @param suit
+</span>27 <span style=''>    *   The suit of the card.
+</span>28 <span style=''>    * @return
+</span>29 <span style=''>    *   A new instance of CardModel.
+</span>30 <span style=''>    */
+</span>31 <span style=''>  </span><span style='background: #AEF1AE'>def apply</span><span style=''>(name: String, rank: Int, suit: String): CardModel =
+</span>32 <span style=''>    CardModelImpl(name, rank, suit)
+</span>33 <span style=''>
+</span>34 <span style=''>  private final case class CardModelImpl(name: String, rank: Int, suit: String)
+</span>35 <span style=''>      extends CardModel:
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>override def toString</span><span style=''>: String = </span><span style='background: #AEF1AE'>name + &quot; &quot; + rank + &quot; &quot; + suit</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          862
+        </td>
+        <td>
+          725
+          -
+          734
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def apply
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          864
+        </td>
+        <td>
+          970
+          -
+          993
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          name + &quot; &quot; + rank + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          863
+        </td>
+        <td>
+          970
+          -
+          1000
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          name + &quot; &quot; + rank + &quot; &quot; + suit
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          866
+        </td>
+        <td>
+          970
+          -
+          980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          name + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          865
+        </td>
+        <td>
+          970
+          -
+          987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          name + &quot; &quot; + rank
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          867
+        </td>
+        <td>
+          938
+          -
+          959
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          toString
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          override def toString
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,1365 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\view\TurnHistoryViewManager.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.view
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.types.Team.Team
+</span>4 <span style=''>import engine.view.ElementsPositionManager.{centerTableDims, historyCoords}
+</span>5 <span style=''>import engine.view.SwingFunctionalFacade.Frame
+</span>6 <span style=''>import engine.view.monads.States.State
+</span>7 <span style=''>
+</span>8 <span style=''>trait TurnHistoryViewManager:
+</span>9 <span style=''>  val panelName = &quot;History&quot;
+</span>10 <span style=''>  </span><span style='background: #F0ADAD'>def addTurnHistory</span><span style=''>(): State[Frame, Unit] =
+</span>11 <span style=''>    import WindowStateImpl.*
+</span>12 <span style=''>    </span><span style='background: #F0ADAD'>for _ &lt;- addScrollablePanel(panelName)(historyCoords)(centerTableDims)
+</span>13 <span style=''></span><span style='background: #F0ADAD'>    yield ()</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  </span><span style='background: #F0ADAD'>def addTurnWinner</span><span style=''>(playerName: String, round: String): State[Frame, Unit] =
+</span>16 <span style=''>    import WindowStateImpl.*
+</span>17 <span style=''>    </span><span style='background: #F0ADAD'>for
+</span>18 <span style=''></span><span style='background: #F0ADAD'>      _ &lt;- addLabel(
+</span>19 <span style=''></span><span style='background: #F0ADAD'>        &quot;Turn &quot; + round + &quot; Winner is &quot; + playerName,
+</span>20 <span style=''></span><span style='background: #F0ADAD'>        panelName + &quot; &quot; + playerName + &quot; &quot; + round
+</span>21 <span style=''></span><span style='background: #F0ADAD'>      )
+</span>22 <span style=''></span><span style='background: #F0ADAD'>      - &lt;- moveComponentIntoPanel(
+</span>23 <span style=''></span><span style='background: #F0ADAD'>        panelName + &quot; &quot; + playerName + &quot; &quot; + round,
+</span>24 <span style=''></span><span style='background: #F0ADAD'>        panelName
+</span>25 <span style=''></span><span style='background: #F0ADAD'>      )
+</span>26 <span style=''></span><span style='background: #F0ADAD'>    yield ()</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  </span><span style='background: #F0ADAD'>def declareWinner</span><span style=''>(playerName: String): State[Frame, Unit] =
+</span>29 <span style=''>    import WindowStateImpl.*
+</span>30 <span style=''>    </span><span style='background: #F0ADAD'>for
+</span>31 <span style=''></span><span style='background: #F0ADAD'>      _ &lt;- addLabel(
+</span>32 <span style=''></span><span style='background: #F0ADAD'>        &quot;THE WINNER OF THE GAME IS &quot; + playerName,
+</span>33 <span style=''></span><span style='background: #F0ADAD'>        &quot;WINNER &quot; + playerName
+</span>34 <span style=''></span><span style='background: #F0ADAD'>      )
+</span>35 <span style=''></span><span style='background: #F0ADAD'>      - &lt;- moveComponentIntoPanel(
+</span>36 <span style=''></span><span style='background: #F0ADAD'>        &quot;WINNER &quot; + playerName,
+</span>37 <span style=''></span><span style='background: #F0ADAD'>        panelName
+</span>38 <span style=''></span><span style='background: #F0ADAD'>      )
+</span>39 <span style=''></span><span style='background: #F0ADAD'>    yield ()</span><span style=''>
+</span>40 <span style=''>
+</span>41 <span style=''>  </span><span style='background: #F0ADAD'>def printPointsTeam</span><span style=''>(teams:List[(Team,Int)]): State[Frame, Unit] =
+</span>42 <span style=''>    import WindowStateImpl.*
+</span>43 <span style=''>    </span><span style='background: #F0ADAD'>teams.foldLeft(State(s =&gt; (s, ())): State[Frame, Unit]) { (acc, teamWithScore) =&gt;
+</span>44 <span style=''></span><span style='background: #F0ADAD'>      val t = teamWithScore._1.reduce((a:String, b:String)=&gt;a + &quot; &quot; + b)  // or team.mkString(&quot; &quot;)
+</span>45 <span style=''></span><span style='background: #F0ADAD'>      acc.flatMap { _ =&gt;
+</span>46 <span style=''></span><span style='background: #F0ADAD'>        for {
+</span>47 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- addLabel(s&quot;$t score: ${teamWithScore._2}&quot;, t)
+</span>48 <span style=''></span><span style='background: #F0ADAD'>          _ &lt;- moveComponentIntoPanel(t, panelName)
+</span>49 <span style=''></span><span style='background: #F0ADAD'>        } yield ()
+</span>50 <span style=''></span><span style='background: #F0ADAD'>      }
+</span>51 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          10
+        </td>
+        <td>
+          1259
+        </td>
+        <td>
+          280
+          -
+          298
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addTurnHistory
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def addTurnHistory
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          1255
+        </td>
+        <td>
+          358
+          -
+          442
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for _ &lt;- addScrollablePanel(panelName)(historyCoords)(centerTableDims)\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          1257
+        </td>
+        <td>
+          367
+          -
+          428
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addScrollablePanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addScrollablePanel(panelName)(historyCoords)(centerTableDims)
+        </td>
+      </tr><tr>
+        <td>
+          12
+        </td>
+        <td>
+          1256
+        </td>
+        <td>
+          367
+          -
+          428
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addScrollablePanel(panelName)(historyCoords)(centerTableDims)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1258
+        </td>
+        <td>
+          440
+          -
+          442
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1278
+        </td>
+        <td>
+          448
+          -
+          465
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          addTurnWinner
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def addTurnWinner
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1260
+        </td>
+        <td>
+          558
+          -
+          830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n      _ &lt;- addLabel(\r\n        &quot;Turn &quot; + round + &quot; Winner is &quot; + playerName,\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round\r\n      )\r\n      - &lt;- moveComponentIntoPanel(\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round,\r\n        panelName\r\n      )\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1261
+        </td>
+        <td>
+          574
+          -
+          699
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(\r\n        &quot;Turn &quot; + round + &quot; Winner is &quot; + playerName,\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          1262
+        </td>
+        <td>
+          574
+          -
+          699
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addLabel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(\r\n        &quot;Turn &quot; + round + &quot; Winner is &quot; + playerName,\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1264
+        </td>
+        <td>
+          593
+          -
+          624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Turn &quot; + round + &quot; Winner is &quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1263
+        </td>
+        <td>
+          593
+          -
+          637
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Turn &quot; + round + &quot; Winner is &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1265
+        </td>
+        <td>
+          593
+          -
+          608
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Turn &quot; + round
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1267
+        </td>
+        <td>
+          648
+          -
+          682
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot; + playerName + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1269
+        </td>
+        <td>
+          648
+          -
+          663
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1266
+        </td>
+        <td>
+          648
+          -
+          690
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot; + playerName + &quot; &quot; + round
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1268
+        </td>
+        <td>
+          648
+          -
+          676
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1270
+        </td>
+        <td>
+          707
+          -
+          830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          - &lt;- moveComponentIntoPanel(\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round,\r\n        panelName\r\n      )\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1272
+        </td>
+        <td>
+          712
+          -
+          816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          moveComponentIntoPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round,\r\n        panelName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1277
+        </td>
+        <td>
+          707
+          -
+          830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          - &lt;- moveComponentIntoPanel(\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round,\r\n        panelName\r\n      )\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1271
+        </td>
+        <td>
+          712
+          -
+          816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(\r\n        panelName + &quot; &quot; + playerName + &quot; &quot; + round,\r\n        panelName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1273
+        </td>
+        <td>
+          745
+          -
+          787
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot; + playerName + &quot; &quot; + round
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1276
+        </td>
+        <td>
+          745
+          -
+          760
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1275
+        </td>
+        <td>
+          745
+          -
+          773
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1274
+        </td>
+        <td>
+          745
+          -
+          779
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          panelName + &quot; &quot; + playerName + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1289
+        </td>
+        <td>
+          836
+          -
+          853
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          declareWinner
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def declareWinner
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1279
+        </td>
+        <td>
+          931
+          -
+          1160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for\r\n      _ &lt;- addLabel(\r\n        &quot;THE WINNER OF THE GAME IS &quot; + playerName,\r\n        &quot;WINNER &quot; + playerName\r\n      )\r\n      - &lt;- moveComponentIntoPanel(\r\n        &quot;WINNER &quot; + playerName,\r\n        panelName\r\n      )\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1281
+        </td>
+        <td>
+          947
+          -
+          1049
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addLabel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(\r\n        &quot;THE WINNER OF THE GAME IS &quot; + playerName,\r\n        &quot;WINNER &quot; + playerName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1280
+        </td>
+        <td>
+          947
+          -
+          1049
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(\r\n        &quot;THE WINNER OF THE GAME IS &quot; + playerName,\r\n        &quot;WINNER &quot; + playerName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1282
+        </td>
+        <td>
+          966
+          -
+          1007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;THE WINNER OF THE GAME IS &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1283
+        </td>
+        <td>
+          1018
+          -
+          1040
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;WINNER &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1285
+        </td>
+        <td>
+          1062
+          -
+          1146
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(\r\n        &quot;WINNER &quot; + playerName,\r\n        panelName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1288
+        </td>
+        <td>
+          1057
+          -
+          1160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          - &lt;- moveComponentIntoPanel(\r\n        &quot;WINNER &quot; + playerName,\r\n        panelName\r\n      )\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1284
+        </td>
+        <td>
+          1057
+          -
+          1160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          - &lt;- moveComponentIntoPanel(\r\n        &quot;WINNER &quot; + playerName,\r\n        panelName\r\n      )\r\n    yield ()
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1286
+        </td>
+        <td>
+          1062
+          -
+          1146
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          moveComponentIntoPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(\r\n        &quot;WINNER &quot; + playerName,\r\n        panelName\r\n      )
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1287
+        </td>
+        <td>
+          1095
+          -
+          1117
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;WINNER &quot; + playerName
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1307
+        </td>
+        <td>
+          1166
+          -
+          1185
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          printPointsTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          def printPointsTeam
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1290
+        </td>
+        <td>
+          1267
+          -
+          1640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foldLeft
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          teams.foldLeft(State(s =&gt; (s, ())): State[Frame, Unit]) { (acc, teamWithScore) =&gt;\r\n      val t = teamWithScore._1.reduce((a:String, b:String)=&gt;a + &quot; &quot; + b)  // or team.mkString(&quot; &quot;)\r\n      acc.flatMap { _ =&gt;\r\n        for {\r\n          _ &lt;- addLabel(s&quot;$t score: ${teamWithScore._2}&quot;, t)\r\n          _ &lt;- moveComponentIntoPanel(t, panelName)\r\n        } yield ()\r\n      }\r\n    }
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1291
+        </td>
+        <td>
+          1364
+          -
+          1422
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          reduce
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          teamWithScore._1.reduce((a:String, b:String)=&gt;a + &quot; &quot; + b)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1294
+        </td>
+        <td>
+          1410
+          -
+          1417
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          a + &quot; &quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1293
+        </td>
+        <td>
+          1410
+          -
+          1421
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          +
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          a + &quot; &quot; + b
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1292
+        </td>
+        <td>
+          1364
+          -
+          1380
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          teamWithScore._1
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1296
+        </td>
+        <td>
+          1456
+          -
+          1467
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          acc.flatMap
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1295
+        </td>
+        <td>
+          1456
+          -
+          1633
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          acc.flatMap { _ =&gt;\r\n        for {\r\n          _ &lt;- addLabel(s&quot;$t score: ${teamWithScore._2}&quot;, t)\r\n          _ &lt;- moveComponentIntoPanel(t, panelName)\r\n        } yield ()\r\n      }
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1297
+        </td>
+        <td>
+          1484
+          -
+          1624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          for {\r\n          _ &lt;- addLabel(s&quot;$t score: ${teamWithScore._2}&quot;, t)\r\n          _ &lt;- moveComponentIntoPanel(t, panelName)\r\n        } yield ()
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1300
+        </td>
+        <td>
+          1515
+          -
+          1547
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          s
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          s&quot;$t score: ${teamWithScore._2}&quot;
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1299
+        </td>
+        <td>
+          1506
+          -
+          1551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addLabel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(s&quot;$t score: ${teamWithScore._2}&quot;, t)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1301
+        </td>
+        <td>
+          1529
+          -
+          1545
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          teamWithScore._2
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1298
+        </td>
+        <td>
+          1506
+          -
+          1551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          addLabel(s&quot;$t score: ${teamWithScore._2}&quot;, t)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1306
+        </td>
+        <td>
+          1563
+          -
+          1624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- moveComponentIntoPanel(t, panelName)\r\n        } yield ()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1303
+        </td>
+        <td>
+          1568
+          -
+          1604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(t, panelName)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1302
+        </td>
+        <td>
+          1563
+          -
+          1624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          _ &lt;- moveComponentIntoPanel(t, panelName)\r\n        } yield ()
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1304
+        </td>
+        <td>
+          1568
+          -
+          1604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          moveComponentIntoPanel
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          moveComponentIntoPanel(t, panelName)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1305
+        </td>
+        <td>
+          1622
+          -
+          1624
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

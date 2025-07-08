@@ -1,0 +1,1563 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          engine\model\Strategies.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package engine.model
+</span>2 <span style=''>
+</span>3 <span style=''>import dsl.types.HandRule.HandRule
+</span>4 <span style=''>import dsl.types.PlayRule.PlayRule
+</span>5 <span style=''>import dsl.types.PointsRule.PointsRule
+</span>6 <span style=''>import dsl.types.Suits.Suits
+</span>7 <span style=''>import dsl.types.Team.Team
+</span>8 <span style=''>import dsl.types.WinRule.WinRule
+</span>9 <span style=''>import dsl.types.{HandRule, PlayRule, PointsRule, Suits, Team, WinRule}
+</span>10 <span style=''>
+</span>11 <span style=''>/** Strategy for hand rules (which cards can be played from hand)
+</span>12 <span style=''>  */
+</span>13 <span style=''>trait HandRuleStrategy:
+</span>14 <span style=''>  /** Checks if a card can be played based on the current hand rules.
+</span>15 <span style=''>    * @param cardsOnTable
+</span>16 <span style=''>    *   the cards currently on the table
+</span>17 <span style=''>    * @param playerHand
+</span>18 <span style=''>    *   the player's hand of cards
+</span>19 <span style=''>    * @param playedCard
+</span>20 <span style=''>    *   the card that the player wants to play
+</span>21 <span style=''>    * @return
+</span>22 <span style=''>    */
+</span>23 <span style=''>  def canPlayCard(
+</span>24 <span style=''>      cardsOnTable: List[CardModel],
+</span>25 <span style=''>      playerHand: DeckModel,
+</span>26 <span style=''>      playedCard: CardModel
+</span>27 <span style=''>  ): Boolean
+</span>28 <span style=''>
+</span>29 <span style=''>/** Default implementation of HandRuleStrategy that allows any card to be
+</span>30 <span style=''>  * played.
+</span>31 <span style=''>  */
+</span>32 <span style=''>class DefaultHandRuleStrategy extends HandRuleStrategy:
+</span>33 <span style=''>  </span><span style='background: #AEF1AE'>def canPlayCard</span><span style=''>(
+</span>34 <span style=''>      cardsOnTable: List[CardModel],
+</span>35 <span style=''>      playerHand: DeckModel,
+</span>36 <span style=''>      playedCard: CardModel
+</span>37 <span style=''>  ): Boolean =
+</span>38 <span style=''>    true
+</span>39 <span style=''>
+</span>40 <span style=''>/** Custom implementation of HandRuleStrategy that uses a provided hand rule
+</span>41 <span style=''>  * function.
+</span>42 <span style=''>  * @param handRule
+</span>43 <span style=''>  *   the hand rule function that determines if a card can be played
+</span>44 <span style=''>  */
+</span>45 <span style=''>class CustomHandRuleStrategy(handRule: HandRule) extends HandRuleStrategy:
+</span>46 <span style=''>  </span><span style='background: #AEF1AE'>def canPlayCard</span><span style=''>(
+</span>47 <span style=''>      cardsOnTable: List[CardModel],
+</span>48 <span style=''>      playerHand: DeckModel,
+</span>49 <span style=''>      playedCard: CardModel
+</span>50 <span style=''>  ): Boolean =
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>handRule(cardsOnTable, playerHand, playedCard)</span><span style=''>
+</span>52 <span style=''>
+</span>53 <span style=''>/** Strategy for determining the winning player based on the cards played.
+</span>54 <span style=''>  */
+</span>55 <span style=''>trait PlayRuleStrategy:
+</span>56 <span style=''>  /** Calculates the winning player based on the cards played on the table.
+</span>57 <span style=''>    * @param cardsOnTableByPlayer
+</span>58 <span style=''>    *   the list of cards played on the table, each associated with the player
+</span>59 <span style=''>    *   who played it
+</span>60 <span style=''>    * @return
+</span>61 <span style=''>    *   the winning player, or None if no player wins
+</span>62 <span style=''>    */
+</span>63 <span style=''>  def calculateWinningPlayer(
+</span>64 <span style=''>      cardsOnTableByPlayer: List[(PlayerModel, CardModel)]
+</span>65 <span style=''>  ): Option[PlayerModel]
+</span>66 <span style=''>
+</span>67 <span style=''>/** Default implementation of PlayRuleStrategy that determines the winning
+</span>68 <span style=''>  * player based on common briscola rules (highest card of the first suit)
+</span>69 <span style=''>  */
+</span>70 <span style=''>class DefaultPlayRuleStrategy extends PlayRuleStrategy:
+</span>71 <span style=''>  </span><span style='background: #AEF1AE'>def calculateWinningPlayer</span><span style=''>(
+</span>72 <span style=''>      cardsOnTableByPlayer: List[(PlayerModel, CardModel)]
+</span>73 <span style=''>  ): Option[PlayerModel] =
+</span>74 <span style=''>    val firstCardPlayed = </span><span style='background: #AEF1AE'>cardsOnTableByPlayer.head._2</span><span style=''>
+</span>75 <span style=''>    val playedSuit = </span><span style='background: #AEF1AE'>firstCardPlayed.suit</span><span style=''>
+</span>76 <span style=''>    val maxCardByPlayer =
+</span>77 <span style=''>      </span><span style='background: #AEF1AE'>cardsOnTableByPlayer
+</span>78 <span style=''></span><span style='background: #AEF1AE'>        .filter(_._2.suit == playedSuit)
+</span>79 <span style=''></span><span style='background: #AEF1AE'>        .max(Ordering.by(_._2.rank))</span><span style=''>
+</span>80 <span style=''>    val winningPlayer = </span><span style='background: #AEF1AE'>cardsOnTableByPlayer.find(_.eq(maxCardByPlayer)).get._1</span><span style=''>
+</span>81 <span style=''>    Some(winningPlayer)
+</span>82 <span style=''>
+</span>83 <span style=''>/** Custom implementation of PlayRuleStrategy that uses a list of play
+</span>84 <span style=''>  * @param playRules
+</span>85 <span style=''>  *   the list of play rules to determine the winning player
+</span>86 <span style=''>  */
+</span>87 <span style=''>class CustomPlayRuleStrategy(playRules: List[PlayRule])
+</span>88 <span style=''>    extends PlayRuleStrategy:
+</span>89 <span style=''>  </span><span style='background: #AEF1AE'>def calculateWinningPlayer</span><span style=''>(
+</span>90 <span style=''>      cardsOnTableByPlayer: List[(PlayerModel, CardModel)]
+</span>91 <span style=''>  ): Option[PlayerModel] =
+</span>92 <span style=''>    val winningPlayers: List[PlayerModel] =
+</span>93 <span style=''>      </span><span style='background: #AEF1AE'>playRules
+</span>94 <span style=''></span><span style='background: #AEF1AE'>        .map(rule =&gt; rule(cardsOnTableByPlayer))
+</span>95 <span style=''></span><span style='background: #AEF1AE'>        .filter(_.isDefined)
+</span>96 <span style=''></span><span style='background: #AEF1AE'>        .map(_.get)</span><span style=''>
+</span>97 <span style=''>
+</span>98 <span style=''>    if </span><span style='background: #AEF1AE'>winningPlayers.size</span><span style=''> &gt; 1 then </span><span style='background: #AEF1AE'>return None</span><span style=''>
+</span>99 <span style=''>
+</span>100 <span style=''>    val winningPlayer = </span><span style='background: #AEF1AE'>winningPlayers.head</span><span style=''>
+</span>101 <span style=''>    Some(winningPlayer)
+</span>102 <span style=''>
+</span>103 <span style=''>/** Strategy for calculating points based on the cards played.
+</span>104 <span style=''>  */
+</span>105 <span style=''>trait PointsStrategy:
+</span>106 <span style=''>  /** Calculates the total points based on the cards played.
+</span>107 <span style=''>    * @param cards
+</span>108 <span style=''>    *   the cards played during the turn
+</span>109 <span style=''>    * @return
+</span>110 <span style=''>    *   the total points calculated from the cards
+</span>111 <span style=''>    */
+</span>112 <span style=''>  def calculatePoints(cards: List[CardModel]): Int
+</span>113 <span style=''>
+</span>114 <span style=''>/** Default implementation of PointsStrategy that sums the ranks of the cards.
+</span>115 <span style=''>  */
+</span>116 <span style=''>class DefaultPointsStrategy extends PointsStrategy:
+</span>117 <span style=''>  </span><span style='background: #AEF1AE'>def calculatePoints</span><span style=''>(cards: List[CardModel]): Int =
+</span>118 <span style=''>    </span><span style='background: #AEF1AE'>cards.map(card =&gt; card.rank).sum</span><span style=''> // Default implementation sums ranks
+</span>119 <span style=''>
+</span>120 <span style=''>/** Custom implementation of PointsStrategy that uses a list of point rules.
+</span>121 <span style=''>  * @param pointRules
+</span>122 <span style=''>  *   the list of point rules to calculate points
+</span>123 <span style=''>  */
+</span>124 <span style=''>class CustomPointsStrategy(pointRules: List[PointsRule]) extends PointsStrategy:
+</span>125 <span style=''>  </span><span style='background: #AEF1AE'>def calculatePoints</span><span style=''>(cards: List[CardModel]): Int =
+</span>126 <span style=''>    </span><span style='background: #AEF1AE'>(for
+</span>127 <span style=''></span><span style='background: #AEF1AE'>      card &lt;- cards
+</span>128 <span style=''></span><span style='background: #AEF1AE'>      rule &lt;- pointRules
+</span>129 <span style=''></span><span style='background: #AEF1AE'>    yield rule(card.name, card.suit)).sum</span><span style=''>
+</span>130 <span style=''>
+</span>131 <span style=''>/** Strategy for determining the winning team based on the game rules.
+</span>132 <span style=''>  */
+</span>133 <span style=''>trait WinRuleStrategy:
+</span>134 <span style=''>  /** Determines the winning team based on the game rules.
+</span>135 <span style=''>    * @param teams
+</span>136 <span style=''>    *   the teams in the game
+</span>137 <span style=''>    * @param listOfPlayers
+</span>138 <span style=''>    *   the list of players in the game
+</span>139 <span style=''>    * @return
+</span>140 <span style=''>    *   the winning List[team]
+</span>141 <span style=''>    */
+</span>142 <span style=''>  def orderedTeam(
+</span>143 <span style=''>      teams: List[Team],
+</span>144 <span style=''>      listOfPlayers: List[PlayerModel]
+</span>145 <span style=''>  ): List[Team]
+</span>146 <span style=''>
+</span>147 <span style=''>/** Default implementation of WinRuleStrategy that uses the highest scoring team
+</span>148 <span style=''>  * as the winner.
+</span>149 <span style=''>  */
+</span>150 <span style=''>class DefaultWinRuleStrategy extends WinRuleStrategy:
+</span>151 <span style=''>  </span><span style='background: #AEF1AE'>def orderedTeam</span><span style=''>(
+</span>152 <span style=''>      teams: List[Team],
+</span>153 <span style=''>      listOfPlayers: List[PlayerModel]
+</span>154 <span style=''>  ): List[Team] =
+</span>155 <span style=''>    val rule = </span><span style='background: #AEF1AE'>WinRule.highest(using teams, listOfPlayers)</span><span style=''>
+</span>156 <span style=''>    rule
+</span>157 <span style=''>
+</span>158 <span style=''>/** Custom implementation of WinRuleStrategy that uses a provided win rule
+</span>159 <span style=''>  * function.
+</span>160 <span style=''>  * @param winRule
+</span>161 <span style=''>  *   the win rule function that determines the winning team
+</span>162 <span style=''>  */
+</span>163 <span style=''>class CustomWinRuleStrategy(winRule: WinRule) extends WinRuleStrategy:
+</span>164 <span style=''>  </span><span style='background: #AEF1AE'>def orderedTeam</span><span style=''>(
+</span>165 <span style=''>      teams: List[Team],
+</span>166 <span style=''>      listOfPlayers: List[PlayerModel]
+</span>167 <span style=''>  ): List[Team] =
+</span>168 <span style=''>    </span><span style='background: #AEF1AE'>winRule(teams, listOfPlayers)</span><span style=''>
+</span>169 <span style=''>
+</span>170 <span style=''>/** Trait for managing the deck of cards in the game.
+</span>171 <span style=''>  */
+</span>172 <span style=''>trait DeckManagement:
+</span>173 <span style=''>  /** The deck of cards used in the game.
+</span>174 <span style=''>    */
+</span>175 <span style=''>  var deck: DeckModel = </span><span style='background: #AEF1AE'>DeckModel()</span><span style=''>
+</span>176 <span style=''>
+</span>177 <span style=''>  /** Gives a specified number of cards to a player from the deck.
+</span>178 <span style=''>    *
+</span>179 <span style=''>    * @param player
+</span>180 <span style=''>    *   the player to whom cards are given
+</span>181 <span style=''>    * @param handSize
+</span>182 <span style=''>    *   the number of cards to give to the player
+</span>183 <span style=''>    */
+</span>184 <span style=''>  </span><span style='background: #AEF1AE'>def giveCardsToPlayer</span><span style=''>(player: PlayerModel, handSize: Int): Unit =
+</span>185 <span style=''>    </span><span style='background: #AEF1AE'>player.drawFromDeck(deck, handSize)</span><span style=''>
+</span>186 <span style=''>
+</span>187 <span style=''>  /** Creates a deck of cards with the specified suits and ranks. It adds a card
+</span>188 <span style=''>    * for each combination of suit and rank to the deck,
+</span>189 <span style=''>    *
+</span>190 <span style=''>    * @param suits
+</span>191 <span style=''>    *   the suits to include in the deck
+</span>192 <span style=''>    * @param ranks
+</span>193 <span style=''>    *   the ranks to include in the deck
+</span>194 <span style=''>    */
+</span>195 <span style=''>  </span><span style='background: #AEF1AE'>def createDeck</span><span style=''>(suits: Suits, ranks: List[String]): Unit =
+</span>196 <span style=''>    import DeckModel.given
+</span>197 <span style=''>    </span><span style='background: #AEF1AE'>for
+</span>198 <span style=''></span><span style='background: #AEF1AE'>      rank &lt;- ranks
+</span>199 <span style=''></span><span style='background: #AEF1AE'>      suit &lt;- suits
+</span>200 <span style=''></span><span style='background: #AEF1AE'>    do deck.addCard(CardModel(rank, ranks.indexOf(rank), suit))</span><span style=''>
+</span>201 <span style=''>    </span><span style='background: #AEF1AE'>deck.shuffle()</span><span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Tests</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1059
+        </td>
+        <td>
+          984
+          -
+          999
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          canPlayCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def canPlayCard
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1061
+        </td>
+        <td>
+          1395
+          -
+          1410
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          canPlayCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def canPlayCard
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1060
+        </td>
+        <td>
+          1530
+          -
+          1576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          handRule(cardsOnTable, playerHand, playedCard)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1077
+        </td>
+        <td>
+          2316
+          -
+          2342
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          calculateWinningPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def calculateWinningPlayer
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1063
+        </td>
+        <td>
+          2459
+          -
+          2487
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTableByPlayer.head._2
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1062
+        </td>
+        <td>
+          2459
+          -
+          2484
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTableByPlayer.head
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1064
+        </td>
+        <td>
+          2510
+          -
+          2530
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          firstCardPlayed.suit
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1067
+        </td>
+        <td>
+          2603
+          -
+          2607
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1066
+        </td>
+        <td>
+          2565
+          -
+          2627
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          filter
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTableByPlayer\r\n        .filter(_._2.suit == playedSuit)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1068
+        </td>
+        <td>
+          2603
+          -
+          2612
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2.suit
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          1070
+        </td>
+        <td>
+          2642
+          -
+          2650
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          Ordering
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Ordering
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          1069
+        </td>
+        <td>
+          2642
+          -
+          2664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          by
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          Ordering.by(_._2.rank)
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          1072
+        </td>
+        <td>
+          2654
+          -
+          2663
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2.rank
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          1065
+        </td>
+        <td>
+          2565
+          -
+          2665
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          max
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTableByPlayer\r\n        .filter(_._2.suit == playedSuit)\r\n        .max(Ordering.by(_._2.rank))
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          1071
+        </td>
+        <td>
+          2654
+          -
+          2658
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _2
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _._2
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1073
+        </td>
+        <td>
+          2691
+          -
+          2739
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          find
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTableByPlayer.find(_.eq(maxCardByPlayer))
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1076
+        </td>
+        <td>
+          2691
+          -
+          2746
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          _1
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTableByPlayer.find(_.eq(maxCardByPlayer)).get._1
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1075
+        </td>
+        <td>
+          2691
+          -
+          2743
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cardsOnTableByPlayer.find(_.eq(maxCardByPlayer)).get
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1074
+        </td>
+        <td>
+          2717
+          -
+          2738
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          eq
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.eq(maxCardByPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1088
+        </td>
+        <td>
+          3027
+          -
+          3053
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          calculateWinningPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def calculateWinningPlayer
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1081
+        </td>
+        <td>
+          3227
+          -
+          3253
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(cardsOnTableByPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1080
+        </td>
+        <td>
+          3195
+          -
+          3254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playRules\r\n        .map(rule =&gt; rule(cardsOnTableByPlayer))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1079
+        </td>
+        <td>
+          3195
+          -
+          3284
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          filter
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playRules\r\n        .map(rule =&gt; rule(cardsOnTableByPlayer))\r\n        .filter(_.isDefined)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1082
+        </td>
+        <td>
+          3272
+          -
+          3283
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          isDefined
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1078
+        </td>
+        <td>
+          3195
+          -
+          3305
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          playRules\r\n        .map(rule =&gt; rule(cardsOnTableByPlayer))\r\n        .filter(_.isDefined)\r\n        .map(_.get)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1083
+        </td>
+        <td>
+          3299
+          -
+          3304
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          get
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          _.get
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1085
+        </td>
+        <td>
+          3345
+          -
+          3356
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          return None
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1084
+        </td>
+        <td>
+          3316
+          -
+          3335
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          size
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          winningPlayers.size
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1086
+        </td>
+        <td>
+          3356
+          -
+          3356
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;none&gt;
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1087
+        </td>
+        <td>
+          3384
+          -
+          3403
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          head
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          winningPlayers.head
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1092
+        </td>
+        <td>
+          3919
+          -
+          3938
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          calculatePoints
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def calculatePoints
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1091
+        </td>
+        <td>
+          3993
+          -
+          4002
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          rank
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card.rank
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1090
+        </td>
+        <td>
+          3975
+          -
+          4003
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cards.map(card =&gt; card.rank)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1089
+        </td>
+        <td>
+          3975
+          -
+          4007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sum
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          cards.map(card =&gt; card.rank).sum
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          1099
+        </td>
+        <td>
+          4290
+          -
+          4309
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          calculatePoints
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def calculatePoints
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          1094
+        </td>
+        <td>
+          4347
+          -
+          4435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          flatMap
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for\r\n      card &lt;- cards\r\n      rule &lt;- pointRules\r\n    yield rule(card.name, card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          1093
+        </td>
+        <td>
+          4346
+          -
+          4440
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          sum
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          (for\r\n      card &lt;- cards\r\n      rule &lt;- pointRules\r\n    yield rule(card.name, card.suit)).sum
+        </td>
+      </tr><tr>
+        <td>
+          128
+        </td>
+        <td>
+          1095
+        </td>
+        <td>
+          4379
+          -
+          4435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          map
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule &lt;- pointRules\r\n    yield rule(card.name, card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          1097
+        </td>
+        <td>
+          4414
+          -
+          4423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          name
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card.name
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          1096
+        </td>
+        <td>
+          4409
+          -
+          4435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          rule(card.name, card.suit)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          1098
+        </td>
+        <td>
+          4425
+          -
+          4434
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          suit
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          card.suit
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          1101
+        </td>
+        <td>
+          5051
+          -
+          5066
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          orderedTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def orderedTeam
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          1100
+        </td>
+        <td>
+          5169
+          -
+          5212
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          highest
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          WinRule.highest(using teams, listOfPlayers)
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          1103
+        </td>
+        <td>
+          5479
+          -
+          5494
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          orderedTeam
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def orderedTeam
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          1102
+        </td>
+        <td>
+          5586
+          -
+          5615
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          winRule(teams, listOfPlayers)
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1104
+        </td>
+        <td>
+          5778
+          -
+          5789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          DeckModel()
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1106
+        </td>
+        <td>
+          6017
+          -
+          6038
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          giveCardsToPlayer
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def giveCardsToPlayer
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          1105
+        </td>
+        <td>
+          6088
+          -
+          6123
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          drawFromDeck
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          player.drawFromDeck(deck, handSize)
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1113
+        </td>
+        <td>
+          6408
+          -
+          6422
+        </td>
+        <td>
+          DefDef
+        </td>
+        <td>
+          createDeck
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          def createDeck
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          1107
+        </td>
+        <td>
+          6499
+          -
+          6609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          for\r\n      rank &lt;- ranks\r\n      suit &lt;- suits\r\n    do deck.addCard(CardModel(rank, ranks.indexOf(rank), suit))
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1108
+        </td>
+        <td>
+          6531
+          -
+          6609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          foreach
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          suit &lt;- suits\r\n    do deck.addCard(CardModel(rank, ranks.indexOf(rank), suit))
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          1109
+        </td>
+        <td>
+          6553
+          -
+          6609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          addCard
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          deck.addCard(CardModel(rank, ranks.indexOf(rank), suit))
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          1111
+        </td>
+        <td>
+          6582
+          -
+          6601
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          indexOf
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          ranks.indexOf(rank)
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          1110
+        </td>
+        <td>
+          6566
+          -
+          6608
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          apply
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          CardModel(rank, ranks.indexOf(rank), suit)
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          1112
+        </td>
+        <td>
+          6615
+          -
+          6629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          shuffle
+        </td>
+        <td>
+          
+        </td>
+        <td style="background: #AEF1AE">
+          deck.shuffle()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

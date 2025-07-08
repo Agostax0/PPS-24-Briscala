@@ -7,7 +7,8 @@ We tried to follow a Test-Driven Development (TDD) approach, where tests are wri
 After the implementation of a feature, we also checked the coverage of the tests using Scoverage, possibly improving the coverage by adding more tests.
 
 ## Coverage
-Scoverage reported a coverage of 75.68% for the project which is a bit lower than 80%, that was our aim since the start.
+Scoverage reported a coverage of 76.12% for the project which is a bit lower than 80%, that was our aim since the start.
+The full scoverage report can be found [here](scoverage-report/index.html), or at PPS-24-Briscala/target/scala-3.3.6/scoverage-report/index.html.
 
 ![Test_Coverage](../res/scoverage.png "Test Coverage")
 

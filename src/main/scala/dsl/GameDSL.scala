@@ -25,7 +25,7 @@ object GameDSL:
       *   The builder for the game
       */
     infix def is(name: String): GameBuilder =
-      builder = GameBuilder(name)
+      builder = OrderedGameBuilder(name, GameBuilder(name))
       builder
 
     /** Sets the game to have a specific number of players.

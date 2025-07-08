@@ -30,7 +30,7 @@ import engine.model.{
 
 /** GameBuilder is a trait that defines the methods to build a game.
   */
-sealed trait GameBuilder:
+trait GameBuilder:
   /** The name of the game.
     */
   val gameName: String

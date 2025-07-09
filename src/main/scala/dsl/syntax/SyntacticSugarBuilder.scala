@@ -12,18 +12,19 @@ import scala.language.implicitConversions
 
 object SyntacticSugarBuilder:
 
-  /**
-   * Builder for creating a GameBuilder with a specific number of players.
-   */
+  /** Builder for creating a GameBuilder with a specific number of players.
+    */
   trait PlayerCountBuilder:
     infix def players: GameBuilder
   object PlayerCountBuilder:
-    /**
-     * Sets the number of players for the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @param playerCount the number of players expected to be added
-     * @return a PlayerCountBuilder that can be used to set the number of players
-     */
+    /** Sets the number of players for the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @param playerCount
+      *   the number of players expected to be added
+      * @return
+      *   a PlayerCountBuilder that can be used to set the number of players
+      */
     def apply(gameBuilder: GameBuilder, playerCount: Int): PlayerCountBuilder =
       new PlayerCountBuilderImpl(gameBuilder, playerCount)
     private class PlayerCountBuilderImpl(
@@ -33,18 +34,19 @@ object SyntacticSugarBuilder:
       infix def players: GameBuilder =
         gameBuilder.setPlayers(playerCount)
 
-  /**
-   * Builder for adding entities (players or bots) to the GameBuilder.
-   */
+  /** Builder for adding entities (players or bots) to the GameBuilder.
+    */
   trait EntityBuilder:
     infix def called(name: String): GameBuilder
   object EntityBuilder:
-    /**
-     * Adds players or bots to the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @param entity the entity to be added (Player, RandomBot, SmartBot)
-     * @return an EntityBuilder that can be used to set the name of the entity
-     */
+    /** Adds players or bots to the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @param entity
+      *   the entity to be added (Player, RandomBot, SmartBot)
+      * @return
+      *   an EntityBuilder that can be used to set the name of the entity
+      */
     def apply(
         gameBuilder: GameBuilder,
         entity: EntitySyntacticSugar
@@ -62,18 +64,20 @@ object SyntacticSugarBuilder:
           case _: SmartBotSyntacticSugar =>
             gameBuilder.addBotPlayer(name, BotType.Smart)
 
-  /**
-   * Builder for setting the number of cards in each player's hand to the GameBuilder.
-   */
+  /** Builder for setting the number of cards in each player's hand to the
+    * GameBuilder.
+    */
   trait HandBuilder:
     infix def cards(to: ToSyntacticSugar): ToBuilder
   object HandBuilder:
-    /**
-     * Sets the number of cards in each player's hand for the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @param handSize the number of cards in each player's hand
-     * @return a HandBuilder that can be used to set the players' hands
-     */
+    /** Sets the number of cards in each player's hand for the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @param handSize
+      *   the number of cards in each player's hand
+      * @return
+      *   a HandBuilder that can be used to set the players' hands
+      */
     def apply(gameBuilder: GameBuilder, handSize: Int): HandBuilder =
       new HandBuilderImpl(gameBuilder, handSize)
     private class HandBuilderImpl(gameBuilder: GameBuilder, handSize: Int)
@@ -91,17 +95,17 @@ object SyntacticSugarBuilder:
       infix def every(player: PlayerSyntacticSugar): GameBuilder =
         gameBuilder.setPlayersHands(handSize)
 
-  /**
-   * Builder for setting the starting player of the GameBuilder.
-   */
+  /** Builder for setting the starting player of the GameBuilder.
+    */
   trait StartingTurnBuilder:
     infix def from(name: String): GameBuilder
   object StartingTurnBuilder:
-    /**
-     * Sets the index of the starting player in the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @return a StartingTurnBuilder that can be used to set the starting player
-     */
+    /** Sets the index of the starting player in the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @return
+      *   a StartingTurnBuilder that can be used to set the starting player
+      */
     def apply(gameBuilder: GameBuilder): StartingTurnBuilder =
       new StartingTurnBuilderImpl(gameBuilder)
     private class StartingTurnBuilderImpl(builder: GameBuilder)
@@ -109,17 +113,17 @@ object SyntacticSugarBuilder:
       override infix def from(name: String): GameBuilder =
         builder.setStartingPlayer(name)
 
-  /**
-   * Builder for setting the points rules of the GameBuilder.
-   */
+  /** Builder for setting the points rules of the GameBuilder.
+    */
   trait PointsBuilder:
     infix def are(pointRules: ((String, String) => Int)*): GameBuilder
   object PointsBuilder:
-    /**
-     * Adds point rules to the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @return a PointsBuilder that can be used to set the point rules
-     */
+    /** Adds point rules to the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @return
+      *   a PointsBuilder that can be used to set the point rules
+      */
     def apply(gameBuilder: GameBuilder): PointsBuilder = new PointsBuilderImpl(
       gameBuilder
     )
@@ -130,17 +134,17 @@ object SyntacticSugarBuilder:
         pointRules.foreach(rule => builder.setPointRule(PointsRule(rule)))
         builder
 
-  /**
-   * Builder for creating teams of players in the GameBuilder.
-   */
+  /** Builder for creating teams of players in the GameBuilder.
+    */
   trait TeamBuilder:
     infix def composedOf(name: String*): GameBuilder
   object TeamBuilder:
-    /**
-     * Adds teams to the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @return a TeamBuilder that can be used to set the team names
-     */
+    /** Adds teams to the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @return
+      *   a TeamBuilder that can be used to set the team names
+      */
     def apply(gameBuilder: GameBuilder): TeamBuilder = new TeamBuilderImpl(
       gameBuilder
     )
@@ -149,19 +153,19 @@ object SyntacticSugarBuilder:
         builder.addTeam(names.toList)
         builder
 
-  /**
-   * Builder for setting hand rules in the GameBuilder.
-   */
+  /** Builder for setting hand rules in the GameBuilder.
+    */
   trait HandRuleBuilder:
     infix def are(
         handRules: (List[CardModel], DeckModel, CardModel) => Boolean
     ): GameBuilder
   object HandRuleBuilder:
-    /**
-     * Sets the hand rules for the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @return a HandRuleBuilder that can be used to set the hand rules
-     */
+    /** Sets the hand rules for the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @return
+      *   a HandRuleBuilder that can be used to set the hand rules
+      */
     def apply(gameBuilder: GameBuilder): HandRuleBuilder =
       new HandRulesBuilderImpl(
         gameBuilder
@@ -174,19 +178,19 @@ object SyntacticSugarBuilder:
         builder.setHandRule(HandRule(handRules))
         builder
 
-  /**
-   * Builder for setting play rules in the GameBuilder.
-   */
+  /** Builder for setting play rules in the GameBuilder.
+    */
   trait PlayRulesBuilder:
     infix def are(
         playRules: (List[(PlayerModel, CardModel)] => Option[PlayerModel])*
     ): GameBuilder
   object PlayRulesBuilder:
-    /**
-     * Sets the play rules for the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @return a PlayRulesBuilder that can be used to set the play rules
-     */
+    /** Sets the play rules for the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @return
+      *   a PlayRulesBuilder that can be used to set the play rules
+      */
     def apply(gameBuilder: GameBuilder): PlayRulesBuilder =
       new PlayRulesBuilderImpl(
         gameBuilder
@@ -199,19 +203,19 @@ object SyntacticSugarBuilder:
         playRules.foreach(rule => builder.setPlayRule(PlayRule(rule)))
         builder
 
-  /**
-   * Builder for setting win rules in the GameBuilder.
-   */
+  /** Builder for setting win rules in the GameBuilder.
+    */
   trait WinRulesBuilder:
     infix def is(
         winRules: (List[Team], List[PlayerModel]) => List[Team]
     ): GameBuilder
   object WinRulesBuilder:
-    /**
-     * Sets the win rules for the GameBuilder.
-     * @param gameBuilder the GameBuilder to configure
-     * @return a WinRulesBuilder that can be used to set the win rules
-     */
+    /** Sets the win rules for the GameBuilder.
+      * @param gameBuilder
+      *   the GameBuilder to configure
+      * @return
+      *   a WinRulesBuilder that can be used to set the win rules
+      */
     def apply(gameBuilder: GameBuilder): WinRulesBuilder =
       new WinRulesBuilderImpl(
         gameBuilder
@@ -224,9 +228,22 @@ object SyntacticSugarBuilder:
         builder.setWinRule(WinRule(winRules))
         builder
 
+  /** Builder for setting turn-winning cards in the GameBuilder.
+    *
+    * To be used either like this:
+    * {{{highest(suit) that takes is briscolaSuit}}} Or
+    * {{{highest(rank) that takes follows first card suit}}}
+    */
   trait HighestBuilder:
     infix def that(takes: TakesSyntacticSugar): HighestCardBuilder
   private object HighestBuilder:
+    /** Builder for setting turn-winning cards in the GameBuilder.
+      *
+      * @param filterSyntacticSugar
+      *   accepts either "suit" or "rank" syntactic sugar
+      * @return
+      *   a builder which will choose the highest card of either suit or rank
+      */
     def apply(filterSyntacticSugar: CardFilterSyntacticSugar): HighestBuilder =
       new HighestBuilderImpl(filterSyntacticSugar)
     private class HighestBuilderImpl(
@@ -235,10 +252,38 @@ object SyntacticSugarBuilder:
       override infix def that(takes: TakesSyntacticSugar): HighestCardBuilder =
         HighestCardBuilder.apply(highestTakingCardProperty)
 
+  /** Builder for setting how turn-winning cards are chosen in the GameBuilder.
+    *
+    * To be used either like this:
+    * {{{highest(suit) that takes is briscolaSuit}}} Or
+    * {{{highest(rank) that takes follows first card suit}}}
+    */
   trait HighestCardBuilder:
+    /** Meant for briscola configuration
+      *
+      * To be used like this: {{{highest(suit) that takes is briscolaSuit}}}
+      *
+      * @param suit
+      *   the highest ranked card has to be of this suit
+      * @param cards
+      *   the cards at play
+      * @return
+      *   the player who will win this turn based on the cards at play
+      */
     infix def is(suit: String)(using
-        List[(PlayerModel, CardModel)]
+        cards: List[(PlayerModel, CardModel)]
     ): Option[PlayerModel]
+
+    /** Meant for generic taking configurations
+      *
+      * To be used like this:
+      * {{{highest(rank) that takes follows first card suit}}}
+      *
+      * @param cardPosition
+      *   the card's position to refer to when choosing a winner
+      * @return
+      *   a builder to choose the reference card property
+      */
     infix def follows(
         cardPosition: CardPositionSyntacticSugar
     ): HighestCardOfCardPlayedBuilder
@@ -265,9 +310,26 @@ object SyntacticSugarBuilder:
           .map(_._1)
           .headOption
         winner
+
+  /** Builder for setting the reference card property in choosing the turn
+    * winner.
+    */
   trait HighestCardOfCardPlayedBuilder:
-    infix def card(suit: CardFilterSyntacticSugar)(using
-        List[(PlayerModel, CardModel)]
+    /** Meant for choosing the reference card property, to choose "taking power"
+      * and card dominance.
+      *
+      * To be used like this:
+      * {{{highest(rank) that takes follows first card suit}}}
+      * @param property
+      *   the property of the card to compare to (expecting "suit" or "rank"
+      *   syntax sugar)
+      * @param cards
+      *   the cards at play
+      * @return
+      *   the player who will win this turn based on the cards at play
+      */
+    infix def card(property: CardFilterSyntacticSugar)(using
+        cards: List[(PlayerModel, CardModel)]
     ): Option[PlayerModel]
 
   private object HighestCardOfCardPlayedBuilder:
@@ -311,7 +373,8 @@ object SyntacticSugarBuilder:
               cardsOnTable.filter(_._2.suit equals card.suit)
             case _: RankSyntacticSugar =>
               cardsOnTable.filter(_._2.rank equals card.rank)
-            case _ => throw new IllegalArgumentException("Unknown card property")
+            case _ =>
+              throw new IllegalArgumentException("Unknown card property")
         private def sortByHighestProperty: List[(PlayerModel, CardModel)] =
           highestTakingCardProperty match
             case _: SuitSyntacticSugar =>
@@ -324,6 +387,14 @@ object SyntacticSugarBuilder:
               throw new IllegalArgumentException(
                 "Unknown card property"
               )
+
+  /** Builder for setting play rules in the GameBuilder.
+    *
+    * @param highestTakingCardProperty
+    *   "suit" or "rank" syntactic sugar
+    * @return
+    *   a HighestBuilder that can be used to set the play rules
+    */
   implicit def highest(
       highestTakingCardProperty: CardFilterSyntacticSugar
   ): HighestBuilder =

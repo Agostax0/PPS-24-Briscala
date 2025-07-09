@@ -15,6 +15,10 @@ The full scoverage report can be found [here](scoverage-report/index.html), or a
 The main culprits for lowering the coverage are some elements of the GUI, which are not easily testable, and most parts of *EngineController* which are not accessible for tests due to the way the code is structured.
 We are satisfied with the coverage of the other packages as it is solidly above 90%.
 
+To manually check the coverage report, a command alias was added to the sbt configuration.
+
+By running 
+`sbt scoverage` a complete coverage report will be generated.
 ## Example
 We wrote an implementation of the *GameBuilder* trait called *SimpleGameBuilder*.
 This class acts like a mockup for the *GameBuilder* with a less rigid structure, allowing us to better test the trait.

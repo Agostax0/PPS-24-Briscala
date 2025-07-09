@@ -1,6 +1,13 @@
 package dsl
 
-import dsl.syntax.SyntacticSugar.{EntitySyntacticSugar, PlayerSyntacticSugar, PointsSyntacticSugar, RulesSyntacticSugar, StartsSyntacticSugar, TeamSyntacticSugar}
+import dsl.syntax.SyntacticSugar.{
+  EntitySyntacticSugar,
+  PlayerSyntacticSugar,
+  PointsSyntacticSugar,
+  RulesSyntacticSugar,
+  StartsSyntacticSugar,
+  TeamSyntacticSugar
+}
 import dsl.syntax.SyntacticSugarBuilder.*
 
 object GameDSL:
@@ -48,13 +55,13 @@ object GameDSL:
       * {{{
       *   game has player called "Alice"
       * }}}
-     *
+      *
       * @param playerSyntax
       *   "PlayerSyntacticSugar" instance representing the player
       * @return
       *   The builder for the game
       */
-    infix def has(entitySyntax: EntitySyntacticSugar ): EntityBuilder =
+    infix def has(entitySyntax: EntitySyntacticSugar): EntityBuilder =
       EntityBuilder(gameBuilder, entitySyntax)
 
     infix def has(teamSyntax: TeamSyntacticSugar): TeamBuilder =
@@ -76,33 +83,33 @@ object GameDSL:
       gameBuilder.setSuits(suits.toList)
 
     /** Adds the cards to build the deck, creating a card for every suit.
-     *
-     * To be used like this:
-     * {{{
-     *   game ranksAre ("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
-     * }}}
-     *
-     * @param ranks
-     * The name of the suits
-     * @return
-     * The builder for the game
-     */
+      *
+      * To be used like this:
+      * {{{
+      *   game ranksAre ("2", "4", "5", "6", "7", "Knave", "Knight", "King", "3", "Ace")
+      * }}}
+      *
+      * @param ranks
+      *   The name of the suits
+      * @return
+      *   The builder for the game
+      */
     infix def ranksAre(ranks: String*): GameBuilder =
       gameBuilder.setRanks(ranks.toList)
 
-
-    /** Sets the number of cards to be given to each player at the start of each turns
-     *
-     * To be used like this:
-     *  {{{
-     *   game gives 10 cards to every player
-     *  }}}
-     *
-     * @param handSize
-     *  The number of cards to be given to each player
-     * @return
-     *  The builder for the game
-     */
+    /** Sets the number of cards to be given to each player at the start of each
+      * turns
+      *
+      * To be used like this:
+      * {{{
+      *   game gives 10 cards to every player
+      * }}}
+      *
+      * @param handSize
+      *   The number of cards to be given to each player
+      * @return
+      *   The builder for the game
+      */
     infix def gives(handSize: Int): HandBuilder =
       HandBuilder(gameBuilder, handSize)
 
@@ -122,72 +129,83 @@ object GameDSL:
       StartingTurnBuilder(gameBuilder)
 
     /** Sets the points for each card, based on the card name and/or suit.
-     *
-     * To be used like this:
-     * {{{
-     *   game card points are:
-     *     (name, suit) =>
-     *       name match
-     *         case "Ace" => 10
-     *         case _ => 0
-     * }}}
- *
-     * @param points
-     *  syntactic sugar
-     * @return
-     *  The builder for the game
-     */
+      *
+      * To be used like this:
+      * {{{
+      *   game card points are:
+      *     (name, suit) =>
+      *       name match
+      *         case "Ace" => 10
+      *         case _ => 0
+      * }}}
+      *
+      * @param points
+      *   syntactic sugar
+      * @return
+      *   The builder for the game
+      */
     infix def card(points: PointsSyntacticSugar): PointsBuilder =
       PointsBuilder(gameBuilder)
 
     /** Sets the briscola to be used in game.
-     *
-     * To be used like this:
-     * {{{
-     *   game briscolaIs "Cups"
-     * }}}
-     *
-     * @param suit
-     *  the suit of the briscola
-     * @return
-     * The builder for the game
-     */
+      *
+      * To be used like this:
+      * {{{
+      *   game briscolaIs "Cups"
+      * }}}
+      *
+      * @param suit
+      *   the suit of the briscola
+      * @return
+      *   The builder for the game
+      */
     infix def briscolaIs(suit: String): GameBuilder =
       gameBuilder.setBriscolaSuit(suit)
 
-    /** Sets the rules for the hand of cards (which cards can be played and which not)
-     *
-     * To be used like this:
-     * {{{
-     *   game hand rules are:
-     *     (cardsOnTable, playerHand, playedCard) =>
-     *       given List[CardModel] = cardsOnTable
-     *       given DeckModel = playerHand
-     *       given CardModel = playedCard
-     *
-     *       freeStart or followFirstSuit
-     * }}}
-     *
-     * @param rules
-     *  syntactic sugar for hand rules
-     * @return
-     *  The builder for the game
-     */
+    /** Sets the rules for the hand of cards (which cards can be played and
+      * which not)
+      *
+      * To be used like this:
+      * {{{
+      *   game hand rules are:
+      *     (cardsOnTable, playerHand, playedCard) =>
+      *       given List[CardModel] = cardsOnTable
+      *       given DeckModel = playerHand
+      *       given CardModel = playedCard
+      *
+      *       freeStart or followFirstSuit
+      * }}}
+      *
+      * @param rules
+      *   syntactic sugar for hand rules
+      * @return
+      *   The builder for the game
+      */
     infix def hand(rules: RulesSyntacticSugar): HandRuleBuilder =
       HandRuleBuilder(gameBuilder)
 
     /** Sets the rules for the cards (which player wins the turn)
-     *
-     * To be used like this:
-     * {{{
-     *
-     * }}}
-     *
-     * @param rules
-     *  syntactic sugar for play rules
-     * @return
-     *  The builder for the game
-     */
+      *
+      * To be used like this:
+      * {{{
+      * val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+      *         given List[(PlayerModel, CardModel)] = cards
+      *
+      *         highest(suit) that takes is briscolaSuit
+      *
+      *       val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+      *         given List[(PlayerModel, CardModel)] = cards
+      *
+      *         highest(rank) that takes follows first card suit
+      *
+      *       highestBriscolaTakesRule prevailsOn highestCardTakesRule
+      * }}}
+      *
+      * @param rules
+      *   syntactic sugar for play rules
+      * @return
+      *   The builder for the game
+      */
     infix def play(rules: RulesSyntacticSugar): PlayRulesBuilder =
       PlayRulesBuilder(gameBuilder)
 

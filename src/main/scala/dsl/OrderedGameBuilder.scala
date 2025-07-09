@@ -54,74 +54,74 @@ object OrderedGameBuilder:
         case WithPlayers if requiredStep == WithPlayers => true
         case _ => getNextStep(currentStep) == requiredStep
 
-    def simpleEquals(obj: Any): Boolean = builder.simpleEquals(obj)
+    override def simpleEquals(obj: Any): Boolean = builder.simpleEquals(obj)
 
-    def addPlayer(name: String): GameBuilder =
+    override def addPlayer(name: String): GameBuilder =
       validateStep(WithPlayers, "addPlayer")
       currentStep = WithPlayers
       builder.addPlayer(name)
 
-    def addBotPlayer(name: String, botType: BotType): GameBuilder =
+    override def addBotPlayer(name: String, botType: BotType): GameBuilder =
       validateStep(WithPlayers, "addBotPlayer")
       currentStep = WithPlayers
       builder.addBotPlayer(name, botType)
 
-    def setPlayers(n: Int): GameBuilder =
+    override def setPlayers(n: Int): GameBuilder =
       validateStep(WithPlayerCount, "setPlayers")
       currentStep = WithPlayerCount
       builder.setPlayers(n)
 
-    def setSuits(suits: List[String]): GameBuilder =
+    override def setSuits(suits: List[String]): GameBuilder =
       validateStep(WithSuits, "setSuits")
       currentStep = WithSuits
       builder.setSuits(suits)
 
-    def setRanks(ranks: List[String]): GameBuilder =
+    override def setRanks(ranks: List[String]): GameBuilder =
       validateStep(WithRanks, "setRanks")
       currentStep = WithRanks
       builder.setRanks(ranks)
 
-    def setPlayersHands(handSize: Int): GameBuilder =
+    override def setPlayersHands(handSize: Int): GameBuilder =
       validateStep(WithHandSizeSet, "setPlayerHands")
       currentStep = WithHandSizeSet
       builder.setPlayersHands(handSize)
 
-    def setStartingPlayer(name: String): GameBuilder =
+    override def setStartingPlayer(name: String): GameBuilder =
       validateStep(Ready, "setStartingPlayer")
       currentStep = Ready
       builder.setStartingPlayer(name)
 
-    def setPointRule(rule: PointsRule): GameBuilder =
+    override def setPointRule(rule: PointsRule): GameBuilder =
       validateStep(Ready, "setPointRule")
       currentStep = Ready
       builder.setPointRule(rule)
 
-    def setPlayRule(rule: PlayRule): GameBuilder =
+    override def setPlayRule(rule: PlayRule): GameBuilder =
       validateStep(Ready, "setPlayRule")
       currentStep = Ready
       builder.setPlayRule(rule)
 
-    def setHandRule(rule: HandRule): GameBuilder =
+    override def setHandRule(rule: HandRule): GameBuilder =
       validateStep(Ready, "setHandRule")
       currentStep = Ready
       builder.setHandRule(rule)
 
-    def setWinRule(rule: WinRule): GameBuilder =
+    override def setWinRule(rule: WinRule): GameBuilder =
       validateStep(Ready, "setWinRule")
       currentStep = Ready
       builder.setWinRule(rule)
 
-    def addTeam(names: List[String]): GameBuilder =
+    override def addTeam(names: List[String]): GameBuilder =
       validateStep(Ready, "addTeam")
       currentStep = Ready
       builder.addTeam(names)
 
-    def setBriscolaSuit(suit: String): GameBuilder =
+    override def setBriscolaSuit(suit: String): GameBuilder =
       validateStep(Ready, "setBriscolaSuit")
       currentStep = Ready
       builder.setBriscolaSuit(suit)
 
-    def build(): FullEngineModel =
+    override def build(): FullEngineModel =
       if currentStep == Ready | currentStep == WithHandSizeSet then
         builder.build()
       else

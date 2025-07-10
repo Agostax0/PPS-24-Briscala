@@ -1,11 +1,67 @@
 # Agosta Alessandro
-- lavorato su sintassi DSL + method ordering del builder
-- implementazione di mixin di view (card e player)
-- implementazione delle play rules
+In this project I'm responsible for the DSL and its ordering, some view components namely: CardView and PlayerView, and the Play Rules.
 
+I've primarily worked on the following files: GameDSL, OrderedGameBuilder, CardViewManager, PlayerViewManager, GameElements(specifically on PlayRule).
 ## GameDSL
-- scelta nella sintassi (singleton con metodi statici)
-- syntax sugar e ssbuilder
+As per the requirements, the game creation engine must feature a DSL, to be used through simple and intuitive syntax as a configuration tool.
+
+My idea was for the `GameDSL` to provide a more natural-like syntax for interacting with the `GameBuilder` class; in order to ultimately provide a complete `GameModel` ready for use.
+### DSL Development
+DSL development followed these steps:
+- a syntax was created for a needed game configuration
+- such syntax was reviewed with colleagues for understandability
+- then such configuration was introduced into the GameBuilder
+- finally the DSL built the aforementioned syntax to correctly relay the configuration to the GameBuilder
+
+As to the design choices:
+
+- the DSL provides natural language-like extension methods to interact with the GameBuilder trait.
+- defines a getter method `game` which the user can use to refer to the game, in order to add configurations.
+- delegates complex syntaxes to specific-configuration builders, tasked with providing syntactic sugar.
+
+Since the DSL has only a utility role and its usage can be avoided if bypassed by using directly a GameBuilder, I chose to make it a Singleton object with static extension methods for the GameBuilder.
+
+The DSL holds internally a GameBuilder, accessible with the `game` method, to which it relies on to build a complete GameModel.
+```scala
+object GameDSL:
+  private var builder: GameBuilder = _
+  implicit def game: GameBuilder = builder
+```
+It then offers extension methods for a "seamless" language-like syntax:
+```scala
+object GameDSL:
+  ...
+  extension (gameBuilder: GameBuilder)
+    infix def is(name: String): GameBuilder =
+      builder = OrderedGameBuilder(name, GameBuilder(name))
+      builder
+```
+Which allows a configuration syntax as such:
+```scala
+game is "Briscola"
+```
+Each extension method was also designed such that dotted method call could be avoided, but still available.
+```scala
+game is "Briscola"
+game has 4 players
+game has player called "Alice"
+
+game.is("Briscola")
+  .has(4).players
+  .has(player).called("Alice")
+```
+
+As mentioned before, complex syntax is delegated from the DSL to specific-builders (which in turn may call other builders) using the fluent pattern; for example the syntax: `game has player called "Alice"` would call a `EntityBuilder`, tasked with continuing the syntax chain and ultimately operate on the GameBuilder.
+For example:
+```scala
+game has player called "Alice"
+
+val entityBuilder: EntityBuilder = game has player
+val gameBuilder: GameBuilder = entityBuilder called "Alice"
+```
+Such builders are called `SyntaxBuilder` and use implicit variables called `SyntaxSugar` which allow for seamless language-like syntax.
+In the previous example `player` is a SyntaxSugar variable.
+## Method Ordering
 - method ordering come estensione del builder (decorator?)
 
 ## View Mixins
@@ -14,7 +70,7 @@
 
 ## Play Rules
 A "Play Rule" is a way for the game to know which player is going to win a turn based on the cards played.  
-During the design stage of the play rules, I've followed the team's choice of using a type alias `PlayRule` which internally boils down to a lambda.
+During the design stage of the play rules, I've followed the team's choice of using a type alias `PlayRule` which internally converts to a lambda.
 
 Such lambda is structured as follows:
 ```scala

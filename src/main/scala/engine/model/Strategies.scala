@@ -97,8 +97,7 @@ class CustomPlayRuleStrategy(playRules: List[PlayRule])
 
     if winningPlayers.size > 1 then return None
 
-    val winningPlayer = winningPlayers.head
-    Some(winningPlayer)
+    winningPlayers.headOption
 
 /** Strategy for calculating points based on the cards played.
   */

@@ -13,13 +13,14 @@
 - PlayerViewManager
 
 ## Play Rules
-A "Play Rule" is a way for the game to know which player is going to win a single turn based on the cards played.  
+A "Play Rule" is a way for the game to know which player is going to win a turn based on the cards played.  
 During the design stage of the play rules, I've followed the team's choice of using a type alias `PlayRule` which internally boils down to a lambda.
 
 Such lambda is structured as follows:
-`List[(PlayerModel, CardModel)] => Option[PlayerModel]`
-
-This lambda takes in input the current cards on the playing table, in order of play and referred to which player played them;
+```scala
+List[(PlayerModel, CardModel)] => Option[PlayerModel]
+```
+This lambda takes in input the current cards on the playing table, in order of play and linked to which player played them;
 it then returns the winning player if the rule is applicable. 
 
 The choice of returning an `Option[PlayerModel]` is derived from the initial requirement of reproducing the "Briscola" game, where two play rules apply:
@@ -31,7 +32,9 @@ As such, I've decided to also add a concept of "prevalence" of a rule over anoth
 
 Prevalence is used as follows:
 
-`rule prevailsOn anotherRule`
+```scala
+rule prevailsOn anotherRule
+```
 
 Rule prevalence states that if the `rule` is not applicable then `anotherRule` is to be chosen, otherwise `rule` is to be chosen only. 
 
@@ -39,14 +42,22 @@ This choice allowed to simply implement the briscola's main play rules.
 
 Since a card game could potentially have many rules, the rules are stored as a `List[PlayRule]`.
 
-Due to the unpredictable nature of rules' logic and applicability, I've chosen to limit a turn's winning player to only one which led me to add a check which ensures that distinct applicable rules must not result in distinct winning players.
+Due to the unpredictable nature of rules' logic and applicability, I've chosen to limit a turn's winning player to only one which led me to add a check which ensures that distinct applicable rules must not result in distinct winning players; such cases must be handled using the before mentioned "rule prevalence" concept.
+
 This check is applied in the following code:
 ```scala
+def calculateWinningPlayer(
+    cardsOnTableByPlayer: List[(PlayerModel, CardModel)]
+): Option[PlayerModel] =
+  val winningPlayers: List[PlayerModel] =
+    playRules
+      .map(rule => rule(cardsOnTableByPlayer))
+      .filter(_.isDefined)
+      .map(_.get)
 
+  if winningPlayers.size > 1 then return None
+  winningPlayers.headOption
 ```
-
-Such cases must be handled using the before mentioned "rule prevalence" concept. 
-
 ### Play Rules syntax
 
 A game play rules' are unpredictable in nature and as such I've decided to allow the user to also configure them by also using a custom DSL; which allows:
@@ -87,4 +98,4 @@ val exampleRule4 = (cards: List[(PlayerModel, CardModel)]) =>
   given List[(PlayerModel, CardModel)] = cards
   highest(rank) that takes follows last card rank
 ```
-Where one chooses which card position and property, the rule refers to when choosing the prevailing card and the turn-winning player.
+Where one chooses which card position (first or last) and property (same rank or same suit), the rule refers to when choosing the prevailing card and the turn-winning player.

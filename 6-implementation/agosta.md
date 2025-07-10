@@ -51,7 +51,7 @@ game.is("Briscola")
   .has(player).called("Alice")
 ```
 
-As mentioned before, complex syntax is delegated from the DSL to specific-builders (which in turn may call other builders) using the fluent pattern; for example the syntax: `game has player called "Alice"` would call a `EntityBuilder`, tasked with continuing the syntax chain and ultimately operate on the GameBuilder.
+As mentioned before, complex syntax is delegated from the DSL to specific-builders (which in turn may call other builders) using the fluent pattern.
 For example:
 ```scala
 game has player called "Alice"
@@ -62,7 +62,21 @@ val gameBuilder: GameBuilder = entityBuilder called "Alice"
 Such builders are called `SyntaxBuilder` and use implicit variables called `SyntaxSugar` which allow for seamless language-like syntax.
 In the previous example `player` is a SyntaxSugar variable.
 ## Method Ordering
-- method ordering come estensione del builder (decorator?)
+Just like in any language, the DSL is not immune to errors; in particular it's prone to semantic errors. 
+
+For example, the DSL sees no problem in configuring which player the game starts from, but players may have not been defined yet.
+In order to resolve this issue, I've modified the DSL to use a `OrderedGameBuilder` instead of a `GameBuilder`.
+
+The `OrderedGameBuilder` is a decorator of a `GameBuilder` which is tasked with ensuring the correct method's order of call.
+```scala
+trait OrderedGameBuilder extends GameBuilder
+```
+In this trait's hidden implementation, each builder's method has a mandatory order of call.
+
+Initially, method ordering was thought to be at compile-time, by using phantom types, but its implementation would've exceeded the time constraints.
+For simplicity, it was decided to have this order check at runtime.
+
+`OrderedGameBuilder` relies upon `BuilderStep`, an enum which lists all GameBuilder steps', and each next step.
 
 ## View Mixins
 - CardViewManager

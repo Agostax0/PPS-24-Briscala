@@ -26,7 +26,7 @@ object PlayerCount:
     count
 ```
 
-During an initial meeting, we chose which game's feature must be initialized and which were optional; we concluded that these are mandatory:
+During an initial meeting, we chose which game's features must be initialized and which were optional; we concluded that these are mandatory:
 - the game's name
 - the number of players
 - the list of players
@@ -36,7 +36,7 @@ During an initial meeting, we chose which game's feature must be initialized and
 
 With these features, a complete and ready-to-play game can be built.
 
-Additionally, these rules are optional and as such default values are used if not overridden:
+Additionally, these rules are optional, and as such, default values are used if not overridden:
 - the starting player
 - the point rules
 - the win rule
@@ -59,10 +59,10 @@ object BotPlayerModel:
     export player.*
     ...
 ```
-Upon creation, a bot also needs a `BotType` which refers to the bot behavior, applied using strategy pattern, for choosing a card to play.
+Upon creation, a bot also needs a `BotType` which refers to the bot behavior, applied using the strategy pattern, for choosing a card to play.
 The currently implemented strategies are:
 - `RandomStrategy` in which a bot chooses randomly among its playable cards in hand
-- `RuleAwareDecisionStrategy` in which a bot checks if any held cards is eligible to win the current turn, among these it chooses the least valuable; if no cards would win, the bot would choose the least score-giving card. 
+- `RuleAwareDecisionStrategy` in which a bot checks if any held cards are eligible to win the current turn, among these it chooses the least valuable; if no cards would win then the bot would choose the least score-giving card. 
 ### PointRule 
     
 

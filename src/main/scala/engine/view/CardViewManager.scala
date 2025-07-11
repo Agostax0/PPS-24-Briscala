@@ -6,7 +6,15 @@ import engine.view.monads.States.State
 
 trait CardViewManager:
   var cards: Map[String, List[CardModel]] = Map.empty
-
+ /**Adds a card to the player's hand in the game view.
+  *
+  * @param playerName
+  *   the name of the player
+  * @param card
+  *   the card to be added to the player's hand
+  * @return
+  *   a State that represents the action of adding a card to the player's hand
+ * */
   def addCardToPlayer(
       playerName: String,
       card: CardModel
@@ -19,7 +27,16 @@ trait CardViewManager:
     }
 
     displayCard(playerName, card)
-
+/**
+  * Removes a specific card from the player's hand in the game view.
+  *
+  * @param playerName
+  *   the name of the player
+  * @param card
+  *   the card to be removed from the player's hand
+  * @return
+  *   a State that represents the action of removing a card from the player's hand
+ * */
   def removeCardFromPlayer(
       playerName: String,
       card: CardModel
@@ -32,7 +49,14 @@ trait CardViewManager:
     val componentName = playerName + "::" + card.toString
     for _ <- removeComponentFromPanel(componentName, playerName)
     yield ()
-
+/**
+  * Removes all cards from a player's hand in the game view.
+  *
+  * @param playerName
+  *   the name of the player whose cards are to be removed
+  * @return
+  *   a State that represents the action of removing all cards from the player's hand
+* */
   def removeCardsFromPlayer(playerName: String): State[Frame, Unit] =
     import WindowStateImpl.*
     State(frame =>
@@ -42,7 +66,16 @@ trait CardViewManager:
       )
       (frame, ())
     )
-
+/**
+  * Displays a card in the player's hand in the game view.
+  *
+  * @param playerName
+  *   the name of the player
+  * @param card
+  *   the card to be displayed
+  * @return
+  *   a State that represents the action of displaying a card in the player's hand
+* */
   private def displayCard(
       playerName: String,
       card: CardModel

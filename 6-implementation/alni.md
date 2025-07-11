@@ -35,11 +35,11 @@ the user to freely customize any subset of the game rules, from a single type to
 
 ## Play Card Example
 To better demonstrate adherence to the Single Responsibility Principle and provide a clearer understanding of how the different components interact with each other, the following example illustrates a game event: a player's card play action.
-1. The EngineController receives the event and invokes the playCard method of the FullEngineModel. 
-2. This method validates whether the card is playable by checking compliance with the Hand Rule through a call to the canPlayCard method of the GameContext, which in turn delegates to the canPlayCard method of the handRuleStrategy.
-3. The strategy method returns the result of its lambda expression (boolean), which propagates back as the return value of the initial playCard method to the controller : if the play is valid, it returns True; otherwise, False.
-4. When the play is deemed valid, the execution flow continues by invoking the player's playCard method (which removes the card from the player's hand) and updating the table state by adding the just-played card to the cards on the table (cardsOnTable field of GameContext), and advancing the player's turn. 
-5. Finally, the true/false result is returned to the EngineController.
+1. The `EngineController` receives the event and invokes the `playCard` method of the `FullEngineModel`. 
+2. This method validates whether the card is playable by checking compliance with the Hand Rule through a call to the `canPlayCard` method of the `GameContext`, which in turn delegates to the `canPlayCard` method of the `handRuleStrategy`.
+3. The strategy method returns the result of its lambda expression (boolean), which propagates back as the return value of the initial `playCard` method to the controller: if the play is valid, it returns true; otherwise, false.
+4. When the play is deemed valid, the execution flow continues by invoking the player's `playCard` method (which removes the card from the player's hand) and updating the table state by adding the just-played card to the cards on the table (`cardsOnTable` field of `GameContext`), and advancing the player's turn. 
+5. Finally, the true/false result is returned to the `EngineController`.
 
 ![PlayCard_Sequence](../res/playCard_sequence.png "Sequence Diagram for Playing a Card")
 
@@ -69,3 +69,5 @@ These prefabricated rules, along with more readable logical operators that can b
       (cardsOnTable.head.suit == playedCard.suit ||
         !playerHand.view.exists(_.suit == cardsOnTable.head.suit))
 ```
+
+| [Go Back to Implementation](../6-implementation/index.md) | [Index](../index.md) |

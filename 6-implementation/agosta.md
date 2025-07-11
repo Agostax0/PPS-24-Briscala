@@ -81,9 +81,35 @@ For simplicity, it was decided to have this order check at runtime.
 `OrderedGameBuilder` relies upon `BuilderStep`, an enum which lists all GameBuilder steps', and each next step.
 
 ## View Mixins
-- CardViewManager
-- PlayerViewManager
+I was tasked with implementing a UI for each player and their cards in hand, this was done in the following files: `CardViewManager` and `PlayerViewManager`.
 
+Both of these files contain traits meant for the `Engine View` to implement, in order to better abide by the Single Responsibility Principle.
+
+### CardViewManager
+```scala
+trait CardViewManager:
+  var cards: Map[String, List[CardModel]]
+  def addCardToPlayer(playerName: String, card: CardModel): State[Frame, Unit]
+  def removeCardFromPlayer(playerName: String, card: CardModel): State[Frame, Unit]
+  def removeCardsFromPlayer(playerName: String): State[Frame, Unit]
+  private def displayCard(playerName: String, card: CardModel): State[Frame, Unit]
+```
+Each card is displayed as a button and labeled with the card's suit and rank.
+
+Internally, to every card on the table is assigned an ID, to be used for event handling when playing a card.  
+The ID is structured as such:
+```
+<playerName>::<cardName><cardRank><cardSuit>
+```
+### PlayerViewManager
+```scala
+trait PlayerViewManager:
+  var players: List[String]
+  def addPlayer(name: String, numberOfPlayers: Int): State[Frame, Unit]
+```
+Each player is displayed as a panel labeled with their name, containing all ordered cards in their hand, with attention to placing even-numbered teams members' in a front facing manner.
+
+A player's name is used to visually assign their cards in their hand. 
 ## Play Rules
 A "Play Rule" is a way for the game to know which player is going to win a turn based on the cards played.  
 During the design stage of the play rules, I've followed the team's choice of using a type alias `PlayRule` which internally converts to a lambda.

@@ -10,6 +10,8 @@ Below are the individual contributions of each member.
 
 ## Tri-Programming
 In this section a description of our group-work will be provided. 
+
+The following classes were created in the first stages of development to define standards for all future features. 
 ### GameBuilder
 In order to construct a correct and ready-for-use GameModel of the game, we've decided to rely on the builder pattern.
 For this reason we developed the `GameBuilder` trait, which contains methods to build a fully-functional `FullEngineModel`.
@@ -45,25 +47,6 @@ Additionally, these rules are optional, and as such, default values are used if 
 - the hand rule
 - the briscola suit
 
-### Bot
-A Bot is recognized as any other player, being an extension of the `PlayerModel` trait by using scala's `export` keyword, which applied the delegation pattern.
-```scala
-
-sealed trait BotPlayerModel extends PlayerModel
-object BotPlayerModel: 
-  ...
-  private class BotPlayerModelImpl(
-      val player: PlayerModel,
-      val botType: BotType
-  ) extends BotPlayerModel:
-    export player.*
-    ...
-```
-Upon creation, a bot also needs a `BotType` which refers to the bot behavior, applied using the strategy pattern, for choosing a card to play.
-The currently implemented strategies are:
-- `RandomStrategy` in which a bot chooses randomly among its playable cards in hand
-- `RuleAwareDecisionStrategy` in which a bot checks if any held cards are eligible to win the current turn, among these it chooses the least valuable; if no cards would win then the bot would choose the least score-giving card. 
-
 ### PointsRule
 The `PointsRule` type is an opaque type alias for a lambda which, to a given card assigns points for the game's winning scores.
 On this rule's design, the rules (play rules, hand rules, win rules) were based on.
@@ -92,5 +75,24 @@ game card points are :
       )
 ```
 With this configuration, an "Ace of Coins" is worth six points, five from its name and one from its suit.
+
+### BotPlayers
+A Bot is recognized as any other player, being an extension of the `PlayerModel` trait by using scala's `export` keyword, which applied the delegation pattern.
+```scala
+
+sealed trait BotPlayerModel extends PlayerModel
+object BotPlayerModel: 
+  ...
+  private class BotPlayerModelImpl(
+      val player: PlayerModel,
+      val botType: BotType
+  ) extends BotPlayerModel:
+    export player.*
+    ...
+```
+Upon creation, a bot also needs a `BotType` which refers to the bot behavior, applied using the strategy pattern, for choosing a card to play.
+The currently implemented strategies are:
+- `RandomStrategy` in which a bot chooses randomly among its playable cards in hand
+- `RuleAwareDecisionStrategy` in which a bot checks if any held cards are eligible to win the current turn, among these it chooses the least valuable; if no cards would win then the bot would choose the least score-giving card.
 
 | [Previous Chapter](../5-detailed_design/index.md) | [Index](../index.md) | [Next Chapter](../7-testing/index.md) |

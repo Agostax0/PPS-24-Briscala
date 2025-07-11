@@ -69,7 +69,9 @@ In order to resolve this issue, I've modified the DSL to use a `OrderedGameBuild
 
 The `OrderedGameBuilder` is a decorator of a `GameBuilder` which is tasked with ensuring the correct method's order of call.
 ```scala
-trait OrderedGameBuilder extends GameBuilder
+trait OrderedGameBuilder extends GameBuilder:
+  def validateStep(nextStep: BuilderStep, calledMethod: String): Unit
+  def isStepValid(requiredStep: BuilderStep): Boolean
 ```
 In this trait's hidden implementation, each builder's method has a mandatory order of call.
 

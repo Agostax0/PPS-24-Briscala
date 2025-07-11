@@ -71,7 +71,21 @@ object BuilderStep:
 /** OrderedGameBuilder is a trait that defines the methods to build a game in a
   * specific order
   */
-trait OrderedGameBuilder extends GameBuilder
+trait OrderedGameBuilder extends GameBuilder:
+  var currentStep: BuilderStep
+  def validateStep(
+      nextStep: BuilderStep,
+      calledMethod: String
+  ): Unit =
+    if !isStepValid(nextStep) then
+      throw new IllegalStateException(
+        s"$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}"
+      )
+
+  private def isStepValid(requiredStep: BuilderStep): Boolean =
+    currentStep match
+      case WithPlayers if requiredStep == WithPlayers => true
+      case _ => getNextStep(currentStep) == requiredStep
 
 object OrderedGameBuilder:
   def apply(name: String, builder: GameBuilder): GameBuilder =
@@ -83,21 +97,6 @@ object OrderedGameBuilder:
       var currentStep: BuilderStep = Initial
   ) extends OrderedGameBuilder:
     currentStep = if gameName.isEmpty then Initial else Named
-
-    private def validateStep(
-        nextStep: BuilderStep,
-        calledMethod: String
-    ): Unit =
-      if !isStepValid(nextStep) then
-        throw new IllegalStateException(
-          s"$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}"
-        )
-
-    private def isStepValid(requiredStep: BuilderStep): Boolean =
-      currentStep match
-        case WithPlayers if requiredStep == WithPlayers => true
-        case _ => getNextStep(currentStep) == requiredStep
-
     override def simpleEquals(obj: Any): Boolean = builder.simpleEquals(obj)
 
     /** Adds a player to a game with a fixed player size.
@@ -139,137 +138,138 @@ object OrderedGameBuilder:
       builder.setPlayers(n)
 
     /** Sets the suits of the cards in the game with players.
-     *
-     * @param suits
-     * the list of suits
-     * @return
-     * the GameBuilder instance with the set suits
-     */
+      *
+      * @param suits
+      *   the list of suits
+      * @return
+      *   the GameBuilder instance with the set suits
+      */
     override def setSuits(suits: List[String]): GameBuilder =
       validateStep(WithSuits, "setSuits")
       currentStep = WithSuits
       builder.setSuits(suits)
 
     /** Sets the ranks of the cards in the game with suits.
-     *
-     * @param ranks
-     * the list of ranks
-     * @return
-     * the GameBuilder instance with the set ranks
-     */
+      *
+      * @param ranks
+      *   the list of ranks
+      * @return
+      *   the GameBuilder instance with the set ranks
+      */
     override def setRanks(ranks: List[String]): GameBuilder =
       validateStep(WithRanks, "setRanks")
       currentStep = WithRanks
       builder.setRanks(ranks)
 
-    /** Sets the size of the hands for each player after deciding suits and ranks of cards.
-     *
-     * @param handSize
-     * the size of the hands
-     * @return
-     * the GameBuilder instance with the set hand size
-     */
+    /** Sets the size of the hands for each player after deciding suits and
+      * ranks of cards.
+      *
+      * @param handSize
+      *   the size of the hands
+      * @return
+      *   the GameBuilder instance with the set hand size
+      */
     override def setPlayersHands(handSize: Int): GameBuilder =
       validateStep(WithHandSizeSet, "setPlayerHands")
       currentStep = WithHandSizeSet
       builder.setPlayersHands(handSize)
 
     /** Sets the starting player of the complete game.
-     *
-     * @param name
-     * the name of the starting player
-     * @return
-     * the GameBuilder instance with the set starting player
-     */
+      *
+      * @param name
+      *   the name of the starting player
+      * @return
+      *   the GameBuilder instance with the set starting player
+      */
     override def setStartingPlayer(name: String): GameBuilder =
       validateStep(Ready, "setStartingPlayer")
       currentStep = Ready
       builder.setStartingPlayer(name)
 
     /** Sets the point rules for the complete game.
-     *
-     * @param rule
-     * the points rule to be set
-     * @return
-     * the GameBuilder instance with the set point rules
-     */
+      *
+      * @param rule
+      *   the points rule to be set
+      * @return
+      *   the GameBuilder instance with the set point rules
+      */
     override def setPointRule(rule: PointsRule): GameBuilder =
       validateStep(Ready, "setPointRule")
       currentStep = Ready
       builder.setPointRule(rule)
 
     /** Sets the play rules for the complete game.
-     *
-     * @param rule
-     * the play rule to be set
-     * @return
-     * the GameBuilder instance with the set play rules
-     */
+      *
+      * @param rule
+      *   the play rule to be set
+      * @return
+      *   the GameBuilder instance with the set play rules
+      */
     override def setPlayRule(rule: PlayRule): GameBuilder =
       validateStep(Ready, "setPlayRule")
       currentStep = Ready
       builder.setPlayRule(rule)
 
     /** Sets the hand rule for the complete game.
-     *
-     * @param rule
-     * the hand rule to be set
-     * @return
-     * the GameBuilder instance with the set hand rule
-     */
+      *
+      * @param rule
+      *   the hand rule to be set
+      * @return
+      *   the GameBuilder instance with the set hand rule
+      */
     override def setHandRule(rule: HandRule): GameBuilder =
       validateStep(Ready, "setHandRule")
       currentStep = Ready
       builder.setHandRule(rule)
 
     /** Sets the win rule for the complete game.
-     *
-     * @param rule
-     * the win rule to be set
-     * @return
-     * the GameBuilder instance with the set win rule
-     */
+      *
+      * @param rule
+      *   the win rule to be set
+      * @return
+      *   the GameBuilder instance with the set win rule
+      */
     override def setWinRule(rule: WinRule): GameBuilder =
       validateStep(Ready, "setWinRule")
       currentStep = Ready
       builder.setWinRule(rule)
 
     /** Adds a team to the complete game.
-     *
-     * @param names
-     * the list of player names in the team
-     * @return
-     * the GameBuilder instance with the added team
-     * @throws IllegalArgumentException
-     * if any player in the team does not exist or is already in another team
-     */
+      *
+      * @param names
+      *   the list of player names in the team
+      * @return
+      *   the GameBuilder instance with the added team
+      * @throws IllegalArgumentException
+      *   if any player in the team does not exist or is already in another team
+      */
     override def addTeam(names: List[String]): GameBuilder =
       validateStep(Ready, "addTeam")
       currentStep = Ready
       builder.addTeam(names)
 
     /** Sets the suit of the briscola card for the complete game.
-     *
-     * @param suit
-     * the suit of the briscola card
-     * @return
-     * the GameBuilder instance with the set briscola suit
-     * @throws IllegalArgumentException
-     * if the suit is not defined in the game
-     */
+      *
+      * @param suit
+      *   the suit of the briscola card
+      * @return
+      *   the GameBuilder instance with the set briscola suit
+      * @throws IllegalArgumentException
+      *   if the suit is not defined in the game
+      */
     override def setBriscolaSuit(suit: String): GameBuilder =
       validateStep(Ready, "setBriscolaSuit")
       currentStep = Ready
       builder.setBriscolaSuit(suit)
 
     /** Builds the game model.
-     *
-     * @return
-     * the FullEngineModel representing the game
-     * @throws IllegalArgumentException
-     * if the number of players does not match the set player count or if any
-     * other required field is not set correctly
-     */
+      *
+      * @return
+      *   the FullEngineModel representing the game
+      * @throws IllegalArgumentException
+      *   if the number of players does not match the set player count or if any
+      *   other required field is not set correctly
+      */
     override def build(): FullEngineModel =
       if currentStep == Ready | currentStep == WithHandSizeSet then
         builder.build()

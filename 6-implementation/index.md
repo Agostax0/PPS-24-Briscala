@@ -63,7 +63,34 @@ Upon creation, a bot also needs a `BotType` which refers to the bot behavior, ap
 The currently implemented strategies are:
 - `RandomStrategy` in which a bot chooses randomly among its playable cards in hand
 - `RuleAwareDecisionStrategy` in which a bot checks if any held cards are eligible to win the current turn, among these it chooses the least valuable; if no cards would win then the bot would choose the least score-giving card. 
-### PointRule 
-    
+
+### PointsRule
+The `PointsRule` type is an opaque type alias for a lambda which, to a given card assigns points for the game's winning scores.
+On this rule's design, the rules (play rules, hand rules, win rules) were based on.
+```scala
+object PointsRule:
+  opaque type PointsRule = (String, String) => Int
+  def apply(rule: (String, String) => Int): PointsRule = rule
+  extension (rule: PointsRule)
+    def apply(name: String, suit: String): Int = rule(name, suit)
+```
+In the code above, we've used scala's implicit method calling; in the first `apply` a `PointsRule` is created, while in the second a `PointsRule` is used on a card to get that card's points. 
+Points Rules are stored as a list of `PointsRule`, this is meant to allow users more point definitions, and these will be aggregated additively.
+```scala
+game card points are :
+      ((name, suit) =>
+        name match
+          case "Ace" => 5
+          case "King" => 2
+          case "Knight" => 2
+          case "Knave" => 2
+          case _ => 0
+        , (name, suit) =>
+          suit match
+            case "Coins" => 1
+            case _ => 0
+      )
+```
+With this configuration, an "Ace of Coins" is worth six points, five from its name and one from its suit.
 
 | [Previous Chapter](../5-detailed_design/index.md) | [Index](../index.md) | [Next Chapter](../7-testing/index.md) |

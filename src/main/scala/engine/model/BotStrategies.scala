@@ -83,7 +83,7 @@ class RuleAwareDecisionStrategy(private val self: PlayerModel)
   private def selectOpeningCard(
       playerHand: List[CardModel],
       context: GameContext
-  ): CardModel = playerHand.minBy(_.rank)
+  ): CardModel = playerHand.minBy(card => context.calculatePoints(List((self, card))))
 
   private def selectWinningCard(
       validCards: List[CardModel],

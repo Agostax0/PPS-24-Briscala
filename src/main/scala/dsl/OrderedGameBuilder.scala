@@ -82,7 +82,7 @@ trait OrderedGameBuilder extends GameBuilder:
         s"$calledMethod called in wrong order. At: $currentStep is required: ${getNextStep(currentStep)}"
       )
 
-  private def isStepValid(requiredStep: BuilderStep): Boolean =
+  def isStepValid(requiredStep: BuilderStep): Boolean =
     currentStep match
       case WithPlayers if requiredStep == WithPlayers => true
       case _ => getNextStep(currentStep) == requiredStep

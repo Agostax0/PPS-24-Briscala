@@ -61,6 +61,9 @@ val gameBuilder: GameBuilder = entityBuilder called "Alice"
 ```
 Such builders are called `SyntaxBuilder` and use implicit variables called `SyntaxSugar` which allow for seamless language-like syntax.
 In the previous example `player` is a SyntaxSugar variable.
+
+![DSL_SyntaxBuilder](../res/DSL_SyntaxBuilder.png "DSL to SyntaxBuilder structure")
+
 ## Method Ordering
 Just like in any language, the DSL is not immune to errors; in particular it's prone to semantic errors. 
 

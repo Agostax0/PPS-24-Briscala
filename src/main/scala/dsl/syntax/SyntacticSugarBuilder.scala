@@ -286,7 +286,7 @@ object SyntacticSugarBuilder:
       */
     infix def follows(
         cardPosition: CardPositionSyntacticSugar
-    ): HighestCardOfCardPlayedBuilder
+    ): HighestCardInPositionBuilder
   private object HighestCardBuilder:
     def apply(
         highestTakingCardProperty: CardFilterSyntacticSugar
@@ -298,8 +298,8 @@ object SyntacticSugarBuilder:
     ) extends HighestCardBuilder:
       override infix def follows(
           cardPosition: CardPositionSyntacticSugar
-      ): HighestCardOfCardPlayedBuilder =
-        HighestCardOfCardPlayedBuilder(filterSyntacticSugar, cardPosition)
+      ): HighestCardInPositionBuilder =
+        HighestCardInPositionBuilder(filterSyntacticSugar, cardPosition)
 
       override infix def is(briscola: String)(using
           cardsOnTable: List[(PlayerModel, CardModel)]
@@ -314,7 +314,7 @@ object SyntacticSugarBuilder:
   /** Builder for setting the reference card property in choosing the turn
     * winner.
     */
-  trait HighestCardOfCardPlayedBuilder:
+  trait HighestCardInPositionBuilder:
     /** Meant for choosing the reference card property, to choose "taking power"
       * and card dominance.
       *
@@ -332,19 +332,19 @@ object SyntacticSugarBuilder:
         cards: List[(PlayerModel, CardModel)]
     ): Option[PlayerModel]
 
-  private object HighestCardOfCardPlayedBuilder:
+  private object HighestCardInPositionBuilder:
     def apply(
         highestTakingCardProperty: CardFilterSyntacticSugar,
         cardPosition: CardPositionSyntacticSugar
-    ): HighestCardOfCardPlayedBuilder =
-      new HighestCardOfCardPlayedBuilderImpl(
+    ): HighestCardInPositionBuilder =
+      new HighestCardInPositionBuilderImpl(
         highestTakingCardProperty,
         cardPosition
       )
-    private class HighestCardOfCardPlayedBuilderImpl(
+    private class HighestCardInPositionBuilderImpl(
         val highestTakingCardProperty: CardFilterSyntacticSugar,
         val cardPosition: CardPositionSyntacticSugar
-    ) extends HighestCardOfCardPlayedBuilder:
+    ) extends HighestCardInPositionBuilder:
       override infix def card(cardPositionProperty: CardFilterSyntacticSugar)(
           using cardsOnTable: List[(PlayerModel, CardModel)]
       ): Option[PlayerModel] =

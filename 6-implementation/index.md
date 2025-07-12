@@ -78,7 +78,7 @@ With this configuration, an "Ace of Coins" is worth six points, five from its na
 
 ### BotPlayers
 A Bot is recognized as any other player, being an extension of the `PlayerModel` trait by using scala's `export` keyword, which applied the delegation pattern.
-```scala 3
+```scala
 sealed trait BotPlayerModel extends PlayerModel
 object BotPlayerModel: 
   ...

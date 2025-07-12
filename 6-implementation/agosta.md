@@ -200,3 +200,4 @@ val exampleRule4 = (cards: List[(PlayerModel, CardModel)]) =>
   highest(rank) that takes follows last card rank
 ```
 Where one chooses which card position (first or last) and property (same rank or same suit), the rule refers to when choosing the prevailing card and the turn-winning player.
+![PlayRule_DSL](../res/PlayRuleDSL.png "DSL create a PlayRule")

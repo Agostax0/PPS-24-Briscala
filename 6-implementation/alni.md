@@ -31,7 +31,7 @@ When building the game model using the DSL, the builder constructs a `GameContex
 The rules used by the `Custom...Strategy` classes (`PointsRule`, `HandRule`, `PlayRule` and `WinRule`) are all type aliases of lambda functions.
 
 This design ensures that each rule is independent of the others, ensuring modularity and flexibility:
-the user to freely customize any subset of the game rules, from a single type to the entire rule set, without compromising the integrity or playability of the game. 
+the user can freely customize any subset of the game rules, from a single type to the entire rule set, without compromising the integrity or playability of the game. 
 
 ## Play Card Example
 To better demonstrate adherence to the Single Responsibility Principle and provide a clearer understanding of how the different components interact with each other, the following example illustrates a game event: a player's card play action.

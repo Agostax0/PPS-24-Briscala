@@ -61,6 +61,9 @@ val gameBuilder: GameBuilder = entityBuilder called "Alice"
 ```
 Such builders are called `SyntaxBuilder` and use implicit variables called `SyntaxSugar` which allow for seamless language-like syntax.
 In the previous example `player` is a SyntaxSugar variable.
+
+![DSL_SyntaxBuilder](../res/DSL_SyntaxBuilder.png "DSL to SyntaxBuilder structure")
+
 ## Method Ordering
 Just like in any language, the DSL is not immune to errors; in particular it's prone to semantic errors. 
 
@@ -69,7 +72,9 @@ In order to resolve this issue, I've modified the DSL to use a `OrderedGameBuild
 
 The `OrderedGameBuilder` is a decorator of a `GameBuilder` which is tasked with ensuring the correct method's order of call.
 ```scala
-trait OrderedGameBuilder extends GameBuilder
+trait OrderedGameBuilder extends GameBuilder:
+  def validateStep(nextStep: BuilderStep, calledMethod: String): Unit
+  def isStepValid(requiredStep: BuilderStep): Boolean
 ```
 In this trait's hidden implementation, each builder's method has a mandatory order of call.
 
@@ -79,9 +84,35 @@ For simplicity, it was decided to have this order check at runtime.
 `OrderedGameBuilder` relies upon `BuilderStep`, an enum which lists all GameBuilder steps', and each next step.
 
 ## View Mixins
-- CardViewManager
-- PlayerViewManager
+I was tasked with implementing a UI for each player and their cards in hand, this was done in the following files: `CardViewManager` and `PlayerViewManager`.
 
+Both of these files contain traits meant for the `Engine View` to implement, in order to better abide by the Single Responsibility Principle.
+
+### CardViewManager
+```scala
+trait CardViewManager:
+  var cards: Map[String, List[CardModel]]
+  def addCardToPlayer(playerName: String, card: CardModel): State[Frame, Unit]
+  def removeCardFromPlayer(playerName: String, card: CardModel): State[Frame, Unit]
+  def removeCardsFromPlayer(playerName: String): State[Frame, Unit]
+  private def displayCard(playerName: String, card: CardModel): State[Frame, Unit]
+```
+Each card is displayed as a button and labeled with the card's suit and rank.
+
+Internally, to every card on the table is assigned an ID, to be used for event handling when playing a card.  
+The ID is structured as such:
+```
+<playerName>::<cardName><cardRank><cardSuit>
+```
+### PlayerViewManager
+```scala
+trait PlayerViewManager:
+  var players: List[String]
+  def addPlayer(name: String, numberOfPlayers: Int): State[Frame, Unit]
+```
+Each player is displayed as a panel labeled with their name, containing all ordered cards in their hand, with attention to placing even-numbered teams members' in a front facing manner.
+
+A player's name is used to visually assign their cards in their hand. 
 ## Play Rules
 A "Play Rule" is a way for the game to know which player is going to win a turn based on the cards played.  
 During the design stage of the play rules, I've followed the team's choice of using a type alias `PlayRule` which internally converts to a lambda.
@@ -150,7 +181,7 @@ game play rules are :
   highestBriscolaTakesRule prevailsOn highestCardTakesRule
 ```
 
-It's worth to mention that the DSL allows some degree of freedom when choosing the winning card, for example in these are valid syntaxes:
+It's worth to mention that the DSL allows some degree of freedom when choosing the winning card, for example these are valid syntaxes:
 ```scala
 val exampleRule1 = (cards: List[(PlayerModel, CardModel)]) =>
   given List[(PlayerModel, CardModel)] = cards
@@ -169,3 +200,4 @@ val exampleRule4 = (cards: List[(PlayerModel, CardModel)]) =>
   highest(rank) that takes follows last card rank
 ```
 Where one chooses which card position (first or last) and property (same rank or same suit), the rule refers to when choosing the prevailing card and the turn-winning player.
+![PlayRule_DSL](../res/PlayRuleDSL.png "DSL create a PlayRule")

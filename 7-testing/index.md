@@ -8,16 +8,21 @@ After the implementation of a feature, we also checked the coverage of the tests
 
 ## Coverage
 Scoverage reported a coverage of 76.12% for the project which is a bit lower than 80%, that was our aim since the start.
-To manually check the coverage report, a command alias was added to the sbt configuration.
-By running `sbt scoverage` a complete coverage report will be generated. The full scoverage report can be found [here](scoverage-report/index.html), or, after being generated, at *PPS-24-Briscala/target/scala-3.3.6/scoverage-report/index.html*.
+
+To manually check the coverage report, a command alias was added to the sbt configuration:
+by running `sbt scoverage` a complete coverage report will be generated. 
+
+The full scoverage report can be found [here](scoverage-report/index.html), or, after being generated, at *PPS-24-Briscala/target/scala-3.3.6/scoverage-report/index.html*.
 
 ![Test_Coverage](../res/scoverage.png "Test Coverage")
 
-The main culprits for lowering the coverage are some elements of the GUI, which are not easily testable, and most parts of *EngineController* which are not accessible for tests due to the way the code is structured.
+The main culprits for lowering the coverage are some elements of the GUI, which are not easily testable, and most parts of `EngineController` which are not accessible for tests due to the way the code is structured.
 We are satisfied with the coverage of the other packages as it is solidly above 90%.
 
 ## Example
 We wrote an implementation of the `GameBuilder` trait called `SimpleGameBuilder`.
 This class acts like a mockup for the Game Builder with a less rigid structure, allowing us to better test the trait.
+
+We have also added a `simpleEquals` method to test the game examples built from the `GameBuilder` via DSL.
 
 | [Previous Chapter](../6-implementation/index.md) | [Index](../index.md) | [Next Chapter](../8-retrospective/index.md) |

@@ -1,6 +1,5 @@
 # Briscala
-This project aims  to create a DSL for generating typical card games
-
+This project aims to create a DSL for generating typical card games
 
 ## Table of Contents
 

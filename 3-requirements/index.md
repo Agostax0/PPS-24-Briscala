@@ -10,7 +10,7 @@
   * Each player takes turn playing a card from their hand and placing it on the table
   * After all players have completed their turn, the outcome of the turn is calculated, the table is cleared and the game proceeds to the next turn
   * If the deck still contains enough cards, players draw to return to their initial hand size; otherwise, if the deck is empty, the game continues without drawing new cards 
-
+  * The games ends when there are no more cards in the players' hands.
 ### User Functional Requirements
 * The user should be able to:
   * Define the rules of the game using the DSL:
@@ -28,6 +28,7 @@
 
 ### System Functional Requirements
 * The system should be able to:
+  * Usage of the DSL should ensure game creation and playability
   * Handle the game logic, including turn management, card drawing, specific rules and win conditions
   * Provide a GUI for users to interact with the game
 
@@ -35,6 +36,7 @@
 * Readability: the DSL should be easy to read and understand, allowing users to quickly grasp the game rules
 * Modularity: the DSL should allow users to define different game rules and configurations without modifying the core engine
 * Performance: the game engine should be efficient and responsive, providing a smooth user experience
+* Robustness: the game engine should enforce correctness in input data and notify when malformed.
 
 ## Implementation Requirements
 * Use of Scala 3.+

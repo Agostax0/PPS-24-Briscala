@@ -9,9 +9,89 @@ Below are the individual contributions of each member.
 - [Pesic Marco](./pesic.md)
 
 ## Tri-Programming
+In this section a description of our group-work will be provided. 
+
+The following classes were created in the first stages of development to define standards for all future features. 
 ### GameBuilder
-### Bot
-### PointRule 
-    
+In order to construct a correct and ready-for-use GameModel of the game, we've decided to rely on the builder pattern.
+For this reason we developed the `GameBuilder` trait, which contains methods to build a fully-functional `FullEngineModel`.
+During configuration with the DSL, input parameters are checked and saved internally in the builder, to ultimately call the `build()` method which returns a `FullEngineModel` representation.   
+
+Not all semantic checks on the input data are done by the `GameBuilder`, but this task is delegated to each type alias representing an attribute. 
+
+For example, we have chosen to limit a game's number of players to an interval between two and four. 
+```scala
+object PlayerCount:
+  opaque type PlayerCount = Int
+  def apply(count: Int): PlayerCount =
+    require(count >= 2 && count <= 4, "player count should be between 2 and 4")
+    count
+```
+
+During an initial meeting, we chose which game's features must be initialized and which were optional; we concluded that these are mandatory:
+- the game's name
+- the number of players
+- the list of players
+- the suits of the deck
+- the ranks of the deck
+- the cards to give to each player
+
+With these features, a complete and ready-to-play game can be built.
+
+Additionally, these rules are optional, and as such, default values are used if not overridden:
+- the starting player
+- the point rules
+- the win rule
+- the composition of teams
+- the play rules
+- the hand rule
+- the briscola suit
+
+### PointsRule
+The `PointsRule` type is an opaque type alias for a lambda which, to a given card assigns points for the game's winning scores.
+On this rule's design, the rules (play rules, hand rules, win rules) were based on.
+```scala
+object PointsRule:
+  opaque type PointsRule = (String, String) => Int
+  def apply(rule: (String, String) => Int): PointsRule = rule
+  extension (rule: PointsRule)
+    def apply(name: String, suit: String): Int = rule(name, suit)
+```
+In the code above, we've used scala's implicit method calling; in the first `apply` a `PointsRule` is created, while in the second a `PointsRule` is used on a card to get that card's points. 
+Points Rules are stored as a list of `PointsRule`, this is meant to allow users more point definitions, and these will be aggregated additively.
+```scala
+game card points are :
+      ((name, suit) =>
+        name match
+          case "Ace" => 5
+          case "King" => 2
+          case "Knight" => 2
+          case "Knave" => 2
+          case _ => 0
+        , (name, suit) =>
+          suit match
+            case "Coins" => 1
+            case _ => 0
+      )
+```
+With this configuration, an "Ace of Coins" is worth six points, five from its name and one from its suit.
+
+### BotPlayers
+A Bot is recognized as any other player, being an extension of the `PlayerModel` trait by using scala's `export` keyword, which applied the delegation pattern.
+```scala
+sealed trait BotPlayerModel extends PlayerModel
+object BotPlayerModel: 
+  ...
+  private class BotPlayerModelImpl(
+      val player: PlayerModel,
+      val botType: BotType
+  ) extends BotPlayerModel:
+    export player.*
+    ...
+```
+Upon creation, a bot also needs a `BotType` which refers to the bot behavior, applied using the strategy pattern, for choosing a card to play.
+The currently implemented strategies are:
+- `RandomStrategy` in which a bot chooses randomly among its playable cards in hand
+- `RuleAwareDecisionStrategy` in which a bot checks if any held cards are eligible to win the current turn, among these it chooses the least valuable; if no cards would win then the bot would choose the least score-giving card.
 
 | [Previous Chapter](../5-detailed_design/index.md) | [Index](../index.md) | [Next Chapter](../7-testing/index.md) |

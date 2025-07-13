@@ -181,7 +181,7 @@ game play rules are :
   highestBriscolaTakesRule prevailsOn highestCardTakesRule
 ```
 
-It's worth to mention that the DSL allows some degree of freedom when choosing the winning card, for example in these are valid syntaxes:
+It's worth to mention that the DSL allows some degree of freedom when choosing the winning card, for example these are valid syntaxes:
 ```scala
 val exampleRule1 = (cards: List[(PlayerModel, CardModel)]) =>
   given List[(PlayerModel, CardModel)] = cards

@@ -7,6 +7,7 @@ trait WindowState:
   type Window
   def initialWindow: Window
   def setSize(width: Int, height: Int): State[Window, Unit]
+  def addTitle(title: String): State[Window, Unit]
   def addPanel(panelName: String)(pos: (Int, Int))(
       dims: (Int, Int)
   ): State[Window, Unit]
@@ -50,7 +51,7 @@ object WindowStateImpl extends WindowState:
 
   type Window = Frame
 
-  def initialWindow: Window = createFrame
+  override def initialWindow: Window = createFrame
 
   /** Sets the UI sizes
     * @param width
@@ -59,8 +60,15 @@ object WindowStateImpl extends WindowState:
     *   the height the UI will take
     * @return
     */
-  def setSize(width: Int, height: Int): State[Window, Unit] =
+  override def setSize(width: Int, height: Int): State[Window, Unit] =
     State(w => ((w.setSize(width, height)), {}))
+
+  /** Adds a title to the UI
+   * @param title the title to be added
+   * @return
+   */
+  override def addTitle(title: String): State[Window, Unit] =
+    State(w => ((w.addTitle(title)), {}))
 
   /** Adds a panel to the UI
     * @param panelName
@@ -71,12 +79,12 @@ object WindowStateImpl extends WindowState:
     *   the dimensions that this new panel takes
     * @return
     */
-  def addPanel(
+  override def addPanel(
       panelName: String
   )(pos: (Int, Int))(dims: (Int, Int)): State[Window, Unit] =
     State(w => (w.addPanel(panelName, pos._1, pos._2, dims._1, dims._2), {}))
 
-  /** Adds a scrollbale panel to the UI the panel's name for querying purposes
+  /** Adds a scrollable panel to the UI the panel's name for querying purposes
     * @param panelName
     *   the position where to put this new panel
     * @param pos
@@ -84,7 +92,7 @@ object WindowStateImpl extends WindowState:
     * @param dims
     * @return
     */
-  def addScrollablePanel(
+  override def addScrollablePanel(
       panelName: String
   )(pos: (Int, Int))(dims: (Int, Int)): State[Window, Unit] =
     State(w =>
@@ -98,7 +106,7 @@ object WindowStateImpl extends WindowState:
     *   the panel's configuration
     * @return
     */
-  def setGridLayout(
+  override def setGridLayout(
       panelName: String,
       layout: GridLayoutOrientation
   ): State[Window, Unit] =
@@ -111,7 +119,7 @@ object WindowStateImpl extends WindowState:
     *   the button's name for querying purposes
     * @return
     */
-  def addButton(text: String, name: String): State[Window, Unit] =
+  override def addButton(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addButton(text, name)), {}))
 
   /** Adds a label in the UI
@@ -122,7 +130,7 @@ object WindowStateImpl extends WindowState:
     *   the name of the label element for querying purposes
     * @return
     */
-  def addLabel(text: String, name: String): State[Window, Unit] =
+  override def addLabel(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addLabel(text, name)), {}))
 
   /** Moves a component inside a panel
@@ -132,21 +140,25 @@ object WindowStateImpl extends WindowState:
     *   the panel's name
     * @return
     */
-  def moveComponentIntoPanel(
+  override def moveComponentIntoPanel(
       componentName: String,
       panelName: String
   ): State[Frame, Unit] =
     State(w => (w.moveComponentIntoPanel(componentName, panelName), {}))
-  def removeComponentFromPanel(
+
+  override def removeComponentFromPanel(
       componentName: String,
       panelName: String
   ): State[Frame, Unit] =
     State(w => (w.removeComponentFromPanel(componentName, panelName), {}))
-  def show(): State[Window, Unit] =
+
+  override def show(): State[Window, Unit] =
     State(w => (w.show, {}))
-  def exec(cmd: => Unit): State[Window, Unit] =
+
+  override def exec(cmd: => Unit): State[Window, Unit] =
     State(w => (w, cmd))
-  def eventStream(): State[Window, Stream[String]] =
+
+  override def eventStream(): State[Window, Stream[String]] =
     State(w => (w, Stream.generate(() => w.events().get)))
 
 //@main def windowStateExample =

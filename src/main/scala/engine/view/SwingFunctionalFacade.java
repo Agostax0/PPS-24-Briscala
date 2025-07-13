@@ -11,6 +11,7 @@ class SwingFunctionalFacade {
 
     public static interface Frame {
         Frame setSize(int width, int height);
+        Frame addTitle(String title);
         Frame addPanel(String panelName, int x, int y, int width, int height);
         Frame addScrollablePanel(String panelName, int x, int y, int width, int height);
         Frame setGridLayout(String panelName, int rows, int columns);
@@ -46,6 +47,13 @@ class SwingFunctionalFacade {
         @Override
         public Frame setSize(int width, int height) {
             this.jframe.setSize(width, height);
+            return this;
+        }
+
+        @Override
+        public Frame addTitle(String title) {
+            this.jframe.setTitle(title);
+            this.jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             return this;
         }
 

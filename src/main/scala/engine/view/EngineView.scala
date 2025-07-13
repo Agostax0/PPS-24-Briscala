@@ -25,7 +25,7 @@ object EngineView:
       import WindowStateImpl.*
       for
         _ <- setSize(width, height)
-        _ <- addLabel(gameName, "GameName")
+        _ <- addTitle(gameName)
         _ <- WindowStateImpl.show()
         e <- eventStream()
       yield e

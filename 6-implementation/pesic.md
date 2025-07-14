@@ -46,7 +46,7 @@ val windowEventsHandler: State[Window, Unit] = for
     ))
     yield ()
 ```
-THe `handleCardPlayed` checks whether the player exists in the model and then moves the responsibility for checking the turn validity to the model through the `playCard` method.
+The `handleCardPlayed` checks whether the player exists in the model and then moves the responsibility for checking the turn validity to the model through the `playCard` method.
 ```scala
 private def handleCardPlayed(playerName: String, name: String , rank: String, suit: String): State[Window, Unit] =
   val card = CardModel(name, rank.toInt, suit)
@@ -71,7 +71,6 @@ The `playCard` method updates the game state and the view accordingly, and then 
         unitState()
 ```
 The difference between a `BotPlayerModel` and a `PlayerModel` is that the bot player automatically plays a card when it's their turn, by not passing through the eventHandler .
-```scala
 ```scala
     private def playCardProgrammatically(bot: BotPlayerModel): State[Window, Unit] =
       val card: CardModel = model.botPlayCard(bot)

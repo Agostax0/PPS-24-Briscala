@@ -9,7 +9,7 @@ As a result, the team encountered relatively few obstacles and was able to deliv
 ## Future improvements
 While the project is already functional and meets all initial expectations, there are various areas where the codebase could be refined and extended to improve maintainability, scalability, and alignment with modern and more functional programming paradigms.
 
-A class that would benefit from refactoring is `EngineController`. Its current design is not strongly aligned with a state-oriented approach, which makes the logic more rigid and less adaptable to change. Reworking the class to follow a more state-driven architecture—potentially by applying design patterns like State or Strategy—would simplify the addition of new game behaviors or modes. This shift would also enhance the overall readability of the code and make unit testing more straightforward and effective.
+A class that would benefit from refactoring is `EngineController`. Its current design is not strongly aligned with a state-oriented approach, which makes the logic more rigid and less adaptable to change. Reworking the class to follow a more state-driven architecture would simplify the addition of new game behaviors or modes. This shift would also enhance the overall readability of the code and make unit testing more straightforward and effective.
 
 Finally, more advanced functional programming patterns could have been employed in place of the older, Java-like approaches currently in use. 
 Additionally, the bot could be extended by introducing a new strategy that leverages logic programming, using Prolog, to compute the next card to play. 

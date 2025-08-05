@@ -56,8 +56,8 @@ object GameDSL:
       *   game has player called "Alice"
       * }}}
       *
-      * @param playerSyntax
-      *   "PlayerSyntacticSugar" instance representing the player
+      * @param entitySyntax
+      *   "EntitySyntacticSugar" instance representing the player
       * @return
       *   The builder for the game
       */

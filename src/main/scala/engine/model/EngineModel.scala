@@ -322,5 +322,5 @@ class FullEngineModel(
     *   the number of cards to be given to each player
     */
   def giveCardsToPlayers(handSize: Int): Unit =
-    if deck.view.size > handSize * players.size then
+    if deck.view.size >= handSize * players.size then
       players.foreach(player => giveCardsToPlayer(player, handSize))

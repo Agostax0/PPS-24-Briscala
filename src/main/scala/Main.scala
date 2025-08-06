@@ -1,5 +1,5 @@
 import engine.controller.EngineController
-import examples.GameExamples.*
+import games.Games.*
 
 import scala.language.{implicitConversions, postfixOps}
 
@@ -8,13 +8,15 @@ def main(): Unit =
 
   val briscolaGame: String = "briscola"
   val marafoneGame: String = "marafone"
+  val rovescinoGame: String = "rovescino"
   val customGame: String = "custom"
 
-  val selectedGame = briscolaGame
+  val selectedGame = rovescinoGame
 
   val gameConfig = selectedGame match {
     case game if game == briscolaGame => briscola()
     case game if game == marafoneGame => marafone()
+    case game if game == rovescinoGame => rovescino()
     case game if game == customGame => custom()
     case _ => throw new IllegalArgumentException(s"Unknown game: $selectedGame")
   }

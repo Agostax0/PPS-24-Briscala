@@ -1,4 +1,4 @@
-package examples
+package games
 
 import dsl.syntax.SyntacticSugar.*
 import dsl.syntax.SyntacticSugarBuilder
@@ -7,6 +7,7 @@ import dsl.types.HandRule.{followFirstSuit, followPreviousSuit, freeStart, or, s
 import dsl.types.PlayRule.*
 import dsl.types.Team.Team
 import dsl.types.WinRule.highest as highestPointTeam
+import dsl.types.WinRule.lowest as lowestPointTeam
 import dsl.types.{HandRule, PlayRule, PointsRule, WinRule}
 import dsl.{GameBuilder, GameDSL, SimpleGameBuilder}
 import engine.model.BotType.{Random, Smart}
@@ -15,11 +16,11 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
-class GameExamplesTest
+class GamesTest
   extends AnyFlatSpec
     with should.Matchers
     with BeforeAndAfterEach:
-  import examples.GameExamples.*
+  import games.Games.*
 
   private val wrongClassText = "GameBuilder is not of type SimpleGameBuilder"
 
@@ -131,6 +132,52 @@ class GameExamplesTest
     ))
     marafoneGame match
       case g: GameBuilder => g.simpleEquals(marafoneBuilder) shouldBe true
+      case _ => fail(wrongClassText)
+
+  "Rovescino game" should "be correctly built" in :
+    val rovescinoGame = rovescino()
+    val rovescinoBuilder = SimpleGameBuilder("Rovescino")
+    rovescinoBuilder.setPlayers(4)
+    rovescinoBuilder.addPlayer("Alice")
+    rovescinoBuilder.addPlayer("Bob")
+    rovescinoBuilder.addPlayer("Bob1")
+    rovescinoBuilder.addPlayer("Bob2")
+    rovescinoBuilder.setSuits(List("Cups", "Coins", "Swords", "Batons"))
+    rovescinoBuilder.setRanks(
+      List("4", "5", "6", "7", "Knave", "Knight", "King", "Ace", "2", "3"))
+    rovescinoBuilder.setPlayersHands(10)
+    rovescinoBuilder.setStartingPlayer("Alice")
+    rovescinoBuilder.setPointRule(PointsRule(
+      (name: String, suit: String) =>
+        name match
+          case "Ace" => 10
+          case "3" | "2" | "King" | "Knight" | "Knave" => 3
+          case _ => 0
+    ))
+    rovescinoBuilder.setHandRule(HandRule(
+      (cardsOnTable, playerHand, playedCard) =>
+        given List[CardModel] = cardsOnTable
+        given DeckModel = playerHand
+        given CardModel = playedCard
+
+        freeStart or followFirstSuit
+    ))
+    val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+      given List[(PlayerModel, CardModel)] = cards
+
+      highest(rank) that takes follows first card suit
+    rovescinoBuilder.setPlayRule(PlayRule(
+      highestCardTakesRule
+    ))
+    rovescinoBuilder.setWinRule(WinRule(
+      (teams, listOfPlayers) =>
+        given List[Team] = teams
+        given List[PlayerModel] = listOfPlayers
+
+        lowestPointTeam
+    ))
+    rovescinoBuilder match
+      case g: GameBuilder => g.simpleEquals(rovescinoBuilder) shouldBe true
       case _ => fail(wrongClassText)
 
   "Custom game" should "be correctly built" in:

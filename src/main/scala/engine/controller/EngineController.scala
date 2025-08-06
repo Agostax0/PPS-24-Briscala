@@ -103,7 +103,7 @@ object EngineController:
         _ <- handleCardPlayed(bot.name, card.name, card.rank.toString, card.suit)
       yield()
 
-    private def checkBot():State[Window, Unit] = {
+    private def checkBot(): State[Window, Unit] = {
       model.activePlayer match
         case bot: BotPlayerModel if bot.hand.view.nonEmpty => playCardProgrammatically(bot)
         case _ => unitState()

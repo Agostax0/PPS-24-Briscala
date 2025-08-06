@@ -50,12 +50,10 @@ object GameExamples:
     game play rules are :
       val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
         given List[(PlayerModel, CardModel)] = cards
-  
         highest(suit) that takes is briscolaSuit
   
       val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
         given List[(PlayerModel, CardModel)] = cards
-  
         highest(rank) that takes follows first card suit
   
       highestBriscolaTakesRule prevailsOn highestCardTakesRule
@@ -63,7 +61,6 @@ object GameExamples:
     game win rules is :
       (teams, listOfPlayers) =>
         given List[Team] = teams
-  
         given List[PlayerModel] = listOfPlayers
   
         highestPointTeam

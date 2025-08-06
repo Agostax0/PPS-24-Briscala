@@ -267,8 +267,7 @@ object OrderedGameBuilder:
       * @return
       *   the FullEngineModel representing the game
       * @throws IllegalArgumentException
-      *   if the number of players does not match the set player count or if any
-      *   other required field is not set correctly
+      *   if any required field is not set correctly
       */
     override def build(): FullEngineModel =
       if currentStep == Ready | currentStep == WithHandSizeSet then

@@ -11,7 +11,7 @@ def main(): Unit =
   val rovescinoGame: String = "rovescino"
   val customGame: String = "custom"
 
-  val selectedGame = rovescinoGame
+  val selectedGame = briscolaGame
 
   val gameConfig = selectedGame match {
     case game if game == briscolaGame => briscola()
@@ -21,6 +21,7 @@ def main(): Unit =
     case _ => throw new IllegalArgumentException(s"Unknown game: $selectedGame")
   }
 
-  EngineController(gameConfig.build()).start()
+  val debugger = false
+  EngineController(gameConfig.build(), debugger).start()
 
 end main

@@ -48,11 +48,18 @@ sealed trait EngineController:
   def start(): Unit
 
 object EngineController:
-  def apply(model: FullEngineModel): EngineController = new EngineControllerImpl(
-    model
+  /**
+   * Creates an instance of EngineController with the provided model and debugger flag.
+   *
+   * @param model The FullEngineModel representing the game state.
+   * @param debugger A boolean flag indicating whether to enable debugging features, by default it's false.
+   * @return An instance of EngineController.
+   */
+  def apply(model: FullEngineModel, debugger: Boolean = false): EngineController = new EngineControllerImpl(
+    model, debugger
   )
 
-  private class EngineControllerImpl(private val model: FullEngineModel)
+  private class EngineControllerImpl(private val model: FullEngineModel, private val debugger: Boolean)
       extends EngineController:
 
     private val view: EngineView =
@@ -109,7 +116,6 @@ object EngineController:
         case _ => unitState()
     }
 
-
     private def handleCardPlayed(playerName: String, name: String , rank: String, suit: String): State[Window, Unit] =
       val card = CardModel(name, rank.toInt, suit)
       model.players.find(playerName == _.name) match
@@ -122,8 +128,7 @@ object EngineController:
       playerTurn = 0
       totalRounds += 1
 
-    private def drawCards(): State[Window, Unit] =
-      model.giveCardsToPlayers(1)
+    private def loadHands(): State[Window, Unit] =
       for
         _ <- model.players.foldLeft( unitState(): State[Window, Unit]):
           (state, player) =>
@@ -139,10 +144,11 @@ object EngineController:
         model.computeTurn()
         resetTurn()
         println(s"End of turn, ${model.activePlayer.name} is the winner of this turn.")
+        model.giveCardsToPlayers(1)
         for
           _ <- view.clearTable()
           _ <- view.addTurnWinner(model.activePlayer.name, totalRounds.toString)
-          _ <- drawCards()
+          _ <- loadHands()
           _ <- endGame()
           _ <- checkBot()
         yield()
@@ -171,6 +177,7 @@ object EngineController:
           _ <- view.removeCardFromPlayer(player.name, card)
           _ <- view.addCardToTable(player.name, card)
           _ <- endTurn()
+          _ <- if debugger then unitState() else loadHands()
         yield()
       else
         unitState()
@@ -180,7 +187,7 @@ object EngineController:
     private def renderHand(player: PlayerModel): State[Window, Unit] =
       player.hand.view.foldLeft(unitState(): State[Window, Unit]):
         (nestedState, card) =>
-        for
-          _ <- nestedState
-          _ <- view.addCardToPlayer(player.name, card)
-        yield ()
+          for
+            _ <- nestedState
+            _ <- if debugger then view.addCardToPlayer(player.name, card) else view.addCardToPlayer(player.name, card, model.activePlayer == player)
+          yield ()

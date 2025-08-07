@@ -139,9 +139,9 @@ class GamesTest
     val rovescinoBuilder = SimpleGameBuilder("Rovescino")
     rovescinoBuilder.setPlayers(4)
     rovescinoBuilder.addPlayer("Alice")
-    rovescinoBuilder.addPlayer("Bob")
-    rovescinoBuilder.addPlayer("Bob1")
-    rovescinoBuilder.addPlayer("Bob2")
+    rovescinoBuilder.addBotPlayer("Bob", Random)
+    rovescinoBuilder.addBotPlayer("Josh", Smart)
+    rovescinoBuilder.addPlayer("Albert")
     rovescinoBuilder.setSuits(List("Cups", "Coins", "Swords", "Batons"))
     rovescinoBuilder.setRanks(
       List("4", "5", "6", "7", "Knave", "Knight", "King", "Ace", "2", "3"))

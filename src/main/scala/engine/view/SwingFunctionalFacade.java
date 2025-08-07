@@ -18,6 +18,7 @@ class SwingFunctionalFacade {
         Frame moveComponentIntoPanel(String componentName, String panelName);
         Frame removeComponentFromPanel(String componentName, String panelName);
         Frame addButton(String text, String name);
+        Frame addSilencedButton(String name);
         Frame addLabel(String text, String name);
         Frame show();
         Supplier<String> events();        
@@ -114,6 +115,20 @@ class SwingFunctionalFacade {
         public Frame addButton(String text, String name) {
             JButton jb = new JButton(text);
             jb.setActionCommand(name);
+            this.components.put(name, jb);
+            jb.addActionListener(e -> {
+                try {
+                    eventQueue.put(name);
+                } catch (InterruptedException ex){}
+            });
+            return this;
+        }
+
+        @Override
+        public Frame addSilencedButton(String name) {
+            JButton jb = new JButton("");
+            jb.setActionCommand(name);
+            jb.setEnabled(false);
             this.components.put(name, jb);
             jb.addActionListener(e -> {
                 try {

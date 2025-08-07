@@ -19,6 +19,7 @@ trait WindowState:
       layoutOrientation: GridLayoutOrientation
   ): State[Window, Unit]
   def addButton(text: String, name: String): State[Window, Unit]
+  def addSilencedButton(name: String): State[Window, Unit]
   def addLabel(text: String, name: String): State[Window, Unit]
   def moveComponentIntoPanel(
       componentName: String,
@@ -121,6 +122,17 @@ object WindowStateImpl extends WindowState:
     */
   override def addButton(text: String, name: String): State[Window, Unit] =
     State(w => ((w.addButton(text, name)), {}))
+
+  /** Adds a silenced button to the available components: the button is deactivated and nameless
+   *
+   * @param text
+   * the text displayed by the button
+   * @param name
+   * the button's name for querying purposes
+   * @return
+   */
+  override def addSilencedButton(name: String): State[Window, Unit] =
+    State(w => ((w.addSilencedButton(name)), {}))
 
   /** Adds a label in the UI
     *

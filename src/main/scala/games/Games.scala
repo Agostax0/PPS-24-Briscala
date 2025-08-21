@@ -1,4 +1,4 @@
-package examples
+package games
 
 import dsl.{GameBuilder, GameDSL}
 import dsl.GameDSL.{game, is, *}
@@ -9,10 +9,11 @@ import dsl.types.PlayRule.prevailsOn
 import dsl.types.Team
 import dsl.types.Team.Team
 import dsl.types.WinRule.highest as highestPointTeam
+import dsl.types.WinRule.lowest as lowestPointTeam
 import engine.model.{CardModel, DeckModel, PlayerModel}
 
 import scala.language.{implicitConversions, postfixOps}
-object GameExamples:
+object Games:
 
   /** Creates a game builder for the game "Briscola".
    * The game is set up with 2 players, Alice and Bob, and includes two bots: Albert (smart) and Josh (random).
@@ -50,12 +51,10 @@ object GameExamples:
     game play rules are :
       val highestBriscolaTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
         given List[(PlayerModel, CardModel)] = cards
-  
         highest(suit) that takes is briscolaSuit
   
       val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
         given List[(PlayerModel, CardModel)] = cards
-  
         highest(rank) that takes follows first card suit
   
       highestBriscolaTakesRule prevailsOn highestCardTakesRule
@@ -63,7 +62,6 @@ object GameExamples:
     game win rules is :
       (teams, listOfPlayers) =>
         given List[Team] = teams
-  
         given List[PlayerModel] = listOfPlayers
   
         highestPointTeam
@@ -134,6 +132,60 @@ object GameExamples:
         given List[PlayerModel] = listOfPlayers
   
         highestPointTeam
+
+    game
+
+  /** Creates a game builder for the game "Rovescino".
+   * The game is set up with 4 players: Alice, Bob, Josh, and Albert with no teams.
+   * The game is a variation of "Marafone" with a little twist: there is no briscola
+   * suit and the winner is the player with the lowest points at the end of the game.
+   *
+   * @return
+   */
+  def rovescino(): GameBuilder =
+    game is "Rovescino"
+    game has 4 players
+
+    game has player called "Alice"
+    game has randomBot called "Bob"
+    game has smartBot called "Josh"
+    game has player called "Albert"
+
+    game suitsAre("Cups", "Coins", "Swords", "Batons")
+    game ranksAre("4", "5", "6", "7", "Knave", "Knight", "King", "Ace", "2", "3")
+    game gives 10 cards to every player
+
+    game firstTurn starts from "Alice"
+
+    game card points are :
+      (name, suit) =>
+        name match
+          case "Ace" => 10
+          case "3" | "2" | "King" | "Knight" | "Knave" => 3
+          case _ => 0
+
+    game hand rules are :
+      (cardsOnTable, playerHand, playedCard) =>
+        given List[CardModel] = cardsOnTable
+        given DeckModel = playerHand
+        given CardModel = playedCard
+
+        freeStart or followFirstSuit
+
+    game play rules are :
+      val highestCardTakesRule = (cards: List[(PlayerModel, CardModel)]) =>
+        given List[(PlayerModel, CardModel)] = cards
+
+        highest(rank) that takes follows first card suit
+
+      highestCardTakesRule
+
+    game win rules is :
+      (teams, listOfPlayers) =>
+        given List[Team] = teams
+        given List[PlayerModel] = listOfPlayers
+
+        lowestPointTeam
 
     game
 

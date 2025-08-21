@@ -17,7 +17,8 @@ trait CardViewManager:
  * */
   def addCardToPlayer(
       playerName: String,
-      card: CardModel
+      card: CardModel,
+      isActive: Boolean = true
   ): State[Frame, Unit] =
     cards = cards.updatedWith(playerName) {
       case Some(existingCards) if !existingCards.contains(card) =>
@@ -26,7 +27,7 @@ trait CardViewManager:
       case _                   => Some(List(card))
     }
 
-    displayCard(playerName, card)
+    displayCard(playerName, card, isActive)
 /**
   * Removes a specific card from the player's hand in the game view.
   *
@@ -78,13 +79,21 @@ trait CardViewManager:
 * */
   private def displayCard(
       playerName: String,
-      card: CardModel
+      card: CardModel,
+      isActive: Boolean
   ): State[Frame, Unit] =
     import WindowStateImpl.*
+
     val cardInfo =
       "<html><body>" + card.name + "<br>" + card.suit + "</body></html>"
     val componentName = playerName + "::" + card.toString
-    for
-      _ <- addButton(cardInfo, componentName)
-      _ <- moveComponentIntoPanel(componentName, playerName)
-    yield ()
+    if isActive then
+      for
+        _ <- addButton(cardInfo, componentName)
+        _ <- moveComponentIntoPanel(componentName, playerName)
+      yield ()
+    else
+      for
+        _ <- addSilencedButton(componentName)
+        _ <- moveComponentIntoPanel(componentName, playerName)
+      yield ()

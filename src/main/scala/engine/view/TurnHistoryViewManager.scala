@@ -60,7 +60,7 @@ trait TurnHistoryViewManager:
     import WindowStateImpl.*
     for
       _ <- addLabel(
-        "THE WINNER OF THE GAME IS " + playerName,
+        "THE WINNER IS " + playerName,
         "WINNER " + playerName
       )
       - <- moveComponentIntoPanel(

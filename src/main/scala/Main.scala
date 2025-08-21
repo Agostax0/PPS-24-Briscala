@@ -11,15 +11,22 @@ def main(): Unit =
   val rovescinoGame: String = "rovescino"
   val customGame: String = "custom"
 
-  val selectedGame = customGame
+  val games = List(briscolaGame, marafoneGame, rovescinoGame, customGame)
 
-  val gameConfig = selectedGame match {
-    case game if game == briscolaGame => briscola()
-    case game if game == marafoneGame => marafone()
+  Console.out.println(
+    "Choose any of these pre-made games: [ " + games.foldRight("")(
+      _ + " " + _
+    ) + "]"
+  )
+
+  val selectedGame = Console.in.readLine()
+
+  val gameConfig = selectedGame match
+    case game if game == briscolaGame  => briscola()
+    case game if game == marafoneGame  => marafone()
     case game if game == rovescinoGame => rovescino()
-    case game if game == customGame => custom()
+    case game if game == customGame    => custom()
     case _ => throw new IllegalArgumentException(s"Unknown game: $selectedGame")
-  }
 
   val debugger = false
   EngineController(gameConfig.build(), debugger).start()

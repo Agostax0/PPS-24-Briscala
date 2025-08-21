@@ -11,7 +11,7 @@ We confirmed that the project works on Ubuntu 24.04 LTS with OpenJDK 21.0.7.
 
 1. To run the project download the release and run the following command:
    ```bash
-   java -jar Briscala_v100.jar
+   java -jar Briscala_v200.jar
    ```
    2. (Alternative) Download the repository and run the following command:
    ```bash
@@ -24,9 +24,22 @@ We confirmed that the project works on Windows 10/11 with Java Runtime class fil
 
 1. To run the project download the release and run the following command:
    ```bash
-   java -jar Briscala_v100.jar
+   java -jar Briscala_v200.jar
    ```
    2. (Alternative) Download the repository and run the following command:
    ```bash
    sbt run
    ```
+   
+## Usage
+
+Upon execution on the terminal will appear a list of pre-made games.
+```
+Choose any of these pre-made games: [ briscola marafone rovescino custom ]
+```
+
+
+Upon selecting a game, the user will be asked if cards should always be visible.
+```
+Should cards be always visible? [Y / n]
+```

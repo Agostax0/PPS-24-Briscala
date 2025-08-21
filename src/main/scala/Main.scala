@@ -28,7 +28,14 @@ def main(): Unit =
     case game if game == customGame    => custom()
     case _ => throw new IllegalArgumentException(s"Unknown game: $selectedGame")
 
-  val debugger = false
+  Console.out.println(
+    "Should cards be always visible? [Y / n]"
+  )
+
+  val debugger = Console.in.readLine() match
+    case "n" | "N" => false
+    case _         => true
+
   EngineController(gameConfig.build(), debugger).start()
 
 end main

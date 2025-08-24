@@ -11,7 +11,7 @@ We confirmed that the project works on Ubuntu 24.04 LTS with OpenJDK 21.0.7.
 
 1. To run the project download the release and run the following command:
    ```bash
-   java -jar Briscala_v200.jar
+   java -jar Briscala_v201.jar
    ```
    2. (Alternative) Download the repository and run the following command:
    ```bash
@@ -24,7 +24,7 @@ We confirmed that the project works on Windows 10/11 with Java Runtime class fil
 
 1. To run the project download the release and run the following command:
    ```bash
-   java -jar Briscala_v200.jar
+   java -jar Briscala_v201.jar
    ```
    2. (Alternative) Download the repository and run the following command:
    ```bash
